@@ -1,0 +1,2651 @@
+{
+  "ok": true,
+  "parceiros": [
+    {
+      "id": "parceiro1",
+      "nome": "Clínica Saúde"
+    },
+    {
+      "id": "parceiro2",
+      "nome": "Empresa XYZ"
+    },
+    {
+      "id": "parceiro3",
+      "nome": "Associação ABC"
+    }
+  ],
+  "grupos": [
+    {
+      "id": "grupo1",
+      "nome": "Grupo 1",
+      "parceiroId": "parceiro2",
+      "nomeParceiro": "Empresa XYZ",
+      "membros": [
+        {
+          "cpf": "10000000001",
+          "tipo": "empregador",
+          "nome": "Empregador 1"
+        },
+        {
+          "cpf": "10000000002",
+          "tipo": "empregado",
+          "nome": "Empregado 2"
+        },
+        {
+          "cpf": "10000000003",
+          "tipo": "familiar",
+          "nome": "Familiar 3"
+        },
+        {
+          "cpf": "10000000004",
+          "tipo": "empregador",
+          "nome": "Empregador 4"
+        },
+        {
+          "cpf": "10000000005",
+          "tipo": "empregado",
+          "nome": "Empregado 5"
+        }
+      ]
+    },
+    {
+      "id": "grupo2",
+      "nome": "Grupo 2",
+      "parceiroId": "parceiro3",
+      "nomeParceiro": "Associação ABC",
+      "membros": [
+        {
+          "cpf": "10000000006",
+          "tipo": "empregador",
+          "nome": "Empregador 6"
+        },
+        {
+          "cpf": "10000000007",
+          "tipo": "empregado",
+          "nome": "Empregado 7"
+        },
+        {
+          "cpf": "10000000008",
+          "tipo": "familiar",
+          "nome": "Familiar 8"
+        },
+        {
+          "cpf": "10000000009",
+          "tipo": "empregador",
+          "nome": "Empregador 9"
+        },
+        {
+          "cpf": "10000000010",
+          "tipo": "empregado",
+          "nome": "Empregado 10"
+        }
+      ]
+    },
+    {
+      "id": "grupo3",
+      "nome": "Grupo 3",
+      "parceiroId": "parceiro1",
+      "nomeParceiro": "Clínica Saúde",
+      "membros": [
+        {
+          "cpf": "10000000011",
+          "tipo": "empregador",
+          "nome": "Empregador 11"
+        },
+        {
+          "cpf": "10000000012",
+          "tipo": "empregado",
+          "nome": "Empregado 12"
+        },
+        {
+          "cpf": "10000000013",
+          "tipo": "familiar",
+          "nome": "Familiar 13"
+        },
+        {
+          "cpf": "10000000014",
+          "tipo": "empregador",
+          "nome": "Empregador 14"
+        },
+        {
+          "cpf": "10000000015",
+          "tipo": "empregado",
+          "nome": "Empregado 15"
+        }
+      ]
+    },
+    {
+      "id": "grupo4",
+      "nome": "Grupo 4",
+      "parceiroId": "parceiro2",
+      "nomeParceiro": "Empresa XYZ",
+      "membros": [
+        {
+          "cpf": "10000000016",
+          "tipo": "empregador",
+          "nome": "Empregador 16"
+        },
+        {
+          "cpf": "10000000017",
+          "tipo": "empregado",
+          "nome": "Empregado 17"
+        },
+        {
+          "cpf": "10000000018",
+          "tipo": "familiar",
+          "nome": "Familiar 18"
+        },
+        {
+          "cpf": "10000000019",
+          "tipo": "empregador",
+          "nome": "Empregador 19"
+        },
+        {
+          "cpf": "10000000020",
+          "tipo": "empregado",
+          "nome": "Empregado 20"
+        }
+      ]
+    },
+    {
+      "id": "grupo5",
+      "nome": "Grupo 5",
+      "parceiroId": "parceiro3",
+      "nomeParceiro": "Associação ABC",
+      "membros": [
+        {
+          "cpf": "10000000021",
+          "tipo": "empregador",
+          "nome": "Empregador 21"
+        },
+        {
+          "cpf": "10000000022",
+          "tipo": "empregado",
+          "nome": "Empregado 22"
+        },
+        {
+          "cpf": "10000000023",
+          "tipo": "familiar",
+          "nome": "Familiar 23"
+        },
+        {
+          "cpf": "10000000024",
+          "tipo": "empregador",
+          "nome": "Empregador 24"
+        },
+        {
+          "cpf": "10000000025",
+          "tipo": "empregado",
+          "nome": "Empregado 25"
+        }
+      ]
+    },
+    {
+      "id": "grupo6",
+      "nome": "Grupo 6",
+      "parceiroId": "parceiro1",
+      "nomeParceiro": "Clínica Saúde",
+      "membros": [
+        {
+          "cpf": "10000000026",
+          "tipo": "empregador",
+          "nome": "Empregador 26"
+        },
+        {
+          "cpf": "10000000027",
+          "tipo": "empregado",
+          "nome": "Empregado 27"
+        },
+        {
+          "cpf": "10000000028",
+          "tipo": "familiar",
+          "nome": "Familiar 28"
+        },
+        {
+          "cpf": "10000000029",
+          "tipo": "empregador",
+          "nome": "Empregador 29"
+        },
+        {
+          "cpf": "10000000030",
+          "tipo": "empregado",
+          "nome": "Empregado 30"
+        }
+      ]
+    },
+    {
+      "id": "grupo7",
+      "nome": "Grupo 7",
+      "parceiroId": "parceiro2",
+      "nomeParceiro": "Empresa XYZ",
+      "membros": [
+        {
+          "cpf": "10000000031",
+          "tipo": "empregador",
+          "nome": "Empregador 31"
+        },
+        {
+          "cpf": "10000000032",
+          "tipo": "empregado",
+          "nome": "Empregado 32"
+        },
+        {
+          "cpf": "10000000033",
+          "tipo": "familiar",
+          "nome": "Familiar 33"
+        },
+        {
+          "cpf": "10000000034",
+          "tipo": "empregador",
+          "nome": "Empregador 34"
+        },
+        {
+          "cpf": "10000000035",
+          "tipo": "empregado",
+          "nome": "Empregado 35"
+        }
+      ]
+    },
+    {
+      "id": "grupo8",
+      "nome": "Grupo 8",
+      "parceiroId": "parceiro3",
+      "nomeParceiro": "Associação ABC",
+      "membros": [
+        {
+          "cpf": "10000000036",
+          "tipo": "empregador",
+          "nome": "Empregador 36"
+        },
+        {
+          "cpf": "10000000037",
+          "tipo": "empregado",
+          "nome": "Empregado 37"
+        },
+        {
+          "cpf": "10000000038",
+          "tipo": "familiar",
+          "nome": "Familiar 38"
+        },
+        {
+          "cpf": "10000000039",
+          "tipo": "empregador",
+          "nome": "Empregador 39"
+        },
+        {
+          "cpf": "10000000040",
+          "tipo": "empregado",
+          "nome": "Empregado 40"
+        }
+      ]
+    },
+    {
+      "id": "grupo9",
+      "nome": "Grupo 9",
+      "parceiroId": "parceiro1",
+      "nomeParceiro": "Clínica Saúde",
+      "membros": [
+        {
+          "cpf": "10000000041",
+          "tipo": "empregador",
+          "nome": "Empregador 41"
+        },
+        {
+          "cpf": "10000000042",
+          "tipo": "empregado",
+          "nome": "Empregado 42"
+        },
+        {
+          "cpf": "10000000043",
+          "tipo": "familiar",
+          "nome": "Familiar 43"
+        },
+        {
+          "cpf": "10000000044",
+          "tipo": "empregador",
+          "nome": "Empregador 44"
+        },
+        {
+          "cpf": "10000000045",
+          "tipo": "empregado",
+          "nome": "Empregado 45"
+        }
+      ]
+    },
+    {
+      "id": "grupo10",
+      "nome": "Grupo 10",
+      "parceiroId": "parceiro2",
+      "nomeParceiro": "Empresa XYZ",
+      "membros": [
+        {
+          "cpf": "10000000046",
+          "tipo": "empregador",
+          "nome": "Empregador 46"
+        },
+        {
+          "cpf": "10000000047",
+          "tipo": "empregado",
+          "nome": "Empregado 47"
+        },
+        {
+          "cpf": "10000000048",
+          "tipo": "familiar",
+          "nome": "Familiar 48"
+        },
+        {
+          "cpf": "10000000049",
+          "tipo": "empregador",
+          "nome": "Empregador 49"
+        },
+        {
+          "cpf": "10000000050",
+          "tipo": "empregado",
+          "nome": "Empregado 50"
+        }
+      ]
+    }
+  ],
+  "usuarios": [
+    {
+      "id": "10000000001",
+      "name": "Empregador 1",
+      "email": "usuario10000000001@teste.com",
+      "cpf": "10000000001",
+      "phone": "11999990001",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000001",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo1",
+          "nomeGrupo": "Grupo 1",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 1",
+        "number": "101",
+        "complement": "Apto 1",
+        "neighborhood": "Bairro 1",
+        "city": "Cidade 1",
+        "state": "SP",
+        "zipCode": "01000-01",
+        "latitude": -23.49,
+        "longitude": -46.59
+      },
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "cpf",
+          "title": "Documento CPF 1",
+          "url": "https://exemplo.com/doc1.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.545Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000002",
+      "name": "Empregado 2",
+      "email": "usuario10000000002@teste.com",
+      "cpf": "10000000002",
+      "phone": "11999990002",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000002",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo1",
+          "nomeGrupo": "Grupo 1",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 2",
+        "number": "102",
+        "complement": "Apto 2",
+        "neighborhood": "Bairro 2",
+        "city": "Cidade 2",
+        "state": "SP",
+        "zipCode": "01000-02",
+        "latitude": -23.48,
+        "longitude": -46.58
+      },
+      "documents": [
+        {
+          "id": "doc2",
+          "type": "cpf",
+          "title": "Documento CPF 2",
+          "url": "https://exemplo.com/doc2.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.545Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000003",
+      "name": "Familiar 3",
+      "email": "usuario10000000003@teste.com",
+      "cpf": "10000000003",
+      "phone": "11999990003",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000003",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo1",
+          "nomeGrupo": "Grupo 1",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 3",
+        "number": "103",
+        "complement": "Apto 3",
+        "neighborhood": "Bairro 3",
+        "city": "Cidade 3",
+        "state": "SP",
+        "zipCode": "01000-03",
+        "latitude": -23.47,
+        "longitude": -46.57
+      },
+      "documents": [
+        {
+          "id": "doc3",
+          "type": "cpf",
+          "title": "Documento CPF 3",
+          "url": "https://exemplo.com/doc3.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.545Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000004",
+      "name": "Empregador 4",
+      "email": "usuario10000000004@teste.com",
+      "cpf": "10000000004",
+      "phone": "11999990004",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000004",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo1",
+          "nomeGrupo": "Grupo 1",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 4",
+        "number": "104",
+        "complement": "Apto 4",
+        "neighborhood": "Bairro 4",
+        "city": "Cidade 4",
+        "state": "SP",
+        "zipCode": "01000-04",
+        "latitude": -23.46,
+        "longitude": -46.56
+      },
+      "documents": [
+        {
+          "id": "doc4",
+          "type": "cpf",
+          "title": "Documento CPF 4",
+          "url": "https://exemplo.com/doc4.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.545Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000005",
+      "name": "Empregado 5",
+      "email": "usuario10000000005@teste.com",
+      "cpf": "10000000005",
+      "phone": "11999990005",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000005",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo1",
+          "nomeGrupo": "Grupo 1",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 5",
+        "number": "105",
+        "complement": "Apto 5",
+        "neighborhood": "Bairro 5",
+        "city": "Cidade 5",
+        "state": "SP",
+        "zipCode": "01000-05",
+        "latitude": -23.45,
+        "longitude": -46.550000000000004
+      },
+      "documents": [
+        {
+          "id": "doc5",
+          "type": "cpf",
+          "title": "Documento CPF 5",
+          "url": "https://exemplo.com/doc5.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.545Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000006",
+      "name": "Empregador 6",
+      "email": "usuario10000000006@teste.com",
+      "cpf": "10000000006",
+      "phone": "11999990006",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000006",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo2",
+          "nomeGrupo": "Grupo 2",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 6",
+        "number": "106",
+        "complement": "Apto 6",
+        "neighborhood": "Bairro 6",
+        "city": "Cidade 6",
+        "state": "SP",
+        "zipCode": "01000-06",
+        "latitude": -23.44,
+        "longitude": -46.54
+      },
+      "documents": [
+        {
+          "id": "doc6",
+          "type": "cpf",
+          "title": "Documento CPF 6",
+          "url": "https://exemplo.com/doc6.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.616Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000007",
+      "name": "Empregado 7",
+      "email": "usuario10000000007@teste.com",
+      "cpf": "10000000007",
+      "phone": "11999990007",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000007",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo2",
+          "nomeGrupo": "Grupo 2",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 7",
+        "number": "107",
+        "complement": "Apto 7",
+        "neighborhood": "Bairro 7",
+        "city": "Cidade 7",
+        "state": "SP",
+        "zipCode": "01000-07",
+        "latitude": -23.43,
+        "longitude": -46.53
+      },
+      "documents": [
+        {
+          "id": "doc7",
+          "type": "cpf",
+          "title": "Documento CPF 7",
+          "url": "https://exemplo.com/doc7.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.616Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000008",
+      "name": "Familiar 8",
+      "email": "usuario10000000008@teste.com",
+      "cpf": "10000000008",
+      "phone": "11999990008",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000008",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo2",
+          "nomeGrupo": "Grupo 2",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 8",
+        "number": "108",
+        "complement": "Apto 8",
+        "neighborhood": "Bairro 8",
+        "city": "Cidade 8",
+        "state": "SP",
+        "zipCode": "01000-08",
+        "latitude": -23.42,
+        "longitude": -46.52
+      },
+      "documents": [
+        {
+          "id": "doc8",
+          "type": "cpf",
+          "title": "Documento CPF 8",
+          "url": "https://exemplo.com/doc8.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.616Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000009",
+      "name": "Empregador 9",
+      "email": "usuario10000000009@teste.com",
+      "cpf": "10000000009",
+      "phone": "11999990009",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000009",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo2",
+          "nomeGrupo": "Grupo 2",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 9",
+        "number": "109",
+        "complement": "Apto 9",
+        "neighborhood": "Bairro 9",
+        "city": "Cidade 9",
+        "state": "SP",
+        "zipCode": "01000-09",
+        "latitude": -23.41,
+        "longitude": -46.51
+      },
+      "documents": [
+        {
+          "id": "doc9",
+          "type": "cpf",
+          "title": "Documento CPF 9",
+          "url": "https://exemplo.com/doc9.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.616Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000010",
+      "name": "Empregado 10",
+      "email": "usuario10000000010@teste.com",
+      "cpf": "10000000010",
+      "phone": "11999990010",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000010",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo2",
+          "nomeGrupo": "Grupo 2",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 10",
+        "number": "110",
+        "complement": "Apto 10",
+        "neighborhood": "Bairro 10",
+        "city": "Cidade 10",
+        "state": "SP",
+        "zipCode": "01000-010",
+        "latitude": -23.4,
+        "longitude": -46.5
+      },
+      "documents": [
+        {
+          "id": "doc10",
+          "type": "cpf",
+          "title": "Documento CPF 10",
+          "url": "https://exemplo.com/doc10.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.616Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000011",
+      "name": "Empregador 11",
+      "email": "usuario10000000011@teste.com",
+      "cpf": "10000000011",
+      "phone": "11999990011",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000011",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo3",
+          "nomeGrupo": "Grupo 3",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 11",
+        "number": "111",
+        "complement": "Apto 11",
+        "neighborhood": "Bairro 11",
+        "city": "Cidade 11",
+        "state": "SP",
+        "zipCode": "01000-011",
+        "latitude": -23.39,
+        "longitude": -46.49
+      },
+      "documents": [
+        {
+          "id": "doc11",
+          "type": "cpf",
+          "title": "Documento CPF 11",
+          "url": "https://exemplo.com/doc11.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.674Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000012",
+      "name": "Empregado 12",
+      "email": "usuario10000000012@teste.com",
+      "cpf": "10000000012",
+      "phone": "11999990012",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000012",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo3",
+          "nomeGrupo": "Grupo 3",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 12",
+        "number": "112",
+        "complement": "Apto 12",
+        "neighborhood": "Bairro 12",
+        "city": "Cidade 12",
+        "state": "SP",
+        "zipCode": "01000-012",
+        "latitude": -23.38,
+        "longitude": -46.480000000000004
+      },
+      "documents": [
+        {
+          "id": "doc12",
+          "type": "cpf",
+          "title": "Documento CPF 12",
+          "url": "https://exemplo.com/doc12.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.674Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000013",
+      "name": "Familiar 13",
+      "email": "usuario10000000013@teste.com",
+      "cpf": "10000000013",
+      "phone": "11999990013",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000013",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo3",
+          "nomeGrupo": "Grupo 3",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 13",
+        "number": "113",
+        "complement": "Apto 13",
+        "neighborhood": "Bairro 13",
+        "city": "Cidade 13",
+        "state": "SP",
+        "zipCode": "01000-013",
+        "latitude": -23.37,
+        "longitude": -46.47
+      },
+      "documents": [
+        {
+          "id": "doc13",
+          "type": "cpf",
+          "title": "Documento CPF 13",
+          "url": "https://exemplo.com/doc13.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.675Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000014",
+      "name": "Empregador 14",
+      "email": "usuario10000000014@teste.com",
+      "cpf": "10000000014",
+      "phone": "11999990014",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000014",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo3",
+          "nomeGrupo": "Grupo 3",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 14",
+        "number": "114",
+        "complement": "Apto 14",
+        "neighborhood": "Bairro 14",
+        "city": "Cidade 14",
+        "state": "SP",
+        "zipCode": "01000-014",
+        "latitude": -23.36,
+        "longitude": -46.46
+      },
+      "documents": [
+        {
+          "id": "doc14",
+          "type": "cpf",
+          "title": "Documento CPF 14",
+          "url": "https://exemplo.com/doc14.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.675Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000015",
+      "name": "Empregado 15",
+      "email": "usuario10000000015@teste.com",
+      "cpf": "10000000015",
+      "phone": "11999990015",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000015",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo3",
+          "nomeGrupo": "Grupo 3",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 15",
+        "number": "115",
+        "complement": "Apto 15",
+        "neighborhood": "Bairro 15",
+        "city": "Cidade 15",
+        "state": "SP",
+        "zipCode": "01000-015",
+        "latitude": -23.35,
+        "longitude": -46.45
+      },
+      "documents": [
+        {
+          "id": "doc15",
+          "type": "cpf",
+          "title": "Documento CPF 15",
+          "url": "https://exemplo.com/doc15.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.675Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000016",
+      "name": "Empregador 16",
+      "email": "usuario10000000016@teste.com",
+      "cpf": "10000000016",
+      "phone": "11999990016",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000016",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo4",
+          "nomeGrupo": "Grupo 4",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 16",
+        "number": "116",
+        "complement": "Apto 16",
+        "neighborhood": "Bairro 16",
+        "city": "Cidade 16",
+        "state": "SP",
+        "zipCode": "01000-016",
+        "latitude": -23.34,
+        "longitude": -46.440000000000005
+      },
+      "documents": [
+        {
+          "id": "doc16",
+          "type": "cpf",
+          "title": "Documento CPF 16",
+          "url": "https://exemplo.com/doc16.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.744Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000017",
+      "name": "Empregado 17",
+      "email": "usuario10000000017@teste.com",
+      "cpf": "10000000017",
+      "phone": "11999990017",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000017",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo4",
+          "nomeGrupo": "Grupo 4",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 17",
+        "number": "117",
+        "complement": "Apto 17",
+        "neighborhood": "Bairro 17",
+        "city": "Cidade 17",
+        "state": "SP",
+        "zipCode": "01000-017",
+        "latitude": -23.33,
+        "longitude": -46.43
+      },
+      "documents": [
+        {
+          "id": "doc17",
+          "type": "cpf",
+          "title": "Documento CPF 17",
+          "url": "https://exemplo.com/doc17.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.744Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000018",
+      "name": "Familiar 18",
+      "email": "usuario10000000018@teste.com",
+      "cpf": "10000000018",
+      "phone": "11999990018",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000018",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo4",
+          "nomeGrupo": "Grupo 4",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 18",
+        "number": "118",
+        "complement": "Apto 18",
+        "neighborhood": "Bairro 18",
+        "city": "Cidade 18",
+        "state": "SP",
+        "zipCode": "01000-018",
+        "latitude": -23.32,
+        "longitude": -46.42
+      },
+      "documents": [
+        {
+          "id": "doc18",
+          "type": "cpf",
+          "title": "Documento CPF 18",
+          "url": "https://exemplo.com/doc18.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.744Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000019",
+      "name": "Empregador 19",
+      "email": "usuario10000000019@teste.com",
+      "cpf": "10000000019",
+      "phone": "11999990019",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000019",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo4",
+          "nomeGrupo": "Grupo 4",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 19",
+        "number": "119",
+        "complement": "Apto 19",
+        "neighborhood": "Bairro 19",
+        "city": "Cidade 19",
+        "state": "SP",
+        "zipCode": "01000-019",
+        "latitude": -23.31,
+        "longitude": -46.410000000000004
+      },
+      "documents": [
+        {
+          "id": "doc19",
+          "type": "cpf",
+          "title": "Documento CPF 19",
+          "url": "https://exemplo.com/doc19.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.744Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000020",
+      "name": "Empregado 20",
+      "email": "usuario10000000020@teste.com",
+      "cpf": "10000000020",
+      "phone": "11999990020",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000020",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo4",
+          "nomeGrupo": "Grupo 4",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 20",
+        "number": "120",
+        "complement": "Apto 20",
+        "neighborhood": "Bairro 20",
+        "city": "Cidade 20",
+        "state": "SP",
+        "zipCode": "01000-020",
+        "latitude": -23.3,
+        "longitude": -46.4
+      },
+      "documents": [
+        {
+          "id": "doc20",
+          "type": "cpf",
+          "title": "Documento CPF 20",
+          "url": "https://exemplo.com/doc20.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.744Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000021",
+      "name": "Empregador 21",
+      "email": "usuario10000000021@teste.com",
+      "cpf": "10000000021",
+      "phone": "11999990021",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000021",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo5",
+          "nomeGrupo": "Grupo 5",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 21",
+        "number": "121",
+        "complement": "Apto 21",
+        "neighborhood": "Bairro 21",
+        "city": "Cidade 21",
+        "state": "SP",
+        "zipCode": "01000-021",
+        "latitude": -23.29,
+        "longitude": -46.39
+      },
+      "documents": [
+        {
+          "id": "doc21",
+          "type": "cpf",
+          "title": "Documento CPF 21",
+          "url": "https://exemplo.com/doc21.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.813Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000022",
+      "name": "Empregado 22",
+      "email": "usuario10000000022@teste.com",
+      "cpf": "10000000022",
+      "phone": "11999990022",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000022",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo5",
+          "nomeGrupo": "Grupo 5",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 22",
+        "number": "122",
+        "complement": "Apto 22",
+        "neighborhood": "Bairro 22",
+        "city": "Cidade 22",
+        "state": "SP",
+        "zipCode": "01000-022",
+        "latitude": -23.28,
+        "longitude": -46.38
+      },
+      "documents": [
+        {
+          "id": "doc22",
+          "type": "cpf",
+          "title": "Documento CPF 22",
+          "url": "https://exemplo.com/doc22.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.813Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000023",
+      "name": "Familiar 23",
+      "email": "usuario10000000023@teste.com",
+      "cpf": "10000000023",
+      "phone": "11999990023",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000023",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo5",
+          "nomeGrupo": "Grupo 5",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 23",
+        "number": "123",
+        "complement": "Apto 23",
+        "neighborhood": "Bairro 23",
+        "city": "Cidade 23",
+        "state": "SP",
+        "zipCode": "01000-023",
+        "latitude": -23.27,
+        "longitude": -46.370000000000005
+      },
+      "documents": [
+        {
+          "id": "doc23",
+          "type": "cpf",
+          "title": "Documento CPF 23",
+          "url": "https://exemplo.com/doc23.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.813Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000024",
+      "name": "Empregador 24",
+      "email": "usuario10000000024@teste.com",
+      "cpf": "10000000024",
+      "phone": "11999990024",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000024",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo5",
+          "nomeGrupo": "Grupo 5",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 24",
+        "number": "124",
+        "complement": "Apto 24",
+        "neighborhood": "Bairro 24",
+        "city": "Cidade 24",
+        "state": "SP",
+        "zipCode": "01000-024",
+        "latitude": -23.26,
+        "longitude": -46.36
+      },
+      "documents": [
+        {
+          "id": "doc24",
+          "type": "cpf",
+          "title": "Documento CPF 24",
+          "url": "https://exemplo.com/doc24.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.813Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000025",
+      "name": "Empregado 25",
+      "email": "usuario10000000025@teste.com",
+      "cpf": "10000000025",
+      "phone": "11999990025",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000025",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo5",
+          "nomeGrupo": "Grupo 5",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 25",
+        "number": "125",
+        "complement": "Apto 25",
+        "neighborhood": "Bairro 25",
+        "city": "Cidade 25",
+        "state": "SP",
+        "zipCode": "01000-025",
+        "latitude": -23.25,
+        "longitude": -46.35
+      },
+      "documents": [
+        {
+          "id": "doc25",
+          "type": "cpf",
+          "title": "Documento CPF 25",
+          "url": "https://exemplo.com/doc25.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.813Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000026",
+      "name": "Empregador 26",
+      "email": "usuario10000000026@teste.com",
+      "cpf": "10000000026",
+      "phone": "11999990026",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000026",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo6",
+          "nomeGrupo": "Grupo 6",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 26",
+        "number": "126",
+        "complement": "Apto 26",
+        "neighborhood": "Bairro 26",
+        "city": "Cidade 26",
+        "state": "SP",
+        "zipCode": "01000-026",
+        "latitude": -23.24,
+        "longitude": -46.34
+      },
+      "documents": [
+        {
+          "id": "doc26",
+          "type": "cpf",
+          "title": "Documento CPF 26",
+          "url": "https://exemplo.com/doc26.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.873Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000027",
+      "name": "Empregado 27",
+      "email": "usuario10000000027@teste.com",
+      "cpf": "10000000027",
+      "phone": "11999990027",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000027",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo6",
+          "nomeGrupo": "Grupo 6",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 27",
+        "number": "127",
+        "complement": "Apto 27",
+        "neighborhood": "Bairro 27",
+        "city": "Cidade 27",
+        "state": "SP",
+        "zipCode": "01000-027",
+        "latitude": -23.23,
+        "longitude": -46.33
+      },
+      "documents": [
+        {
+          "id": "doc27",
+          "type": "cpf",
+          "title": "Documento CPF 27",
+          "url": "https://exemplo.com/doc27.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.873Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000028",
+      "name": "Familiar 28",
+      "email": "usuario10000000028@teste.com",
+      "cpf": "10000000028",
+      "phone": "11999990028",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000028",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo6",
+          "nomeGrupo": "Grupo 6",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 28",
+        "number": "128",
+        "complement": "Apto 28",
+        "neighborhood": "Bairro 28",
+        "city": "Cidade 28",
+        "state": "SP",
+        "zipCode": "01000-028",
+        "latitude": -23.22,
+        "longitude": -46.32
+      },
+      "documents": [
+        {
+          "id": "doc28",
+          "type": "cpf",
+          "title": "Documento CPF 28",
+          "url": "https://exemplo.com/doc28.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.874Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000029",
+      "name": "Empregador 29",
+      "email": "usuario10000000029@teste.com",
+      "cpf": "10000000029",
+      "phone": "11999990029",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000029",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo6",
+          "nomeGrupo": "Grupo 6",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 29",
+        "number": "129",
+        "complement": "Apto 29",
+        "neighborhood": "Bairro 29",
+        "city": "Cidade 29",
+        "state": "SP",
+        "zipCode": "01000-029",
+        "latitude": -23.21,
+        "longitude": -46.31
+      },
+      "documents": [
+        {
+          "id": "doc29",
+          "type": "cpf",
+          "title": "Documento CPF 29",
+          "url": "https://exemplo.com/doc29.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.874Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000030",
+      "name": "Empregado 30",
+      "email": "usuario10000000030@teste.com",
+      "cpf": "10000000030",
+      "phone": "11999990030",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000030",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo6",
+          "nomeGrupo": "Grupo 6",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 30",
+        "number": "130",
+        "complement": "Apto 30",
+        "neighborhood": "Bairro 30",
+        "city": "Cidade 30",
+        "state": "SP",
+        "zipCode": "01000-030",
+        "latitude": -23.2,
+        "longitude": -46.300000000000004
+      },
+      "documents": [
+        {
+          "id": "doc30",
+          "type": "cpf",
+          "title": "Documento CPF 30",
+          "url": "https://exemplo.com/doc30.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.874Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000031",
+      "name": "Empregador 31",
+      "email": "usuario10000000031@teste.com",
+      "cpf": "10000000031",
+      "phone": "11999990031",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000031",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo7",
+          "nomeGrupo": "Grupo 7",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 31",
+        "number": "131",
+        "complement": "Apto 31",
+        "neighborhood": "Bairro 31",
+        "city": "Cidade 31",
+        "state": "SP",
+        "zipCode": "01000-031",
+        "latitude": -23.19,
+        "longitude": -46.29
+      },
+      "documents": [
+        {
+          "id": "doc31",
+          "type": "cpf",
+          "title": "Documento CPF 31",
+          "url": "https://exemplo.com/doc31.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.929Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000032",
+      "name": "Empregado 32",
+      "email": "usuario10000000032@teste.com",
+      "cpf": "10000000032",
+      "phone": "11999990032",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000032",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo7",
+          "nomeGrupo": "Grupo 7",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 32",
+        "number": "132",
+        "complement": "Apto 32",
+        "neighborhood": "Bairro 32",
+        "city": "Cidade 32",
+        "state": "SP",
+        "zipCode": "01000-032",
+        "latitude": -23.18,
+        "longitude": -46.28
+      },
+      "documents": [
+        {
+          "id": "doc32",
+          "type": "cpf",
+          "title": "Documento CPF 32",
+          "url": "https://exemplo.com/doc32.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.929Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000033",
+      "name": "Familiar 33",
+      "email": "usuario10000000033@teste.com",
+      "cpf": "10000000033",
+      "phone": "11999990033",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000033",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo7",
+          "nomeGrupo": "Grupo 7",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 33",
+        "number": "133",
+        "complement": "Apto 33",
+        "neighborhood": "Bairro 33",
+        "city": "Cidade 33",
+        "state": "SP",
+        "zipCode": "01000-033",
+        "latitude": -23.17,
+        "longitude": -46.27
+      },
+      "documents": [
+        {
+          "id": "doc33",
+          "type": "cpf",
+          "title": "Documento CPF 33",
+          "url": "https://exemplo.com/doc33.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.929Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000034",
+      "name": "Empregador 34",
+      "email": "usuario10000000034@teste.com",
+      "cpf": "10000000034",
+      "phone": "11999990034",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000034",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo7",
+          "nomeGrupo": "Grupo 7",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 34",
+        "number": "134",
+        "complement": "Apto 34",
+        "neighborhood": "Bairro 34",
+        "city": "Cidade 34",
+        "state": "SP",
+        "zipCode": "01000-034",
+        "latitude": -23.16,
+        "longitude": -46.26
+      },
+      "documents": [
+        {
+          "id": "doc34",
+          "type": "cpf",
+          "title": "Documento CPF 34",
+          "url": "https://exemplo.com/doc34.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.929Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000035",
+      "name": "Empregado 35",
+      "email": "usuario10000000035@teste.com",
+      "cpf": "10000000035",
+      "phone": "11999990035",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000035",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo7",
+          "nomeGrupo": "Grupo 7",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 35",
+        "number": "135",
+        "complement": "Apto 35",
+        "neighborhood": "Bairro 35",
+        "city": "Cidade 35",
+        "state": "SP",
+        "zipCode": "01000-035",
+        "latitude": -23.15,
+        "longitude": -46.25
+      },
+      "documents": [
+        {
+          "id": "doc35",
+          "type": "cpf",
+          "title": "Documento CPF 35",
+          "url": "https://exemplo.com/doc35.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.929Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000036",
+      "name": "Empregador 36",
+      "email": "usuario10000000036@teste.com",
+      "cpf": "10000000036",
+      "phone": "11999990036",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000036",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo8",
+          "nomeGrupo": "Grupo 8",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 36",
+        "number": "136",
+        "complement": "Apto 36",
+        "neighborhood": "Bairro 36",
+        "city": "Cidade 36",
+        "state": "SP",
+        "zipCode": "01000-036",
+        "latitude": -23.14,
+        "longitude": -46.24
+      },
+      "documents": [
+        {
+          "id": "doc36",
+          "type": "cpf",
+          "title": "Documento CPF 36",
+          "url": "https://exemplo.com/doc36.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.986Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000037",
+      "name": "Empregado 37",
+      "email": "usuario10000000037@teste.com",
+      "cpf": "10000000037",
+      "phone": "11999990037",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000037",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo8",
+          "nomeGrupo": "Grupo 8",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 37",
+        "number": "137",
+        "complement": "Apto 37",
+        "neighborhood": "Bairro 37",
+        "city": "Cidade 37",
+        "state": "SP",
+        "zipCode": "01000-037",
+        "latitude": -23.13,
+        "longitude": -46.230000000000004
+      },
+      "documents": [
+        {
+          "id": "doc37",
+          "type": "cpf",
+          "title": "Documento CPF 37",
+          "url": "https://exemplo.com/doc37.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.986Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000038",
+      "name": "Familiar 38",
+      "email": "usuario10000000038@teste.com",
+      "cpf": "10000000038",
+      "phone": "11999990038",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000038",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo8",
+          "nomeGrupo": "Grupo 8",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 38",
+        "number": "138",
+        "complement": "Apto 38",
+        "neighborhood": "Bairro 38",
+        "city": "Cidade 38",
+        "state": "SP",
+        "zipCode": "01000-038",
+        "latitude": -23.12,
+        "longitude": -46.22
+      },
+      "documents": [
+        {
+          "id": "doc38",
+          "type": "cpf",
+          "title": "Documento CPF 38",
+          "url": "https://exemplo.com/doc38.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.986Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000039",
+      "name": "Empregador 39",
+      "email": "usuario10000000039@teste.com",
+      "cpf": "10000000039",
+      "phone": "11999990039",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000039",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo8",
+          "nomeGrupo": "Grupo 8",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 39",
+        "number": "139",
+        "complement": "Apto 39",
+        "neighborhood": "Bairro 39",
+        "city": "Cidade 39",
+        "state": "SP",
+        "zipCode": "01000-039",
+        "latitude": -23.11,
+        "longitude": -46.21
+      },
+      "documents": [
+        {
+          "id": "doc39",
+          "type": "cpf",
+          "title": "Documento CPF 39",
+          "url": "https://exemplo.com/doc39.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.986Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000040",
+      "name": "Empregado 40",
+      "email": "usuario10000000040@teste.com",
+      "cpf": "10000000040",
+      "phone": "11999990040",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000040",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo8",
+          "nomeGrupo": "Grupo 8",
+          "parceiroId": "parceiro3",
+          "nomeParceiro": "Associação ABC",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 40",
+        "number": "140",
+        "complement": "Apto 40",
+        "neighborhood": "Bairro 40",
+        "city": "Cidade 40",
+        "state": "SP",
+        "zipCode": "01000-040",
+        "latitude": -23.1,
+        "longitude": -46.2
+      },
+      "documents": [
+        {
+          "id": "doc40",
+          "type": "cpf",
+          "title": "Documento CPF 40",
+          "url": "https://exemplo.com/doc40.pdf",
+          "uploadedAt": "2025-04-27T01:23:52.986Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000041",
+      "name": "Empregador 41",
+      "email": "usuario10000000041@teste.com",
+      "cpf": "10000000041",
+      "phone": "11999990041",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000041",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo9",
+          "nomeGrupo": "Grupo 9",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 41",
+        "number": "141",
+        "complement": "Apto 41",
+        "neighborhood": "Bairro 41",
+        "city": "Cidade 41",
+        "state": "SP",
+        "zipCode": "01000-041",
+        "latitude": -23.09,
+        "longitude": -46.190000000000005
+      },
+      "documents": [
+        {
+          "id": "doc41",
+          "type": "cpf",
+          "title": "Documento CPF 41",
+          "url": "https://exemplo.com/doc41.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.020Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000042",
+      "name": "Empregado 42",
+      "email": "usuario10000000042@teste.com",
+      "cpf": "10000000042",
+      "phone": "11999990042",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000042",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo9",
+          "nomeGrupo": "Grupo 9",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 42",
+        "number": "142",
+        "complement": "Apto 42",
+        "neighborhood": "Bairro 42",
+        "city": "Cidade 42",
+        "state": "SP",
+        "zipCode": "01000-042",
+        "latitude": -23.08,
+        "longitude": -46.18
+      },
+      "documents": [
+        {
+          "id": "doc42",
+          "type": "cpf",
+          "title": "Documento CPF 42",
+          "url": "https://exemplo.com/doc42.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.020Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000043",
+      "name": "Familiar 43",
+      "email": "usuario10000000043@teste.com",
+      "cpf": "10000000043",
+      "phone": "11999990043",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000043",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo9",
+          "nomeGrupo": "Grupo 9",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 43",
+        "number": "143",
+        "complement": "Apto 43",
+        "neighborhood": "Bairro 43",
+        "city": "Cidade 43",
+        "state": "SP",
+        "zipCode": "01000-043",
+        "latitude": -23.07,
+        "longitude": -46.17
+      },
+      "documents": [
+        {
+          "id": "doc43",
+          "type": "cpf",
+          "title": "Documento CPF 43",
+          "url": "https://exemplo.com/doc43.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.020Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000044",
+      "name": "Empregador 44",
+      "email": "usuario10000000044@teste.com",
+      "cpf": "10000000044",
+      "phone": "11999990044",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000044",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo9",
+          "nomeGrupo": "Grupo 9",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 44",
+        "number": "144",
+        "complement": "Apto 44",
+        "neighborhood": "Bairro 44",
+        "city": "Cidade 44",
+        "state": "SP",
+        "zipCode": "01000-044",
+        "latitude": -23.06,
+        "longitude": -46.160000000000004
+      },
+      "documents": [
+        {
+          "id": "doc44",
+          "type": "cpf",
+          "title": "Documento CPF 44",
+          "url": "https://exemplo.com/doc44.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.020Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000045",
+      "name": "Empregado 45",
+      "email": "usuario10000000045@teste.com",
+      "cpf": "10000000045",
+      "phone": "11999990045",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000045",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo9",
+          "nomeGrupo": "Grupo 9",
+          "parceiroId": "parceiro1",
+          "nomeParceiro": "Clínica Saúde",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 45",
+        "number": "145",
+        "complement": "Apto 45",
+        "neighborhood": "Bairro 45",
+        "city": "Cidade 45",
+        "state": "SP",
+        "zipCode": "01000-045",
+        "latitude": -23.05,
+        "longitude": -46.15
+      },
+      "documents": [
+        {
+          "id": "doc45",
+          "type": "cpf",
+          "title": "Documento CPF 45",
+          "url": "https://exemplo.com/doc45.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.020Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000046",
+      "name": "Empregador 46",
+      "email": "usuario10000000046@teste.com",
+      "cpf": "10000000046",
+      "phone": "11999990046",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000046",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo10",
+          "nomeGrupo": "Grupo 10",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 46",
+        "number": "146",
+        "complement": "Apto 46",
+        "neighborhood": "Bairro 46",
+        "city": "Cidade 46",
+        "state": "SP",
+        "zipCode": "01000-046",
+        "latitude": -23.04,
+        "longitude": -46.14
+      },
+      "documents": [
+        {
+          "id": "doc46",
+          "type": "cpf",
+          "title": "Documento CPF 46",
+          "url": "https://exemplo.com/doc46.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.282Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000047",
+      "name": "Empregado 47",
+      "email": "usuario10000000047@teste.com",
+      "cpf": "10000000047",
+      "phone": "11999990047",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000047",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo10",
+          "nomeGrupo": "Grupo 10",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 47",
+        "number": "147",
+        "complement": "Apto 47",
+        "neighborhood": "Bairro 47",
+        "city": "Cidade 47",
+        "state": "SP",
+        "zipCode": "01000-047",
+        "latitude": -23.03,
+        "longitude": -46.13
+      },
+      "documents": [
+        {
+          "id": "doc47",
+          "type": "cpf",
+          "title": "Documento CPF 47",
+          "url": "https://exemplo.com/doc47.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.282Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000048",
+      "name": "Familiar 48",
+      "email": "usuario10000000048@teste.com",
+      "cpf": "10000000048",
+      "phone": "11999990048",
+      "role": "familiar",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000048",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo10",
+          "nomeGrupo": "Grupo 10",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "familiar"
+        }
+      ],
+      "tipo": "familiar",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 48",
+        "number": "148",
+        "complement": "Apto 48",
+        "neighborhood": "Bairro 48",
+        "city": "Cidade 48",
+        "state": "SP",
+        "zipCode": "01000-048",
+        "latitude": -23.02,
+        "longitude": -46.120000000000005
+      },
+      "documents": [
+        {
+          "id": "doc48",
+          "type": "cpf",
+          "title": "Documento CPF 48",
+          "url": "https://exemplo.com/doc48.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.282Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000049",
+      "name": "Empregador 49",
+      "email": "usuario10000000049@teste.com",
+      "cpf": "10000000049",
+      "phone": "11999990049",
+      "role": "employer",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000049",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo10",
+          "nomeGrupo": "Grupo 10",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregador"
+        }
+      ],
+      "tipo": "empregador",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 49",
+        "number": "149",
+        "complement": "Apto 49",
+        "neighborhood": "Bairro 49",
+        "city": "Cidade 49",
+        "state": "SP",
+        "zipCode": "01000-049",
+        "latitude": -23.01,
+        "longitude": -46.11
+      },
+      "documents": [
+        {
+          "id": "doc49",
+          "type": "cpf",
+          "title": "Documento CPF 49",
+          "url": "https://exemplo.com/doc49.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.282Z",
+          "expiresAt": null
+        }
+      ]
+    },
+    {
+      "id": "10000000050",
+      "name": "Empregado 50",
+      "email": "usuario10000000050@teste.com",
+      "cpf": "10000000050",
+      "phone": "11999990050",
+      "role": "employee",
+      "photoURL": "https://api.dicebear.com/7.x/identicon/svg?seed=10000000050",
+      "isVerified": true,
+      "emailVerified": true,
+      "phoneVerified": false,
+      "createdAt": "2025-04-27T01:23:51.313Z",
+      "updatedAt": "2025-04-27T01:23:51.313Z",
+      "grupos": [
+        {
+          "grupoId": "grupo10",
+          "nomeGrupo": "Grupo 10",
+          "parceiroId": "parceiro2",
+          "nomeParceiro": "Empresa XYZ",
+          "tipo": "empregado"
+        }
+      ],
+      "tipo": "empregado",
+      "status": "active",
+      "address": {
+        "street": "Rua Exemplo 50",
+        "number": "150",
+        "complement": "Apto 50",
+        "neighborhood": "Bairro 50",
+        "city": "Cidade 50",
+        "state": "SP",
+        "zipCode": "01000-050",
+        "latitude": -23,
+        "longitude": -46.1
+      },
+      "documents": [
+        {
+          "id": "doc50",
+          "type": "cpf",
+          "title": "Documento CPF 50",
+          "url": "https://exemplo.com/doc50.pdf",
+          "uploadedAt": "2025-04-27T01:23:53.282Z",
+          "expiresAt": null
+        }
+      ]
+    }
+  ]
+}

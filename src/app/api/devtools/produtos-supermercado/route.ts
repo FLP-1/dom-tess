@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { initializeApp, getApps, cert } from "firebase-admin/app";
+import admin from 'firebase-admin';
 import { getFirestore } from "firebase-admin/firestore";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const serviceAccount = require("../../../../../secrets/serviceAccountKey.json");
+import path from 'path';
+import fs from 'fs';
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount)
+// Inicializa o Firebase Admin se ainda não estiver inicializado
+if (!admin.apps.length) {
+  const serviceAccountPath = path.join(process.cwd(), 'src/secrets/serviceAccountKey.json');
+  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+  
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://dom-v2-tess-default-rtdb.firebaseio.com"
   });
 }
+
 const db = getFirestore();
 
 export async function POST(req: NextRequest) {

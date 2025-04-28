@@ -1,9 +1,10 @@
-import { Box, Heading, VStack, Flex, Text, Button, Checkbox, Input, FormLabel, Spinner, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Select } from '@chakra-ui/react';
+import { Box, Heading, VStack, Flex, Text, Button, Checkbox, Input, FormLabel, Spinner, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Select, FormControl } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import styles from './page.module.css';
+import { EditIcon } from '@chakra-ui/icons';
 
 type Produto = {
   id: string;
@@ -30,6 +31,7 @@ export default function GrupoComprasPage() {
   const [produtoSelecionado, setProdutoSelecionado] = useState('');
   const [novoProduto, setNovoProduto] = useState({ nome: '', quantidade: 1, marca: '', modelo: '', observacao: '', responsavel: '', comprado: false });
   const [busca, setBusca] = useState('');
+  const [produtoEditando, setProdutoEditando] = useState<Produto | null>(null);
 
   useEffect(() => {
     async function fetchGrupo() {
@@ -103,6 +105,21 @@ export default function GrupoComprasPage() {
     await updateDoc(grupoRef, { produtos: updated });
   };
 
+  const handleEditarProduto = (produto: Produto) => {
+    setProdutoEditando(produto);
+    onOpen();
+  };
+
+  const handleSalvarEdicao = async () => {
+    if (!produtoEditando || !grupoId) return;
+    const updated = produtos.map(p => p.id === produtoEditando.id ? produtoEditando : p);
+    setProdutos(updated);
+    const grupoRef = doc(db, 'shoppingGroups', grupoId);
+    await updateDoc(grupoRef, { produtos: updated });
+    setProdutoEditando(null);
+    onClose();
+  };
+
   return (
     <Box>
       <Button mb={4} onClick={() => router.back()} colorScheme="gray" size="sm">Voltar</Button>
@@ -157,6 +174,7 @@ export default function GrupoComprasPage() {
                 </Text>
                 <Text fontSize="xs" color="gray.500">Responsável: {produto.responsavel}</Text>
               </Box>
+              <Button colorScheme="yellow" size="xs" ml={2} onClick={() => handleEditarProduto(produto)} leftIcon={<EditIcon />}>Editar</Button>
               <Button colorScheme="red" size="xs" ml={2} onClick={() => removerProduto(produto.id)}>Remover</Button>
             </Flex>
           ))}
@@ -168,20 +186,23 @@ export default function GrupoComprasPage() {
           <ModalHeader>Adicionar Produto</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <label htmlFor="select-produto-catalogo">Buscar no catálogo</label>
-            <select
-              id="select-produto-catalogo"
-              title="Buscar no catálogo"
-              value={produtoSelecionado}
-              onChange={e => setProdutoSelecionado(e.target.value)}
-              className={styles.selectCatalogo}
-            >
-              <option value="">Selecione um produto</option>
-              {catalogo.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase())).map(p => (
-                <option key={p.id} value={p.id}>{p.nome} {p.marca && `- ${p.marca}`}</option>
-              ))}
-              <option value="novo">Novo produto</option>
-            </select>
+            <FormControl>
+              <FormLabel htmlFor="select-produto-catalogo">Buscar no catálogo</FormLabel>
+              <select
+                id="select-produto-catalogo"
+                title="Buscar no catálogo"
+                aria-label="Buscar no catálogo"
+                value={produtoSelecionado}
+                onChange={e => setProdutoSelecionado(e.target.value)}
+                className={styles.selectCatalogo}
+              >
+                <option value="">Selecione um produto</option>
+                {catalogo.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase())).map(p => (
+                  <option key={p.id} value={p.id}>{p.nome} {p.marca && `- ${p.marca}`}</option>
+                ))}
+                <option value="novo">Novo produto</option>
+              </select>
+            </FormControl>
             {produtoSelecionado === 'novo' && (
               <>
                 <FormLabel>Nome</FormLabel>
@@ -212,6 +233,31 @@ export default function GrupoComprasPage() {
               Adicionar
             </Button>
             <Button onClick={onClose}>Cancelar</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={!!produtoEditando} onClose={() => setProdutoEditando(null)} isCentered size="xs">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Editar Produto</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormLabel>Nome</FormLabel>
+            <Input value={produtoEditando?.nome || ''} onChange={e => setProdutoEditando(p => p ? { ...p, nome: e.target.value } : p)} mb={2} />
+            <FormLabel>Quantidade</FormLabel>
+            <Input type="number" value={produtoEditando?.quantidade || 1} onChange={e => setProdutoEditando(p => p ? { ...p, quantidade: Number(e.target.value) } : p)} mb={2} />
+            <FormLabel>Marca</FormLabel>
+            <Input value={produtoEditando?.marca || ''} onChange={e => setProdutoEditando(p => p ? { ...p, marca: e.target.value } : p)} mb={2} />
+            <FormLabel>Modelo</FormLabel>
+            <Input value={produtoEditando?.modelo || ''} onChange={e => setProdutoEditando(p => p ? { ...p, modelo: e.target.value } : p)} mb={2} />
+            <FormLabel>Observação</FormLabel>
+            <Input value={produtoEditando?.observacao || ''} onChange={e => setProdutoEditando(p => p ? { ...p, observacao: e.target.value } : p)} mb={2} />
+            <FormLabel>Responsável</FormLabel>
+            <Input value={produtoEditando?.responsavel || ''} onChange={e => setProdutoEditando(p => p ? { ...p, responsavel: e.target.value } : p)} mb={2} />
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleSalvarEdicao}>Salvar</Button>
+            <Button onClick={() => setProdutoEditando(null)}>Cancelar</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

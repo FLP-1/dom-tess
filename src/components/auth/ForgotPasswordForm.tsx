@@ -332,8 +332,11 @@ export function ForgotPasswordForm() {
           <Heading as="h1" size="2xl" color="brand.blue" mb={2} textAlign="center">
             DOM
           </Heading>
-          <Text fontSize="lg" color="gray.600" textAlign="center">
+          <Text fontSize="large" color="brand.blue" textAlign="center" mb={2}>
             Recuperação de Senha
+          </Text>
+          <Text fontSize="md" color="brand.blue" textAlign="center" mb={2}>
+            Digite seu CPF e email para receber o link de recuperação
           </Text>
 
           {step === 'input' && (

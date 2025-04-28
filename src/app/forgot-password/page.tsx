@@ -1,6 +1,6 @@
 'use client';
 
-import { Container, Box, Heading, Text } from '@chakra-ui/react';
+import { Container, Box } from '@chakra-ui/react';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,15 +19,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <Container maxW="container.xl" py={10}>
-      <Box textAlign="center" mb={8}>
-        <Heading as="h1" size="2xl" color="brand.blue" mb={4}>
-          Recuperação de Senha
-        </Heading>
-        <Text fontSize="xl" color="brand.gray">
-          Digite seu CPF e email para receber o link de recuperação
-        </Text>
-      </Box>
-
       <Box 
         display="flex" 
         justifyContent="center"

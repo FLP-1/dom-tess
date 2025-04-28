@@ -1,11 +1,13 @@
 import { Box, Flex, VStack, Heading, Text } from '@chakra-ui/react';
-import { FiHome, FiTool, FiShoppingCart } from 'react-icons/fi';
+import { FiHome, FiTool, FiShoppingCart, FiFileText, FiMessageCircle } from 'react-icons/fi';
 import Link from 'next/link';
 
 const menuItems = [
   { icon: FiHome, label: 'Dashboard', href: '/dashboard' },
   { icon: FiShoppingCart, label: 'Compras', href: '/dashboard/compras' },
   { icon: FiTool, label: 'Massa de Teste', href: '/devtools/massa-teste' },
+  { icon: FiFileText, label: 'Documentos', href: '/documents' },
+  { icon: FiMessageCircle, label: 'Comunicação', href: '/communication' },
   // Adicione mais itens conforme necessário
 ];
 

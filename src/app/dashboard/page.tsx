@@ -1,7 +1,10 @@
+'use client';
+
 import { Box, SimpleGrid, Heading, Text, VStack } from '@chakra-ui/react';
 import { AlertCard } from '@/components/alerts/AlertCard';
 import { useEffect, useState } from 'react';
 import { listenAlerts, updateAlert } from '@/services/alertsService';
+import { TodayTasksCard } from '@/components/TaskManager/TodayTasksCard';
 
 export default function DashboardPage() {
   const [unreadAlerts, setUnreadAlerts] = useState<any[]>([]);
@@ -34,6 +37,7 @@ export default function DashboardPage() {
         </VStack>
       )}
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+        <TodayTasksCard />
         <Card title="Controle de Ponto" description="Registre e gerencie o ponto." />
         <Card title="Folha de Pagamento" description="Gerencie salários e pagamentos." />
         <Card title="Documentos" description="Acesse seus documentos." />

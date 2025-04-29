@@ -1,0 +1,52 @@
+.container {
+  width: 100%;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.filterSelect {
+  min-width: 200px;
+}
+
+.taskGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px;
+  color: #718096;
+}
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .filterSelect {
+    width: 100%;
+  }
+
+  .taskGrid {
+    grid-template-columns: 1fr;
+  }
+} 

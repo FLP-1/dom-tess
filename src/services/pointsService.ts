@@ -1,0 +1,126 @@
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { Task, TaskStatus } from '../types/task';
+
+export interface UserPoints {
+  userId: string;
+  totalPoints: number;
+  level: number;
+  achievements: string[];
+  lastUpdated: Date;
+}
+
+export class PointsService {
+  private static readonly COLLECTION_NAME = 'user_points';
+  private static readonly POINTS_PER_LEVEL = 1000;
+  private static readonly POINTS_RULES = {
+    [TaskStatus.COMPLETED]: 100,
+    [TaskStatus.IN_PROGRESS]: 50,
+    [TaskPriority.HIGH]: 50,
+    [TaskPriority.MEDIUM]: 30,
+    [TaskPriority.LOW]: 10,
+  };
+
+  static async updateUserPoints(userId: string, task: Task, action: 'create' | 'update' | 'complete'): Promise<void> {
+    const pointsRef = doc(db, this.COLLECTION_NAME, userId);
+    const pointsDoc = await getDocs(pointsRef);
+    
+    let currentPoints = 0;
+    let currentLevel = 1;
+    let achievements: string[] = [];
+
+    if (pointsDoc.exists()) {
+      const data = pointsDoc.data();
+      currentPoints = data.totalPoints || 0;
+      currentLevel = data.level || 1;
+      achievements = data.achievements || [];
+    }
+
+    // Calcular pontos baseado na ação
+    let pointsToAdd = 0;
+    switch (action) {
+      case 'create':
+        pointsToAdd = this.POINTS_RULES[task.priority];
+        break;
+      case 'update':
+        pointsToAdd = this.POINTS_RULES[task.priority] * 0.5;
+        break;
+      case 'complete':
+        pointsToAdd = this.POINTS_RULES[TaskStatus.COMPLETED];
+        break;
+    }
+
+    // Adicionar pontos extras por tempo
+    const dueDate = new Date(task.dueDate);
+    const completionDate = new Date();
+    if (completionDate <= dueDate) {
+      pointsToAdd *= 1.2; // 20% de bônus por concluir antes do prazo
+    }
+
+    const newTotalPoints = currentPoints + pointsToAdd;
+    const newLevel = Math.floor(newTotalPoints / this.POINTS_PER_LEVEL) + 1;
+
+    // Verificar conquistas
+    const newAchievements = this.checkAchievements(newTotalPoints, newLevel, achievements);
+
+    await updateDoc(pointsRef, {
+      totalPoints: newTotalPoints,
+      level: newLevel,
+      achievements: newAchievements,
+      lastUpdated: Timestamp.now(),
+    });
+  }
+
+  private static checkAchievements(totalPoints: number, level: number, currentAchievements: string[]): string[] {
+    const achievements = [...currentAchievements];
+    const newAchievements = [];
+
+    if (totalPoints >= 1000 && !achievements.includes('primeiro_mil')) {
+      newAchievements.push('primeiro_mil');
+    }
+    if (totalPoints >= 5000 && !achievements.includes('cinco_mil')) {
+      newAchievements.push('cinco_mil');
+    }
+    if (level >= 5 && !achievements.includes('nivel_5')) {
+      newAchievements.push('nivel_5');
+    }
+    if (level >= 10 && !achievements.includes('nivel_10')) {
+      newAchievements.push('nivel_10');
+    }
+
+    return [...achievements, ...newAchievements];
+  }
+
+  static async getUserPoints(userId: string): Promise<UserPoints | null> {
+    const pointsRef = doc(db, this.COLLECTION_NAME, userId);
+    const pointsDoc = await getDocs(pointsRef);
+
+    if (!pointsDoc.exists()) {
+      return null;
+    }
+
+    const data = pointsDoc.data();
+    return {
+      userId,
+      totalPoints: data.totalPoints || 0,
+      level: data.level || 1,
+      achievements: data.achievements || [],
+      lastUpdated: data.lastUpdated.toDate(),
+    };
+  }
+
+  static async getLeaderboard(limit: number = 10): Promise<UserPoints[]> {
+    const q = query(
+      collection(db, this.COLLECTION_NAME),
+      orderBy('totalPoints', 'desc'),
+      limit(limit)
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      userId: doc.id,
+      ...doc.data(),
+      lastUpdated: doc.data().lastUpdated.toDate(),
+    })) as UserPoints[];
+  }
+} 

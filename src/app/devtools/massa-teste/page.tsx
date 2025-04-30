@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, Box, Heading, Text, Alert, AlertIcon, Stack } from "@chakra-ui/react";
 import * as XLSX from "xlsx";
+import { Select } from "@/components/Select";
 
 export default function MassaTestePage() {
   const [loading, setLoading] = useState(false);
@@ -12,6 +13,8 @@ export default function MassaTestePage() {
   const [produtos, setProdutos] = useState<any[]>([]);
   const [produtosSuccess, setProdutosSuccess] = useState(false);
   const [produtosError, setProdutosError] = useState("");
+  const [jobPositionsSuccess, setJobPositionsSuccess] = useState(false);
+  const [jobPositionsError, setJobPositionsError] = useState("");
 
   const handleSeed = async () => {
     setLoading(true);
@@ -101,13 +104,31 @@ export default function MassaTestePage() {
     XLSX.writeFile(wb, "produtos_supermercado.xlsx");
   };
 
+  const handleSeedJobPositions = async () => {
+    setLoading(true);
+    setJobPositionsSuccess(false);
+    setJobPositionsError("");
+    try {
+      const res = await fetch("/api/devtools/job-positions", {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error("Erro ao popular cargos");
+      const data = await res.json();
+      setJobPositionsSuccess(true);
+    } catch (err) {
+      setJobPositionsError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box maxW="md" mx="auto" mt={10} p={8} bg="white" borderRadius="lg" boxShadow="md">
       <Heading as="h2" size="lg" mb={4} color="brand.blue">
         Gerar Massa de Teste
       </Heading>
       <Text mb={6} color="gray.600">
-        Clique no botão abaixo para popular o Firestore com dados de exemplo (parceiros, grupos e usuários).
+        Clique no botão abaixo para popular o Firestore com dados de exemplo.
       </Text>
       <Button colorScheme="blue" onClick={handleSeed} isLoading={loading} width="full">
         Gerar Massa de Teste
@@ -154,6 +175,25 @@ export default function MassaTestePage() {
             Baixar Excel dos Produtos
           </Button>
         </Stack>
+      )}
+      <Button 
+        colorScheme="teal" 
+        onClick={handleSeedJobPositions} 
+        width="full" 
+        mt={4}
+        isLoading={loading}
+      >
+        Popular Cargos
+      </Button>
+      {jobPositionsSuccess && (
+        <Alert status="success" mt={4} borderRadius="md">
+          <AlertIcon /> Cargos populados com sucesso!
+        </Alert>
+      )}
+      {jobPositionsError && (
+        <Alert status="error" mt={4} borderRadius="md">
+          <AlertIcon /> {jobPositionsError}
+        </Alert>
       )}
     </Box>
   );

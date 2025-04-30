@@ -1,29 +1,29 @@
 'use client';
 
 import { ChakraProvider } from '@chakra-ui/react';
-import { Roboto } from 'next/font/google';
-import { AuthProvider } from '@/contexts/AuthContext';
-import theme from '@/styles/theme';
+import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
+import { usePathname } from 'next/navigation';
 import "./globals.css";
 
-const roboto = Roboto({
-  weight: ['400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-});
+const publicPaths = ['/login', '/register'];
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isPublicPath = publicPaths.includes(pathname);
+
   return (
     <html lang="pt-BR">
-      <body className={roboto.className}>
-        <ChakraProvider theme={theme}>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+      <body>
+        <ChakraProvider>
+          {isPublicPath ? (
+            children
+          ) : (
+            <AuthenticatedLayout>{children}</AuthenticatedLayout>
+          )}
         </ChakraProvider>
       </body>
     </html>

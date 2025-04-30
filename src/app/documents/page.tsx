@@ -1,32 +1,41 @@
 'use client';
 
-import { Box, Container, Heading, VStack, Button } from '@chakra-ui/react';
-import { DocumentUploadForm } from '@/components/documents/DocumentUploadForm';
-import { DocumentList } from '@/components/documents/DocumentList';
-import { useRouter } from 'next/navigation';
+import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
+import { DocumentUpload } from '@/components/DocumentUpload';
+import { DocumentList } from '@/components/DocumentList';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function DocumentsPage() {
-  const router = useRouter();
-  return (
-    <Container maxW="container.xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Box>
-          <Button mb={4} variant="outline" onClick={() => router.back()}>
-            Voltar
-          </Button>
-          <Heading as="h1" size="xl" mb={4}>
-            Controle de Documentos
-          </Heading>
-          <DocumentUploadForm />
-        </Box>
+  const { user } = useAuth();
 
-        <Box>
-          <Heading as="h2" size="lg" mb={4}>
-            Documentos Cadastrados
-          </Heading>
-          <DocumentList />
-        </Box>
-      </VStack>
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <Container maxW="container.lg" py={8}>
+      <Heading mb={8}>Gerenciamento de Documentos</Heading>
+      
+      <Tabs>
+        <TabList>
+          <Tab>Upload de Documento</Tab>
+          <Tab>Meus Documentos</Tab>
+        </TabList>
+
+        <TabPanels>
+          <TabPanel>
+            <Box bg="white" p={6} borderRadius="md" shadow="sm">
+              <DocumentUpload userId={user.id} />
+            </Box>
+          </TabPanel>
+          
+          <TabPanel>
+            <Box bg="white" p={6} borderRadius="md" shadow="sm">
+              <DocumentList userId={user.id} />
+            </Box>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </Container>
   );
 } 

@@ -1,85 +1,95 @@
-import { Box, Heading, FormControl, FormLabel, Input, Button, VStack, useToast, FormErrorMessage } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+'use client';
+
+import { VStack, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { employeeService } from '@/services/employeeService';
-import { formatPhone, validateEmail } from '@/utils/formatting';
+import { formatCPF, formatPhone, formatSalary, validateCPF, validatePhone, validateSalary, validateEmail } from '@/utils/formatting';
+import { MaskedInput } from '@/components/form/MaskedInput';
+import { DatePicker } from '@/components/form/DatePicker';
+import { FormularioBase } from '@/components/forms/FormularioBase';
+import { AuthLayout } from '@/components/layout/AuthLayout';
+
+interface FormValues {
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  cargo: string;
+  dataAdmissao: string;
+  salario: string;
+}
+
+const valoresIniciais: FormValues = {
+  nome: '',
+  cpf: '',
+  email: '',
+  telefone: '',
+  cargo: '',
+  dataAdmissao: '',
+  salario: '',
+};
 
 export default function RegisterEmployee() {
-  const [formData, setFormData] = useState({
-    nome: '',
-    cpf: '',
-    email: '',
-    telefone: '',
-    cargo: '',
-    dataAdmissao: '',
-    salario: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
   const toast = useToast();
   const router = useRouter();
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const validacao = (values: FormValues) => {
+    const errors: Partial<Record<keyof FormValues, string>> = {};
 
-    if (!formData.nome) {
-      newErrors.nome = 'Nome é obrigatório';
+    if (!values.nome) {
+      errors.nome = 'Nome é obrigatório';
+    } else if (values.nome.length < 3) {
+      errors.nome = 'Nome deve ter pelo menos 3 caracteres';
     }
 
-    if (!formData.cpf) {
-      newErrors.cpf = 'CPF é obrigatório';
+    if (!values.cpf) {
+      errors.cpf = 'CPF é obrigatório';
+    } else if (!validateCPF(values.cpf)) {
+      errors.cpf = 'CPF inválido';
     }
 
-    if (!formData.email) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Email inválido';
+    if (!values.email) {
+      errors.email = 'Email é obrigatório';
+    } else if (!validateEmail(values.email)) {
+      errors.email = 'Email inválido';
     }
 
-    if (!formData.telefone) {
-      newErrors.telefone = 'Telefone é obrigatório';
+    if (!values.telefone) {
+      errors.telefone = 'Telefone é obrigatório';
+    } else if (!validatePhone(values.telefone)) {
+      errors.telefone = 'Telefone inválido';
     }
 
-    if (!formData.cargo) {
-      newErrors.cargo = 'Cargo é obrigatório';
+    if (!values.cargo) {
+      errors.cargo = 'Cargo é obrigatório';
     }
 
-    if (!formData.dataAdmissao) {
-      newErrors.dataAdmissao = 'Data de admissão é obrigatória';
+    if (!values.dataAdmissao) {
+      errors.dataAdmissao = 'Data de admissão é obrigatória';
+    } else {
+      const dataAdmissao = new Date(values.dataAdmissao);
+      const hoje = new Date();
+      if (dataAdmissao > hoje) {
+        errors.dataAdmissao = 'Data de admissão não pode ser futura';
+      }
     }
 
-    if (!formData.salario) {
-      newErrors.salario = 'Salário é obrigatório';
-    } else if (isNaN(Number(formData.salario)) || Number(formData.salario) <= 0) {
-      newErrors.salario = 'Salário deve ser um valor positivo';
+    if (!values.salario) {
+      errors.salario = 'Salário é obrigatório';
+    } else if (!validateSalary(values.salario)) {
+      errors.salario = 'Salário deve ser um valor positivo';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return errors;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
+  const onSubmit = async (values: FormValues) => {
     try {
       await employeeService.createEmployee({
-        ...formData,
-        salario: Number(formData.salario),
-        telefone: formatPhone(formData.telefone),
+        ...values,
+        salario: Number(values.salario.replace(/\D/g, '')) / 100,
+        telefone: values.telefone.replace(/\D/g, ''),
+        cpf: values.cpf.replace(/\D/g, ''),
       });
       
       toast({
@@ -99,106 +109,95 @@ export default function RegisterEmployee() {
         duration: 3000,
         isClosable: true,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <Box p={8}>
-      <Heading mb={8}>Cadastrar Empregado</Heading>
-      
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
-          <FormControl isRequired isInvalid={!!errors.nome}>
-            <FormLabel>Nome Completo</FormLabel>
-            <Input
+    <AuthLayout title="Cadastro de Empregado">
+      <FormularioBase
+        titulo="Cadastro de Empregado"
+        valoresIniciais={valoresIniciais}
+        validacao={validacao}
+        onSubmit={onSubmit}
+      >
+        {(formikProps) => (
+          <VStack spacing={4}>
+            <MaskedInput
               name="nome"
-              value={formData.nome}
-              onChange={handleChange}
+              label="Nome Completo"
+              value={formikProps.values.nome}
+              onChange={formikProps.handleChange}
+              onBlur={formikProps.handleBlur}
+              error={formikProps.touched.nome && formikProps.errors.nome}
               placeholder="Digite o nome completo"
             />
-            <FormErrorMessage>{errors.nome}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.cpf}>
-            <FormLabel>CPF</FormLabel>
-            <Input
+            <MaskedInput
               name="cpf"
-              value={formData.cpf}
-              onChange={handleChange}
+              label="CPF"
+              value={formikProps.values.cpf}
+              onChange={formikProps.handleChange}
+              onBlur={formikProps.handleBlur}
+              error={formikProps.touched.cpf && formikProps.errors.cpf}
               placeholder="Digite o CPF"
+              mask={formatCPF}
+              maxLength={14}
             />
-            <FormErrorMessage>{errors.cpf}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.email}>
-            <FormLabel>Email</FormLabel>
-            <Input
+            <MaskedInput
               name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
+              label="Email"
+              value={formikProps.values.email}
+              onChange={formikProps.handleChange}
+              onBlur={formikProps.handleBlur}
+              error={formikProps.touched.email && formikProps.errors.email}
               placeholder="Digite o email"
+              type="email"
             />
-            <FormErrorMessage>{errors.email}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.telefone}>
-            <FormLabel>Telefone</FormLabel>
-            <Input
+            <MaskedInput
               name="telefone"
-              value={formData.telefone}
-              onChange={handleChange}
+              label="Telefone"
+              value={formikProps.values.telefone}
+              onChange={formikProps.handleChange}
+              onBlur={formikProps.handleBlur}
+              error={formikProps.touched.telefone && formikProps.errors.telefone}
               placeholder="Digite o telefone"
+              mask={formatPhone}
+              maxLength={15}
             />
-            <FormErrorMessage>{errors.telefone}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.cargo}>
-            <FormLabel>Cargo</FormLabel>
-            <Input
+            <MaskedInput
               name="cargo"
-              value={formData.cargo}
-              onChange={handleChange}
+              label="Cargo"
+              value={formikProps.values.cargo}
+              onChange={formikProps.handleChange}
+              onBlur={formikProps.handleBlur}
+              error={formikProps.touched.cargo && formikProps.errors.cargo}
               placeholder="Digite o cargo"
             />
-            <FormErrorMessage>{errors.cargo}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.dataAdmissao}>
-            <FormLabel>Data de Admissão</FormLabel>
-            <Input
+            <DatePicker
               name="dataAdmissao"
-              type="date"
-              value={formData.dataAdmissao}
-              onChange={handleChange}
+              label="Data de Admissão"
+              value={formikProps.values.dataAdmissao}
+              onChange={(date) => formikProps.setFieldValue('dataAdmissao', date)}
+              error={formikProps.touched.dataAdmissao && formikProps.errors.dataAdmissao}
             />
-            <FormErrorMessage>{errors.dataAdmissao}</FormErrorMessage>
-          </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.salario}>
-            <FormLabel>Salário</FormLabel>
-            <Input
+            <MaskedInput
               name="salario"
-              type="number"
-              value={formData.salario}
-              onChange={handleChange}
+              label="Salário"
+              value={formikProps.values.salario}
+              onChange={formikProps.handleChange}
+              onBlur={formikProps.handleBlur}
+              error={formikProps.touched.salario && formikProps.errors.salario}
               placeholder="Digite o salário"
+              mask={formatSalary}
             />
-            <FormErrorMessage>{errors.salario}</FormErrorMessage>
-          </FormControl>
-
-          <Button
-            type="submit"
-            colorScheme="blue"
-            isLoading={loading}
-            loadingText="Cadastrando..."
-          >
-            Cadastrar
-          </Button>
-        </VStack>
-      </form>
-    </Box>
+          </VStack>
+        )}
+      </FormularioBase>
+    </AuthLayout>
   );
 } 

@@ -8,11 +8,18 @@ export interface CertificadoDigital {
 }
 
 export interface DadosEmpregador {
-  id: string;
+  id?: string;
   userId: string;
   cpf: string;
   nome: string;
   dataNascimento: Date;
+  nacionalidade: string;
+  estadoCivil: string;
+  rg?: {
+    numero: string;
+    orgaoEmissor: string;
+    dataEmissao: Date;
+  };
   endereco: {
     logradouro: string;
     numero: string;
@@ -24,30 +31,44 @@ export interface DadosEmpregador {
   };
   contato: {
     telefone: string;
-    email: string;
+    email?: string;
   };
-  dadosBancarios?: {
+  dadosBancarios: {
     banco: string;
     agencia: string;
     conta: string;
     tipoConta: 'corrente' | 'poupanca';
   };
-  certificadoDigital?: CertificadoDigital;
-  status: 'completo' | 'incompleto' | 'pendente';
-  ultimaAtualizacao: Date;
+  dadosImovel: {
+    tipoImovel: 'proprio' | 'alugado' | 'cedido';
+    numeroEmpregados: number;
+  };
+  dadosFamiliares?: {
+    nomeMae: string;
+    nomePai: string;
+  };
+  profissao?: string;
+  status: 'incompleto' | 'completo';
+  ultimaAtualizacao?: Date;
+  certificadoDigital?: {
+    certificado: string;
+    senha: string;
+  };
 }
 
 export interface DadosEmpregado {
-  id: string;
+  id?: string;
+  userId: string;
   empregadorId: string;
   cpf: string;
   nome: string;
   dataNascimento: Date;
-  pis: string;
-  ctps: {
+  nacionalidade: string;
+  estadoCivil: string;
+  rg: {
     numero: string;
-    serie: string;
-    uf: string;
+    orgaoEmissor: string;
+    dataEmissao: Date;
   };
   endereco: {
     logradouro: string;
@@ -60,24 +81,41 @@ export interface DadosEmpregado {
   };
   contato: {
     telefone: string;
-    email: string;
+    email?: string;
   };
-  dadosBancarios?: {
+  dadosBancarios: {
     banco: string;
     agencia: string;
     conta: string;
     tipoConta: 'corrente' | 'poupanca';
   };
-  dadosTrabalho: {
+  dadosProfissionais: {
+    cbo: string;
+    funcao: string;
     dataAdmissao: Date;
-    cargo: string;
+    jornadaTrabalho: number;
     salario: number;
-    cargaHoraria: number;
-    tipoContrato: 'prazo_indeterminado' | 'prazo_determinado' | 'temporario';
-    regimeTrabalho: 'mensalista' | 'horista';
+    formaPagamento: 'deposito' | 'dinheiro';
   };
-  status: 'ativo' | 'inativo' | 'ferias' | 'licenca';
-  ultimaAtualizacao: Date;
+  dadosTrabalhistas: {
+    pisPasep: string;
+    ctps: {
+      numero: string;
+      serie: string;
+      uf: string;
+    };
+    tituloEleitor?: string;
+    certificadoReservista?: string;
+  };
+  dadosFamiliares?: {
+    nomeMae: string;
+    nomePai: string;
+  };
+  grauInstrucao?: string;
+  numeroDependentes?: number;
+  informacoesSaude?: string;
+  status: 'incompleto' | 'completo';
+  ultimaAtualizacao?: Date;
 }
 
 export interface Familiar {
@@ -91,4 +129,25 @@ export interface Familiar {
   email: string;
   status: 'ativo' | 'inativo';
   ultimaAtualizacao: Date;
+}
+
+export interface FuncaoDomestica {
+  id?: string;
+  codigo: string;
+  nome: string;
+  descricao: string;
+  cbo: string;
+  ultimaAtualizacao?: Date;
+}
+
+export interface Parentesco {
+  id: string;
+  codigo: string;
+  descricao: string;
+  categoria: 'DIRETO' | 'CASAMENTO' | 'COLATERAL';
+  idadeMinima?: number;
+  idadeMaxima?: number;
+  ativo: boolean;
+  criadoEm: Date;
+  atualizadoEm: Date;
 } 

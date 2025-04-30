@@ -1,5 +1,7 @@
 import React from 'react';
-import { Input, Select, Space } from 'antd';
+import { Box, HStack, Input, InputGroup, InputLeftElement, Select } from '@chakra-ui/react';
+import { FiSearch, FiFilter } from 'react-icons/fi';
+import { SelectField } from '@/components/SelectField';
 import { TaskStatus, TaskPriority } from '../../types/task';
 import styles from './TaskFilter.module.css';
 
@@ -7,55 +9,66 @@ const { Search } = Input;
 const { Option } = Select;
 
 interface TaskFilterProps {
-  onFilterChange: (filters: any) => void;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
+  priorityFilter: string;
+  onPriorityFilterChange: (value: string) => void;
 }
 
-export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
-  const handleSearch = (value: string) => {
-    onFilterChange({ search: value });
-  };
+const statusOptions = [
+  { value: 'all', label: 'Todos os Status' },
+  { value: 'pending', label: 'Pendente' },
+  { value: 'in_progress', label: 'Em Andamento' },
+  { value: 'completed', label: 'Concluído' }
+];
 
-  const handleStatusChange = (value: TaskStatus[]) => {
-    onFilterChange({ status: value });
-  };
+const priorityOptions = [
+  { value: 'all', label: 'Todas as Prioridades' },
+  { value: 'high', label: 'Alta' },
+  { value: 'medium', label: 'Média' },
+  { value: 'low', label: 'Baixa' }
+];
 
-  const handlePriorityChange = (value: TaskPriority[]) => {
-    onFilterChange({ priority: value });
-  };
-
+export function TaskFilter({
+  searchTerm,
+  onSearchChange,
+  statusFilter,
+  onStatusFilterChange,
+  priorityFilter,
+  onPriorityFilterChange
+}: TaskFilterProps) {
   return (
-    <div className={styles.filterContainer}>
-      <Space size="middle">
-        <Search
-          placeholder="Buscar tarefas..."
-          onSearch={handleSearch}
-          style={{ width: 200 }}
+    <Box mb={4}>
+      <HStack spacing={4}>
+        <InputGroup maxW="300px">
+          <InputLeftElement pointerEvents="none">
+            <FiSearch color="gray.300" />
+          </InputLeftElement>
+          <Input
+            placeholder="Buscar tarefas..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </InputGroup>
+
+        <SelectField
+          label="Status"
+          options={statusOptions}
+          value={statusFilter}
+          onChange={(e) => onStatusFilterChange(e.target.value)}
+          formControlProps={{ width: "auto" }}
         />
 
-        <Select
-          mode="multiple"
-          placeholder="Status"
-          style={{ width: 200 }}
-          onChange={handleStatusChange}
-        >
-          <Option value={TaskStatus.NOT_STARTED}>Não Iniciado</Option>
-          <Option value={TaskStatus.PENDING}>Pendente</Option>
-          <Option value={TaskStatus.IN_PROGRESS}>Em Andamento</Option>
-          <Option value={TaskStatus.COMPLETED}>Concluído</Option>
-          <Option value={TaskStatus.CANCELLED}>Cancelado</Option>
-        </Select>
-
-        <Select
-          mode="multiple"
-          placeholder="Prioridade"
-          style={{ width: 200 }}
-          onChange={handlePriorityChange}
-        >
-          <Option value={TaskPriority.HIGH}>Alta</Option>
-          <Option value={TaskPriority.MEDIUM}>Média</Option>
-          <Option value={TaskPriority.LOW}>Baixa</Option>
-        </Select>
-      </Space>
-    </div>
+        <SelectField
+          label="Prioridade"
+          options={priorityOptions}
+          value={priorityFilter}
+          onChange={(e) => onPriorityFilterChange(e.target.value)}
+          formControlProps={{ width: "auto" }}
+        />
+      </HStack>
+    </Box>
   );
-}; 
+} 

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Task, TaskStatus, TaskPriority } from '../../types/task';

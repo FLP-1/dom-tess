@@ -25,6 +25,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { criarRegistro, verificarRegistrosDoDia } from '@/services/registros';
 import { criarNotificacaoHorario } from '@/services/notificacoes';
+import { useAppNotifications } from '@/contexts/AppNotificationsContext';
 
 interface RegistroPontoProps {
   userId: string;
@@ -42,6 +43,7 @@ export function RegistroPonto({ userId }: RegistroPontoProps) {
   });
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const notifications = useAppNotifications();
 
   useEffect(() => {
     // Obter localização
@@ -124,35 +126,29 @@ export function RegistroPonto({ userId }: RegistroPontoProps) {
 
   const handleRegistro = (tipo: 'entrada' | 'saida' | 'intervalo') => {
     if (tipo === 'entrada' && registrosHoje.temEntrada) {
-      toast({
-        title: 'Entrada já registrada',
-        description: 'Você já registrou entrada hoje.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
+      notifications.showWarning(
+        'Entrada já registrada',
+        'Você já registrou entrada hoje.',
+        { persistent: true }
+      );
       return;
     }
 
     if (tipo === 'saida' && !registrosHoje.temEntrada) {
-      toast({
-        title: 'Entrada não registrada',
-        description: 'Você precisa registrar a entrada primeiro.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
+      notifications.showWarning(
+        'Entrada não registrada',
+        'Você precisa registrar a entrada primeiro.',
+        { persistent: true }
+      );
       return;
     }
 
     if (tipo === 'intervalo' && !registrosHoje.temEntrada) {
-      toast({
-        title: 'Entrada não registrada',
-        description: 'Você precisa registrar a entrada primeiro.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
+      notifications.showWarning(
+        'Entrada não registrada',
+        'Você precisa registrar a entrada primeiro.',
+        { persistent: true }
+      );
       return;
     }
 

@@ -1,0 +1,22 @@
+export const jobTitles = [
+  'Empregada Doméstica',
+  'Diarista',
+  'Babá',
+  'Cozinheira',
+  'Lavadeira',
+  'Passadeira',
+  'Motorista Particular',
+  'Jardineiro',
+  'Caseiro',
+  'Cuidador de Idosos',
+  'Cuidador de Crianças',
+  'Auxiliar de Limpeza',
+  'Governanta',
+  'Mordomo',
+  'Auxiliar de Cozinha',
+  'Auxiliar de Serviços Gerais',
+  'Cuidador de Animais',
+  'Auxiliar de Lavanderia',
+  'Auxiliar de Jardinagem',
+  'Auxiliar de Manutenção'
+]; 

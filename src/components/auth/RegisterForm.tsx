@@ -45,6 +45,7 @@ import { EmailVerificationService } from '@/services/EmailVerificationService';
 import { SMSVerificationService } from '@/services/SMSVerificationService';
 import NextLink from 'next/link';
 import { DoubleBorderCard } from '@/components/DoubleBorderCard';
+import { useAppNotifications } from '@/hooks/useAppNotifications';
 
 interface RegisterFormData {
   nome: string;
@@ -78,6 +79,7 @@ export function RegisterForm() {
   const { signUp, checkEmployerExists } = useAuth();
   const toast = useToast();
   const router = useRouter();
+  const notifications = useAppNotifications();
 
   // Modal de validação
   const { isOpen: isEmailModalOpen, onOpen: onOpenEmailModal, onClose: onCloseEmailModal } = useDisclosure();
@@ -281,111 +283,85 @@ export function RegisterForm() {
       );
 
       if (!result.success) {
-        toast({
-          title: 'Erro na verificação',
-          description: result.message,
-          status: 'error',
-          duration: 3000,
-        });
+        notifications.showError(
+          'Erro na verificação',
+          result.message,
+          { persistent: false }
+        );
         return;
       }
 
       setFormData(prev => ({ ...prev, isPhoneVerified: true }));
-      toast({
-        title: 'Celular validado com sucesso!',
-        status: 'success',
-        duration: 2000,
-      });
+      notifications.showSuccess(
+        'Celular validado com sucesso!',
+        undefined,
+        { persistent: false }
+      );
       onClosePhoneModal();
     } catch (error: any) {
-      toast({
-        title: 'Erro na verificação',
-        description: error.message || 'Ocorreu um erro ao verificar o código. Tente novamente.',
-        status: 'error',
-        duration: 3000,
-      });
+      notifications.showError(
+        'Erro na verificação',
+        error.message || 'Ocorreu um erro ao verificar o código. Tente novamente.',
+        { persistent: false }
+      );
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cpfNumerico = formData.cpf.replace(/\D/g, '');
+    
     if (!validateCPF(cpfNumerico)) {
       setCpfError('CPF inválido');
-      toast({
-        title: 'CPF inválido',
-        description: 'Por favor, insira um CPF válido.',
-        status: 'error',
-        duration: 3000,
-      });
+      notifications.showError(
+        'CPF inválido',
+        'Por favor, insira um CPF válido.',
+        { persistent: false }
+      );
       return;
     }
+
     if (!formData.nome || !formData.email || !formData.celular || !formData.password || !formData.passwordConfirmation) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos.',
-        status: 'error',
-        duration: 3000,
-      });
+      notifications.showError(
+        'Campos obrigatórios',
+        'Por favor, preencha todos os campos.',
+        { persistent: false }
+      );
       return;
     }
+
     if (formData.password.length < 6) {
       setPasswordError('A senha deve ter pelo menos 6 caracteres');
-      toast({
-        title: 'Senha inválida',
-        description: 'A senha deve ter pelo menos 6 caracteres.',
-        status: 'error',
-        duration: 3000,
-      });
+      notifications.showError(
+        'Senha inválida',
+        'A senha deve ter pelo menos 6 caracteres.',
+        { persistent: false }
+      );
       return;
     }
+
     if (formData.password !== formData.passwordConfirmation) {
       setPasswordConfirmationError('As senhas não coincidem');
-      toast({
-        title: 'Confirmação de senha incorreta',
-        description: 'As senhas não coincidem.',
-        status: 'error',
-        duration: 3000,
-      });
+      notifications.showError(
+        'Confirmação de senha incorreta',
+        'As senhas não coincidem.',
+        { persistent: false }
+      );
       return;
     }
+
     if (!acceptedTerms) {
-      toast({
-        title: 'Termos não aceitos',
-        description: 'Por favor, aceite os termos para continuar.',
-        status: 'error',
-        duration: 3000,
-      });
+      notifications.showError(
+        'Termos não aceitos',
+        'Por favor, aceite os termos para continuar.',
+        { persistent: false }
+      );
       return;
     }
+
     setLoading(true);
+
     try {
-      // Verificar se já existe o mesmo CPF para o mesmo tipo
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('cpf', '==', cpfNumerico), where('role', '==', 'employer'));
-      const snapshot = await getDocs(q);
-      console.log('Resultado da busca de cpf+role:', snapshot.size, snapshot.docs.map(doc => doc.data()));
-      if (!snapshot.empty) {
-        toast({
-          title: 'Acesso negado',
-          description: 'Já existe um cadastro com este CPF para o tipo Empregador.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        setLoading(false);
-        return;
-      }
-      if (!formData.isEmailVerified) {
-        sendEmailCode();
-        setLoading(false);
-        return;
-      }
-      if (!formData.isPhoneVerified) {
-        sendPhoneCode();
-        setLoading(false);
-        return;
-      }
       await signUp(
         formData.email,
         formData.password,
@@ -394,38 +370,21 @@ export function RegisterForm() {
         cpfNumerico,
         formData.celular
       );
-      toast({
-        title: 'Cadastro realizado',
-        description: 'Sua conta foi criada com sucesso!',
-        status: 'success',
-        duration: 3000,
-      });
-      // Limpar campos após cadastro
-      setFormData({
-        nome: '',
-        cpf: '',
-        email: '',
-        celular: '',
-        password: '',
-        passwordConfirmation: '',
-        isEmailVerified: false,
-        isPhoneVerified: false
-      });
-      setCpfError(null);
-      setPasswordError(null);
-      setPasswordConfirmationError(null);
-      setAcceptedTerms(false);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      notifications.showSuccess(
+        'Cadastro realizado com sucesso!',
+        'Você já pode fazer login.',
+        { 
+          persistent: true,
+          pushNotification: true 
+        }
+      );
+      router.push('/login');
     } catch (error: any) {
-      toast({
-        title: 'Erro no cadastro',
-        description: error.message || 'Ocorreu um erro ao criar sua conta. Tente novamente.',
-        status: 'error',
-        duration: 3000,
-      });
-    } finally {
+      notifications.showError(
+        'Erro no cadastro',
+        error.message || 'Ocorreu um erro ao realizar o cadastro. Tente novamente.',
+        { persistent: true }
+      );
       setLoading(false);
     }
   };

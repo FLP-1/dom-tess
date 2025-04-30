@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import {
   Modal,
@@ -29,6 +31,7 @@ import { FiPlus, FiX } from 'react-icons/fi';
 import { collection, addDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
+import { SelectField } from '@/components/SelectField';
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -36,6 +39,24 @@ interface TaskFormProps {
   task?: Task;
   onUpdate?: () => void;
 }
+
+const statusOptions = [
+  { value: 'pending', label: 'Pendente' },
+  { value: 'in_progress', label: 'Em Andamento' },
+  { value: 'completed', label: 'Concluído' }
+];
+
+const priorityOptions = [
+  { value: 'high', label: 'Alta' },
+  { value: 'medium', label: 'Média' },
+  { value: 'low', label: 'Baixa' }
+];
+
+const assigneeOptions = [
+  { value: 'user1', label: 'Usuário 1' },
+  { value: 'user2', label: 'Usuário 2' },
+  { value: 'user3', label: 'Usuário 3' }
+];
 
 export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, task, onUpdate }) => {
   const { user } = useAuth();
@@ -160,34 +181,21 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, task, onUpd
                   />
                 </FormControl>
 
-                <FormControl>
-                  <FormLabel>Prioridade</FormLabel>
-                  <Select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                    aria-label="Selecione a prioridade da tarefa"
-                  >
-                    <option value={TaskPriority.LOW}>Baixa</option>
-                    <option value={TaskPriority.MEDIUM}>Média</option>
-                    <option value={TaskPriority.HIGH}>Alta</option>
-                    <option value={TaskPriority.URGENT}>Urgente</option>
-                  </Select>
-                </FormControl>
+                <SelectField
+                  label="Status"
+                  options={statusOptions}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                  isRequired
+                />
 
-                <FormControl>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                    aria-label="Selecione o status da tarefa"
-                  >
-                    <option value={TaskStatus.NOT_STARTED}>Não Iniciado</option>
-                    <option value={TaskStatus.PENDING}>Pendente</option>
-                    <option value={TaskStatus.IN_PROGRESS}>Em Andamento</option>
-                    <option value={TaskStatus.COMPLETED}>Concluído</option>
-                    <option value={TaskStatus.CANCELLED}>Cancelado</option>
-                  </Select>
-                </FormControl>
+                <SelectField
+                  label="Prioridade"
+                  options={priorityOptions}
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                  isRequired
+                />
               </HStack>
 
               <HStack width="100%" spacing={4}>

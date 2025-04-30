@@ -21,6 +21,7 @@ import { FiUpload, FiX, FiCheck } from 'react-icons/fi';
 import { useDropzone } from 'react-dropzone';
 import { DatePicker } from '@/components/form/DatePicker';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAppNotifications } from '@/hooks/useAppNotifications';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = [
@@ -41,6 +42,7 @@ export function DocumentUploadForm() {
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
   const { canUpload, isLoading: isLoadingPermissions } = usePermissions();
+  const notifications = useAppNotifications();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -84,35 +86,29 @@ export function DocumentUploadForm() {
 
   const handleSubmit = async () => {
     if (!file) {
-      toast({
-        title: 'Erro',
-        description: 'Por favor, selecione um arquivo',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      notifications.showError(
+        'Erro',
+        'Por favor, selecione um arquivo',
+        { persistent: true }
+      );
       return;
     }
 
     if (!expirationDate) {
-      toast({
-        title: 'Erro',
-        description: 'Por favor, selecione uma data de validade',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      notifications.showError(
+        'Erro',
+        'Por favor, selecione uma data de validade',
+        { persistent: true }
+      );
       return;
     }
 
     if (expirationDate < new Date()) {
-      toast({
-        title: 'Erro',
-        description: 'A data de validade deve ser futura',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      notifications.showError(
+        'Erro',
+        'A data de validade deve ser futura',
+        { persistent: true }
+      );
       return;
     }
 
@@ -138,13 +134,14 @@ export function DocumentUploadForm() {
         throw new Error('Erro ao fazer upload do documento');
       }
 
-      toast({
-        title: 'Sucesso',
-        description: 'Documento enviado com sucesso',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
+      notifications.showSuccess(
+        'Sucesso',
+        'Documento enviado com sucesso',
+        { 
+          persistent: true,
+          pushNotification: true 
+        }
+      );
 
       // Limpar formulário
       setFile(null);
@@ -152,13 +149,11 @@ export function DocumentUploadForm() {
       setResponsible('');
       setDescription('');
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Erro ao fazer upload do documento',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      notifications.showError(
+        'Erro',
+        'Erro ao fazer upload do documento',
+        { persistent: true }
+      );
     } finally {
       setIsUploading(false);
     }

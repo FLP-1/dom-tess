@@ -1,10 +1,11 @@
 "use client";
 
-import { Box, Heading, FormControl, FormLabel, Input, Button, VStack, useToast, Select, FormErrorMessage } from '@chakra-ui/react';
+import { Box, Heading, FormControl, FormLabel, Input, Button, VStack, useToast, FormErrorMessage } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { familyService } from '@/services/familyService';
 import { employeeService, Employee } from '@/services/employeeService';
+import { Select } from '@/components/Select';
 
 export default function RegisterFamily() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ export default function RegisterFamily() {
     dataNascimento: '',
     parentesco: '',
     empregadoId: '',
+    tipoDocumento: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -111,6 +113,20 @@ export default function RegisterFamily() {
     }
   };
 
+  const parentescoOptions = [
+    { value: 'pai', label: 'Pai' },
+    { value: 'mae', label: 'Mãe' },
+    { value: 'filho', label: 'Filho(a)' },
+    { value: 'conjuge', label: 'Cônjuge' },
+    { value: 'outro', label: 'Outro' }
+  ];
+
+  const tipoDocumentoOptions = [
+    { value: 'cpf', label: 'CPF' },
+    { value: 'rg', label: 'RG' },
+    { value: 'certidao', label: 'Certidão de Nascimento' }
+  ];
+
   return (
     <Box p={8}>
       <Heading mb={8}>Cadastrar Familiar</Heading>
@@ -150,21 +166,28 @@ export default function RegisterFamily() {
             <FormErrorMessage>{errors.dataNascimento}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.parentesco}>
-            <FormLabel>Parentesco</FormLabel>
+          <FormControl isRequired>
+            <FormLabel htmlFor="parentesco">Parentesco</FormLabel>
             <Select
+              id="parentesco"
               name="parentesco"
               value={formData.parentesco}
               onChange={handleChange}
-              placeholder="Selecione o parentesco"
-            >
-              <option value="CONJUGE">Cônjuge</option>
-              <option value="FILHO">Filho(a)</option>
-              <option value="PAI">Pai</option>
-              <option value="MAE">Mãe</option>
-              <option value="OUTRO">Outro</option>
-            </Select>
-            <FormErrorMessage>{errors.parentesco}</FormErrorMessage>
+              options={parentescoOptions}
+              label="Selecione o parentesco"
+            />
+          </FormControl>
+
+          <FormControl isRequired>
+            <FormLabel htmlFor="tipoDocumento">Tipo de Documento</FormLabel>
+            <Select
+              id="tipoDocumento"
+              name="tipoDocumento"
+              value={formData.tipoDocumento}
+              onChange={handleChange}
+              options={tipoDocumentoOptions}
+              label="Selecione o tipo de documento"
+            />
           </FormControl>
 
           <FormControl isRequired isInvalid={!!errors.empregadoId}>

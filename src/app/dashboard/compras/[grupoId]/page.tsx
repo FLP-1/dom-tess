@@ -1,10 +1,11 @@
-import { Box, Heading, VStack, Flex, Text, Button, Checkbox, Input, FormLabel, Spinner, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, Select, FormControl } from '@chakra-ui/react';
+import { Box, Heading, VStack, Flex, Text, Button, Checkbox, Input, FormLabel, Spinner, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, FormControl } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import styles from './page.module.css';
 import { EditIcon } from '@chakra-ui/icons';
+import { SelectField } from '@/components/SelectField';
 
 type Produto = {
   id: string;
@@ -125,39 +126,29 @@ export default function GrupoComprasPage() {
       <Button mb={4} onClick={() => router.back()} colorScheme="gray" size="sm">Voltar</Button>
       <Heading as="h2" size="md" mb={4} color="blue.700">Produtos do Grupo: {grupoNome}</Heading>
       <Flex mb={4} gap={2} flexWrap="wrap">
-        <Box>
-          <FormLabel htmlFor="filtro-produtos" fontSize="0.9rem" mb={0}>Filtro</FormLabel>
-          <Select
-            id="filtro-produtos"
-            value={filtro}
-            onChange={e => setFiltro(e.target.value as any)}
-            width="auto"
-            mb={2}
-            borderRadius={6}
-            borderColor="#CBD5E0"
-            padding={2}
-          >
-            <option value="todos">Todos</option>
-            <option value="falta">Falta Comprar</option>
-            <option value="comprado">Comprados</option>
-          </Select>
-        </Box>
-        <Box>
-          <FormLabel htmlFor="ordem-produtos" fontSize="0.9rem" mb={0}>Ordenar</FormLabel>
-          <Select
-            id="ordem-produtos"
-            value={ordem}
-            onChange={e => setOrdem(e.target.value as any)}
-            width="auto"
-            mb={2}
-            borderRadius={6}
-            borderColor="#CBD5E0"
-            padding={2}
-          >
-            <option value="nome">Ordenar por Nome</option>
-            <option value="responsavel">Ordenar por Responsável</option>
-          </Select>
-        </Box>
+        <SelectField
+          label="Filtro"
+          options={[
+            { value: 'todos', label: 'Todos' },
+            { value: 'falta', label: 'Falta Comprar' },
+            { value: 'comprado', label: 'Comprados' }
+          ]}
+          value={filtro}
+          onChange={e => setFiltro(e.target.value as any)}
+          formControlProps={{ width: "auto" }}
+        />
+
+        <SelectField
+          label="Ordenar"
+          options={[
+            { value: 'nome', label: 'Ordenar por Nome' },
+            { value: 'responsavel', label: 'Ordenar por Responsável' }
+          ]}
+          value={ordem}
+          onChange={e => setOrdem(e.target.value as any)}
+          formControlProps={{ width: "auto" }}
+        />
+
         <Button colorScheme="blue" size="sm" onClick={onOpen}>Adicionar Produto</Button>
       </Flex>
       {loading ? (

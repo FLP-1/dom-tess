@@ -43,9 +43,10 @@ export interface Address {
 
 export interface Document {
   id: string;
-  type: 'contract' | 'id' | 'cpf' | 'medical' | 'other';
+  type: string;
   title: string;
   url: string;
+  userId: string;
   uploadedAt: Date;
   expiresAt?: Date;
 }

@@ -1,54 +1,55 @@
-import { HStack, Select, Icon, FormControl, FormLabel } from '@chakra-ui/react';
+'use client';
+
+import { HStack, Icon, FormControl, FormLabel } from '@chakra-ui/react';
+import { Select } from '@/components/Select';
 import { FaFilter } from 'react-icons/fa';
 
 interface FiltrosRegistroProps {
-  tipoFiltro: string;
-  periodoFiltro: string;
-  onTipoChange: (value: string) => void;
+  periodo: string;
+  tipo: string;
   onPeriodoChange: (value: string) => void;
+  onTipoChange: (value: string) => void;
 }
 
-export function FiltrosRegistro({
-  tipoFiltro,
-  periodoFiltro,
-  onTipoChange,
-  onPeriodoChange,
-}: FiltrosRegistroProps) {
+export function FiltrosRegistro({ periodo, tipo, onPeriodoChange, onTipoChange }: FiltrosRegistroProps) {
+  const periodos = [
+    { value: 'hoje', label: 'Hoje' },
+    { value: 'semana', label: 'Esta Semana' },
+    { value: 'mes', label: 'Este Mês' },
+    { value: 'todos', label: 'Todos' }
+  ];
+
+  const tipos = [
+    { value: 'todos', label: 'Todos' },
+    { value: 'entrada', label: 'Entrada' },
+    { value: 'saida', label: 'Saída' },
+    { value: 'intervalo', label: 'Intervalo' }
+  ];
+
   return (
     <HStack spacing={4} align="center">
+      <Icon as={FaFilter} />
       <FormControl>
-        <FormLabel htmlFor="tipo-filtro">
-          <HStack>
-            <Icon as={FaFilter} />
-            <span>Tipo</span>
-          </HStack>
-        </FormLabel>
+        <FormLabel htmlFor="periodo">Período</FormLabel>
         <Select
-          id="tipo-filtro"
-          value={tipoFiltro}
-          onChange={(e) => onTipoChange(e.target.value)}
-          aria-label="Filtrar por tipo de registro"
-        >
-          <option value="todos">Todos os tipos</option>
-          <option value="entrada">Entrada</option>
-          <option value="saida">Saída</option>
-          <option value="intervalo">Intervalo</option>
-        </Select>
-      </FormControl>
-
-      <FormControl>
-        <FormLabel htmlFor="periodo-filtro">Período</FormLabel>
-        <Select
-          id="periodo-filtro"
-          value={periodoFiltro}
+          id="periodo"
+          name="periodo"
+          value={periodo}
           onChange={(e) => onPeriodoChange(e.target.value)}
-          aria-label="Filtrar por período"
-        >
-          <option value="todos">Todos os períodos</option>
-          <option value="hoje">Hoje</option>
-          <option value="semana">Esta semana</option>
-          <option value="mes">Este mês</option>
-        </Select>
+          options={periodos}
+          label="Selecione o período"
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel htmlFor="tipo">Tipo</FormLabel>
+        <Select
+          id="tipo"
+          name="tipo"
+          value={tipo}
+          onChange={(e) => onTipoChange(e.target.value)}
+          options={tipos}
+          label="Selecione o tipo de registro"
+        />
       </FormControl>
     </HStack>
   );

@@ -1,61 +1,104 @@
-import { BaseService } from './base/BaseService';
-import { formatCPF, validateCPF } from '@/utils/formatting';
+import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { DadosEmpregado } from '@/types/esocial';
+import { useAppNotifications } from '@/hooks/useAppNotifications';
 
-export interface Employee {
-  id?: string;
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  cargo: string;
-  dataAdmissao: string;
-  salario: number;
-}
+export class EmployeeService {
+  private static collection = collection(db, 'empregados');
+  private notifications = useAppNotifications();
 
-export class EmployeeService extends BaseService<Employee> {
-  protected collectionName = 'employees';
-
-  async createEmployee(employee: Omit<Employee, 'id'>): Promise<string> {
-    if (!validateCPF(employee.cpf)) {
-      throw new Error('CPF inválido');
-    }
-
-    const cpfFormatted = formatCPF(employee.cpf);
-    
-    // Verificar se já existe empregado com o mesmo CPF
-    const isUnique = await this.checkUnique('cpf', cpfFormatted);
-    if (!isUnique) {
-      throw new Error('Já existe um empregado cadastrado com este CPF');
-    }
-
-    return this.create({
-      ...employee,
-      cpf: cpfFormatted,
-      salario: Number(employee.salario),
-    });
-  }
-
-  async getEmployees(): Promise<Employee[]> {
-    return this.getAll();
-  }
-
-  async getEmployeeById(id: string): Promise<Employee | null> {
-    return this.getById(id);
-  }
-
-  async updateEmployee(id: string, data: Partial<Employee>): Promise<void> {
-    if (data.cpf) {
-      if (!validateCPF(data.cpf)) {
-        throw new Error('CPF inválido');
+  async getEmployeeById(id: string): Promise<DadosEmpregado | null> {
+    try {
+      const docRef = doc(this.collection, id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        return null;
       }
-      data.cpf = formatCPF(data.cpf);
+
+      return {
+        ...docSnap.data(),
+        id: docSnap.id,
+      } as DadosEmpregado;
+    } catch (error) {
+      this.notifications.showError(
+        'Erro ao carregar dados',
+        'Não foi possível carregar os dados do empregado',
+        { persistent: true }
+      );
+      throw error;
     }
-    return this.update(id, data);
+  }
+
+  async getIncompleteEmployees(empregadorId: string): Promise<DadosEmpregado[]> {
+    try {
+      const q = query(
+        this.collection,
+        where('empregadorId', '==', empregadorId),
+        where('status', '==', 'incompleto')
+      );
+
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+      })) as DadosEmpregado[];
+    } catch (error) {
+      this.notifications.showError(
+        'Erro ao carregar rascunhos',
+        'Não foi possível carregar os cadastros incompletos',
+        { persistent: true }
+      );
+      throw error;
+    }
+  }
+
+  async saveEmployee(data: Partial<DadosEmpregado>, isComplete: boolean = false): Promise<string> {
+    try {
+      const employeeData = {
+        ...data,
+        status: isComplete ? 'completo' : 'incompleto',
+        ultimaAtualizacao: new Date(),
+      };
+
+      if (data.id) {
+        // Atualiza documento existente
+        await updateDoc(doc(this.collection, data.id), employeeData);
+        return data.id;
+      } else {
+        // Cria novo documento
+        const docRef = await setDoc(doc(this.collection), employeeData);
+        return docRef.id;
+      }
+    } catch (error) {
+      this.notifications.showError(
+        'Erro ao salvar dados',
+        'Não foi possível salvar os dados do empregado',
+        { persistent: true }
+      );
+      throw error;
+    }
   }
 
   async deleteEmployee(id: string): Promise<void> {
-    return this.delete(id);
+    try {
+      await updateDoc(doc(this.collection, id), {
+        status: 'excluido',
+        dataExclusao: new Date(),
+      });
+      
+      this.notifications.showSuccess(
+        'Empregado excluído',
+        'O cadastro foi excluído com sucesso',
+        { persistent: true }
+      );
+    } catch (error) {
+      this.notifications.showError(
+        'Erro ao excluir',
+        'Não foi possível excluir o cadastro do empregado',
+        { persistent: true }
+      );
+      throw error;
+    }
   }
-}
-
-export const employeeService = new EmployeeService(); 
+} 

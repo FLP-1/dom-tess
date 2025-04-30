@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -5,7 +7,6 @@ import {
   VStack,
   HStack,
   Icon,
-  useToast,
   Badge,
   Button,
   Menu,
@@ -19,11 +20,12 @@ import { collection, query, where, onSnapshot, Timestamp, updateDoc, doc } from 
 import { db } from '../../lib/firebase';
 import { Task, TaskStatus } from '../../types/task';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAppNotifications } from '@/hooks/useAppNotifications';
 
 export const TaskNotifications: React.FC = () => {
   const { user } = useAuth();
-  const toast = useToast();
-  const [notifications, setNotifications] = useState<Task[]>([]);
+  const notifications = useAppNotifications();
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -57,23 +59,24 @@ export const TaskNotifications: React.FC = () => {
         }
       });
 
-      setNotifications(tasks);
+      setTasks(tasks);
       setUnreadCount(unread);
 
       // Mostrar notificação para novas tarefas próximas do vencimento
       if (unread > 0) {
-        toast({
-          title: 'Tarefas próximas do vencimento',
-          description: `Você tem ${unread} tarefa(s) que vencem em breve.`,
-          status: 'warning',
-          duration: 5000,
-          isClosable: true,
-        });
+        notifications.showWarning(
+          'Tarefas próximas do vencimento',
+          `Você tem ${unread} tarefa(s) que vencem em breve.`,
+          { 
+            persistent: true,
+            pushNotification: true 
+          }
+        );
       }
     });
 
     return () => unsubscribe();
-  }, [user, toast]);
+  }, [user, notifications]);
 
   const handleMarkAsRead = async (taskId: string) => {
     try {
@@ -82,7 +85,11 @@ export const TaskNotifications: React.FC = () => {
       });
       setUnreadCount(prev => prev - 1);
     } catch (error) {
-      console.error('Erro ao marcar notificação como lida:', error);
+      notifications.showError(
+        'Erro ao marcar notificação como lida',
+        'Não foi possível atualizar o status da notificação.',
+        { persistent: true }
+      );
     }
   };
 
@@ -92,10 +99,14 @@ export const TaskNotifications: React.FC = () => {
         lastNotified: Timestamp.now(),
         notificationDismissed: true,
       });
-      setNotifications(prev => prev.filter(task => task.id !== taskId));
+      setTasks(prev => prev.filter(task => task.id !== taskId));
       setUnreadCount(prev => prev - 1);
     } catch (error) {
-      console.error('Erro ao descartar notificação:', error);
+      notifications.showError(
+        'Erro ao descartar notificação',
+        'Não foi possível descartar a notificação.',
+        { persistent: true }
+      );
     }
   };
 
@@ -121,12 +132,12 @@ export const TaskNotifications: React.FC = () => {
         )}
       </MenuButton>
       <MenuList maxH="400px" overflowY="auto">
-        {notifications.length === 0 ? (
+        {tasks.length === 0 ? (
           <MenuItem>
             <Text>Nenhuma notificação</Text>
           </MenuItem>
         ) : (
-          notifications.map((task) => (
+          tasks.map((task) => (
             <MenuItem key={task.id}>
               <VStack align="start" spacing={1} width="100%">
                 <HStack justify="space-between" width="100%">

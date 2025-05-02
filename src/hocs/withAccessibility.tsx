@@ -15,9 +15,9 @@ import { useAccessibility } from '../hooks/useAccessibility';
 import { BaseFieldProps } from '../types/common';
 
 export function withAccessibility<P extends BaseFieldProps>(
-  WrappedComponent: React.ComponentType<P>
+  WrappedComponent: React.ComponentType<P & { ref?: React.Ref<any> }>
 ) {
-  return React.forwardRef<HTMLElement, P>((props, ref) => {
+  const WithAccessibility = React.forwardRef<HTMLElement, P>((props, ref) => {
     const {
       label,
       error,
@@ -26,26 +26,27 @@ export function withAccessibility<P extends BaseFieldProps>(
       isDisabled,
       isLoading,
       id,
+      name,
+      placeholder,
       'aria-label': ariaLabel,
       'aria-describedby': ariaDescribedby,
       ...rest
     } = props;
 
-    const {
-      inputId,
-      labelId,
-      helperId,
-      errorId,
-      ariaProps
-    } = useAccessibility({
-      id,
-      label,
-      error,
-      helperText,
-      isRequired,
-      isDisabled,
-      isLoading
-    });
+    const uniqueId = React.useId();
+    const fieldId = id || uniqueId;
+    const labelId = `${fieldId}-label`;
+    const helperId = `${fieldId}-helper`;
+    const errorId = `${fieldId}-error`;
+
+    // Função para gerar aria-describedby
+    const getAriaDescribedby = () => {
+      const ids = [];
+      if (error) ids.push(errorId);
+      if (helperText && !error) ids.push(helperId);
+      if (ariaDescribedby) ids.push(ariaDescribedby);
+      return ids.length > 0 ? ids.join(' ') : undefined;
+    };
 
     // Estado para controle do tooltip de ajuda
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -98,7 +99,7 @@ export function withAccessibility<P extends BaseFieldProps>(
       return (
         <FormLabel
           id={labelId}
-          htmlFor={inputId}
+          htmlFor={fieldId}
           mb={1}
           display="flex"
           alignItems="center"
@@ -135,13 +136,16 @@ export function withAccessibility<P extends BaseFieldProps>(
       );
     };
 
-    // Função para gerar aria-describedby
-    const getAriaDescribedby = () => {
-      const ids = [];
-      if (error) ids.push(errorId);
-      if (helperText && !error) ids.push(helperId);
-      if (ariaDescribedby) ids.push(ariaDescribedby);
-      return ids.length > 0 ? ids.join(' ') : undefined;
+    const accessibilityProps = {
+      id: fieldId,
+      'aria-invalid': !!error,
+      'aria-required': isRequired,
+      'aria-disabled': isDisabled,
+      'aria-busy': isLoading,
+      'aria-labelledby': label ? labelId : undefined,
+      'aria-describedby': getAriaDescribedby(),
+      'aria-label': !label && (ariaLabel || placeholder || name) ? (ariaLabel || placeholder || name) : undefined,
+      title: label || ariaLabel || placeholder || name || 'Campo de formulário'
     };
 
     return (
@@ -150,20 +154,13 @@ export function withAccessibility<P extends BaseFieldProps>(
         isRequired={isRequired}
         isDisabled={isDisabled}
         width={props.width}
-        {...ariaProps}
       >
         {renderLabel()}
 
         <WrappedComponent
           ref={ref}
-          id={inputId}
           {...(rest as P)}
-          aria-invalid={!!error}
-          aria-required={isRequired}
-          aria-disabled={isDisabled}
-          aria-busy={isLoading}
-          aria-label={ariaLabel}
-          aria-describedby={getAriaDescribedby()}
+          {...accessibilityProps}
           data-loading={isLoading}
           data-disabled={isDisabled}
           data-invalid={!!error}
@@ -174,4 +171,10 @@ export function withAccessibility<P extends BaseFieldProps>(
       </FormControl>
     );
   });
+
+  WithAccessibility.displayName = `withAccessibility(${
+    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+  })`;
+
+  return WithAccessibility;
 } 

@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
+import type { AxiosStatic } from 'axios';
 import { 
   LoginCredentials, 
   RegisterData, 
@@ -8,7 +9,7 @@ import {
 } from '../types/auth';
 
 class AuthService {
-  private api: AxiosInstance;
+  private api: ReturnType<typeof axios.create>;
   private static instance: AuthService;
 
   private constructor() {

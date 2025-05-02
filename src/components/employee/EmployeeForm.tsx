@@ -5,6 +5,7 @@ import { positionService } from '@/services/positionService';
 import { Position } from '@/services/positionService';
 import { cctService } from '@/services/cctService';
 import { CCT } from '@/services/cctService';
+import type { ExpiredCCT } from '@/services/cctService';
 import { useToast } from '@chakra-ui/react';
 import { Alert, AlertIcon, AlertTitle, AlertDescription, Box, Text } from '@chakra-ui/react';
 import { criarNotificacaoAlerta } from '@/services/notificacoes';
@@ -15,7 +16,7 @@ export function EmployeeForm() {
   const [loadingPositions, setLoadingPositions] = useState(true);
   const [cct, setCCT] = useState<CCT | null>(null);
   const [loadingCCT, setLoadingCCT] = useState(false);
-  const [expiredCCTs, setExpiredCCTs] = useState<Array<CCT & { isExpired: boolean; daysUntilExpiration: number }>>([]);
+  const [expiredCCTs, setExpiredCCTs] = useState<ExpiredCCT[]>([]);
   const toast = useToast();
   const notifications = useAppNotifications();
 

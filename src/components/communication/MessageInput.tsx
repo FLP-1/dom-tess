@@ -14,9 +14,16 @@ interface MessageInputCustomProps {
   isLoading?: boolean;
 }
 
-type MessageInputProps = Omit<InputProps, 'onChange'> & MessageInputCustomProps & {
-  onChange?: (value: string) => void;
-};
+// Modificando a tipagem para estender BaseInputProps e InputProps
+type MessageInputProps = Omit<BaseInputProps, 'onChange' | 'onBlur' | 'onFocus' | 'onKeyDown' | 'onKeyUp' | 'onKeyPress'> & 
+  MessageInputCustomProps & {
+    onChange?: (value: string) => void;
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onKeyUp?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  };
 
 const BaseMessageInput = React.forwardRef<HTMLInputElement, MessageInputProps>(
   (
@@ -164,5 +171,5 @@ const BaseMessageInput = React.forwardRef<HTMLInputElement, MessageInputProps>(
 
 BaseMessageInput.displayName = 'BaseMessageInput';
 
-const EnhancedMessageInput = withAccessibility(BaseMessageInput as React.ComponentType<BaseInputProps>);
+const EnhancedMessageInput = withAccessibility(BaseMessageInput);
 export { EnhancedMessageInput as MessageInput }; 

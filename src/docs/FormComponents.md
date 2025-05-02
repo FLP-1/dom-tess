@@ -7,6 +7,7 @@ Este documento descreve os componentes de formulário disponíveis no projeto, s
 ## Componentes Base
 
 ### FormInput
+
 Componente básico de entrada de texto.
 
 ```tsx
@@ -26,6 +27,7 @@ import { FormInput } from '../components/common/FormInput';
 ```
 
 ### MaskedInput
+
 Componente de entrada com máscaras de formatação.
 
 ```tsx
@@ -46,6 +48,7 @@ import { MaskedInput } from '../components/common/MaskedInput';
 ```
 
 ### SelectField
+
 Componente de seleção com suporte a grupos de opções.
 
 ```tsx
@@ -66,6 +69,7 @@ import { SelectField } from '../components/common/SelectField';
 ```
 
 ### AutocompleteInput
+
 Componente de autocompletar com suporte a máscaras e validações.
 
 ```tsx
@@ -89,6 +93,7 @@ import { AutocompleteInput } from '../components/common/AutocompleteInput';
 ## Tipos e Interfaces
 
 ### BaseFieldProps
+
 Interface base para todos os componentes de formulário.
 
 ```typescript
@@ -108,6 +113,7 @@ interface BaseFieldProps {
 ```
 
 ### BaseInputProps
+
 Interface para componentes de entrada.
 
 ```typescript
@@ -120,6 +126,7 @@ interface BaseInputProps extends BaseFieldProps {
 ```
 
 ### BaseSelectProps
+
 Interface para componentes de seleção.
 
 ```typescript
@@ -245,4 +252,4 @@ const MyForm = () => {
 4. Use máscaras quando apropriado para melhorar a UX
 5. Mantenha a consistência no uso de labels e mensagens
 6. Teste a acessibilidade do formulário
-7. Documente campos customizados 
+7. Documente campos customizados

@@ -239,283 +239,103 @@ export const generateDefaultEmail = (cpf: string): string => {
 
 export type ValidationRule = (value: any) => string | undefined;
 
-export const required = (message = 'Campo obrigatório'): ValidationRule => {
-  return (value) => {
-    if (value === undefined || value === null || value === '') {
-      return message;
-    }
-    return undefined;
-  };
+export const required = (value: any): string | undefined => {
+  if (value === undefined || value === null || value === '') {
+    return 'Este campo é obrigatório';
+  }
+  return undefined;
 };
 
-export const minLength = (min: number, message = `Mínimo de ${min} caracteres`): ValidationRule => {
-  return (value) => {
-    if (value && value.length < min) {
-      return message;
-    }
-    return undefined;
-  };
-};
-
-export const maxLength = (max: number, message = `Máximo de ${max} caracteres`): ValidationRule => {
-  return (value) => {
-    if (value && value.length > max) {
-      return message;
-    }
-    return undefined;
-  };
-};
-
-export const email = (message = 'E-mail inválido'): ValidationRule => {
+export const email = (value: string): string | undefined => {
+  if (!value) return undefined;
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-  return (value) => {
-    if (value && !emailRegex.test(value)) {
-      return message;
-    }
-    return undefined;
-  };
+  if (!emailRegex.test(value)) {
+    return 'Email inválido';
+  }
+  return undefined;
 };
 
-export const cpf = (message = 'CPF inválido'): ValidationRule => {
-  return (value) => {
-    if (!value) return undefined;
-
-    const cpf = value.replace(/[^\d]/g, '');
-    if (cpf.length !== 11) return message;
-
-    // Verifica se todos os dígitos são iguais
-    if (/^(\d)\1{10}$/.test(cpf)) return message;
-
-    // Validação do primeiro dígito verificador
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      sum += parseInt(cpf.charAt(i)) * (10 - i);
-    }
-    let digit = 11 - (sum % 11);
-    if (digit > 9) digit = 0;
-    if (digit !== parseInt(cpf.charAt(9))) return message;
-
-    // Validação do segundo dígito verificador
-    sum = 0;
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(cpf.charAt(i)) * (11 - i);
-    }
-    digit = 11 - (sum % 11);
-    if (digit > 9) digit = 0;
-    if (digit !== parseInt(cpf.charAt(10))) return message;
-
-    return undefined;
-  };
+export const minLength = (min: number) => (value: string): string | undefined => {
+  if (!value) return undefined;
+  if (value.length < min) {
+    return `Deve ter no mínimo ${min} caracteres`;
+  }
+  return undefined;
 };
 
-export const cnpj = (message = 'CNPJ inválido'): ValidationRule => {
-  return (value) => {
-    if (!value) return undefined;
-
-    const cnpj = value.replace(/[^\d]/g, '');
-    if (cnpj.length !== 14) return message;
-
-    // Verifica se todos os dígitos são iguais
-    if (/^(\d)\1{13}$/.test(cnpj)) return message;
-
-    // Validação do primeiro dígito verificador
-    let sum = 0;
-    const weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    for (let i = 0; i < 12; i++) {
-      sum += parseInt(cnpj.charAt(i)) * weights[i];
-    }
-    let digit = 11 - (sum % 11);
-    if (digit > 9) digit = 0;
-    if (digit !== parseInt(cnpj.charAt(12))) return message;
-
-    // Validação do segundo dígito verificador
-    sum = 0;
-    weights.unshift(6);
-    for (let i = 0; i < 13; i++) {
-      sum += parseInt(cnpj.charAt(i)) * weights[i];
-    }
-    digit = 11 - (sum % 11);
-    if (digit > 9) digit = 0;
-    if (digit !== parseInt(cnpj.charAt(13))) return message;
-
-    return undefined;
-  };
+export const maxLength = (max: number) => (value: string): string | undefined => {
+  if (!value) return undefined;
+  if (value.length > max) {
+    return `Deve ter no máximo ${max} caracteres`;
+  }
+  return undefined;
 };
 
-export const phone = (message = 'Telefone inválido'): ValidationRule => {
-  return (value) => {
-    if (!value) return undefined;
-
-    const phone = value.replace(/[^\d]/g, '');
-    if (phone.length < 10 || phone.length > 11) return message;
-
-    return undefined;
-  };
+export const pattern = (regex: RegExp, message: string) => (value: string): string | undefined => {
+  if (!value) return undefined;
+  if (!regex.test(value)) {
+    return message;
+  }
+  return undefined;
 };
 
-export const date = (message = 'Data inválida'): ValidationRule => {
-  return (value) => {
-    if (!value) return undefined;
-
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return message;
-
-    return undefined;
-  };
+export const numeric = (value: string): string | undefined => {
+  if (!value) return undefined;
+  if (!/^\d+$/.test(value)) {
+    return 'Deve conter apenas números';
+  }
+  return undefined;
 };
 
-export const minDate = (min: Date, message = `Data deve ser posterior a ${min.toLocaleDateString()}`): ValidationRule => {
-  return (value) => {
-    if (!value) return undefined;
-
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return undefined;
-    if (date < min) return message;
-
-    return undefined;
-  };
+export const cpf = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+  if (!cpfRegex.test(value)) {
+    return 'CPF inválido';
+  }
+  return undefined;
 };
 
-export const maxDate = (max: Date, message = `Data deve ser anterior a ${max.toLocaleDateString()}`): ValidationRule => {
-  return (value) => {
-    if (!value) return undefined;
-
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return undefined;
-    if (date > max) return message;
-
-    return undefined;
-  };
+export const phone = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const phoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/;
+  if (!phoneRegex.test(value)) {
+    return 'Telefone inválido';
+  }
+  return undefined;
 };
 
-export const number = (message = 'Valor deve ser um número'): ValidationRule => {
-  return (value) => {
-    if (value && isNaN(Number(value))) {
-      return message;
-    }
-    return undefined;
-  };
+export const cep = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const cepRegex = /^\d{5}-\d{3}$/;
+  if (!cepRegex.test(value)) {
+    return 'CEP inválido';
+  }
+  return undefined;
 };
 
-export const min = (min: number, message = `Valor mínimo: ${min}`): ValidationRule => {
-  return (value) => {
-    if (value && Number(value) < min) {
-      return message;
-    }
-    return undefined;
-  };
+export const date = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+  if (!dateRegex.test(value)) {
+    return 'Data inválida';
+  }
+  return undefined;
 };
 
-export const max = (max: number, message = `Valor máximo: ${max}`): ValidationRule => {
-  return (value) => {
-    if (value && Number(value) > max) {
-      return message;
-    }
-    return undefined;
-  };
+export const currency = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const currencyRegex = /^R\$ \d{1,3}(\.\d{3})*,\d{2}$/;
+  if (!currencyRegex.test(value)) {
+    return 'Valor inválido';
+  }
+  return undefined;
 };
 
-export const pattern = (regex: RegExp, message = 'Formato inválido'): ValidationRule => {
-  return (value) => {
-    if (value && !regex.test(value)) {
-      return message;
-    }
-    return undefined;
-  };
-};
-
-export const custom = (validator: (value: any) => string | undefined): ValidationRule => {
-  return validator;
-};
-
-export const validateCEP = (message = 'CEP inválido'): ValidationRule<string> =>
-  createValidationRule<string>(
-    (value) => {
-      if (!value) return false;
-      const cep = value.replace(/\D/g, '');
-      return cep.length === 8 && /^\d{8}$/.test(cep);
-    },
-    message
-  );
-
-export const validateCreditCard = (message = 'Cartão de crédito inválido'): ValidationRule<string> =>
-  createValidationRule<string>(
-    (value) => {
-      if (!value) return false;
-      const card = value.replace(/\D/g, '');
-      if (card.length < 13 || card.length > 19) return false;
-      
-      // Algoritmo de Luhn
-      let sum = 0;
-      let isEven = false;
-      for (let i = card.length - 1; i >= 0; i--) {
-        let digit = parseInt(card.charAt(i));
-        if (isEven) {
-          digit *= 2;
-          if (digit > 9) digit -= 9;
-        }
-        sum += digit;
-        isEven = !isEven;
-      }
-      return sum % 10 === 0;
-    },
-    message
-  );
-
-export const validateStrongPassword = (
-  options?: {
-    minLength?: number;
-    requireNumbers?: boolean;
-    requireLowercase?: boolean;
-    requireUppercase?: boolean;
-    requireSpecial?: boolean;
-  },
-  message?: string
-): ValidationRule<string> =>
-  createValidationRule<string>(
-    (value) => {
-      if (!value) return false;
-      
-      const minLength = options?.minLength || 8;
-      if (value.length < minLength) return false;
-      
-      if (options?.requireNumbers && !/\d/.test(value)) return false;
-      if (options?.requireLowercase && !/[a-z]/.test(value)) return false;
-      if (options?.requireUppercase && !/[A-Z]/.test(value)) return false;
-      if (options?.requireSpecial && !/[!@#$%^&*(),.?":{}|<>]/.test(value)) return false;
-      
-      return true;
-    },
-    message || 'A senha deve ter pelo menos ' + (options?.minLength || 8) + ' caracteres e conter ' +
-      [
-        options?.requireNumbers && 'números',
-        options?.requireLowercase && 'letras minúsculas',
-        options?.requireUppercase && 'letras maiúsculas',
-        options?.requireSpecial && 'caracteres especiais'
-      ].filter(Boolean).join(', ')
-  );
-
-export const validateEquals = <T>(
-  compareValue: T,
-  message = 'Valores não correspondem'
-): ValidationRule<T> =>
-  createValidationRule<T>(
-    (value) => value === compareValue,
-    message
-  );
-
-export const validateCustom = <T>(
-  validator: (value: T) => boolean,
-  message: string
-): ValidationRule<T> =>
-  createValidationRule<T>(validator, message);
-
-export const composeValidations = <T>(...validations: ValidationRule<T>[]): ValidationRule<T> => {
-  return (value: T) => {
-    for (const validation of validations) {
-      const error = validation(value);
-      if (error) return error;
-    }
-    return undefined;
-  };
+export const composeValidations = (...validations: ValidationRule[]) => (value: any): string | undefined => {
+  for (const validation of validations) {
+    const error = validation(value);
+    if (error) return error;
+  }
+  return undefined;
 }; 

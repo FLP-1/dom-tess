@@ -2,14 +2,14 @@
 
 import React, { useCallback, useState } from 'react';
 import {
+  Select,
+  SelectProps as ChakraSelectProps,
   FormControl,
   FormLabel,
   FormErrorMessage,
-  Select,
   FormHelperText,
-  Box,
-  SelectProps,
   useId,
+  VisuallyHidden,
 } from '@chakra-ui/react';
 import { ValidationRule } from '../../utils/validations';
 import { BaseSelectProps } from '../../types/common';
@@ -21,19 +21,29 @@ export interface Option {
   group?: string;
 }
 
-export interface SelectFieldProps extends BaseSelectProps {
+type SelectFieldBaseProps = {
+  options: Option[];
+  value?: string | number;
+  onChange?: (value: string) => void;
+  onBlur?: (event: React.FocusEvent<HTMLSelectElement>) => void;
+  onFocus?: (event: React.FocusEvent<HTMLSelectElement>) => void;
   label?: string;
   error?: string;
   helperText?: string;
-  validationRules?: ValidationRule<string>[];
+  validationRules?: ValidationRule[];
   isRequired?: boolean;
   isDisabled?: boolean;
+  isLoading?: boolean;
+  id?: string;
+  name?: string;
+  placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
   width?: string | number;
-  isLoading?: boolean;
-}
+};
 
-const BaseSelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
+export type SelectFieldProps = SelectFieldBaseProps & Omit<ChakraSelectProps, keyof SelectFieldBaseProps>;
+
+export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
   (
     {
       value = '',
@@ -49,11 +59,18 @@ const BaseSelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
       isRequired,
       isLoading,
       label,
+      error,
+      helperText,
       ...props
     },
     ref
   ) => {
-    const [internalValue, setInternalValue] = useState(value);
+    const [internalValue, setInternalValue] = useState<string | number>(value);
+    const uniqueId = useId();
+    const fieldId = id || uniqueId;
+    const labelId = `${fieldId}-label`;
+    const helperId = `${fieldId}-helper`;
+    const errorId = `${fieldId}-error`;
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -67,7 +84,7 @@ const BaseSelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
       [onChange]
     );
 
-    const groupedOptions = options.reduce((acc, option) => {
+    const groupedOptions = options.reduce<Record<string, Option[]>>((acc, option) => {
       if (option.group) {
         if (!acc[option.group]) {
           acc[option.group] = [];
@@ -80,45 +97,104 @@ const BaseSelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
         acc.default.push(option);
       }
       return acc;
-    }, {} as Record<string, Option[]>);
+    }, {});
+
+    const accessibleName = label || name || placeholder || 'Campo de seleção';
 
     return (
-      <Select
-        ref={ref}
-        id={id}
-        name={name}
-        value={internalValue}
-        onChange={handleChange}
-        onBlur={(e) => onBlur?.(e.target.value)}
-        placeholder={placeholder}
-        size={size}
-        width={width}
-        isDisabled={isDisabled || isLoading}
+      <FormControl
+        isInvalid={!!error}
         isRequired={isRequired}
-        variant={props.error ? 'outline' : undefined}
-        focusBorderColor={props.error ? 'red.500' : 'blue.500'}
-        errorBorderColor="red.500"
-        role="combobox"
-        title={label || name || placeholder || 'Select field'}
-        {...props}
+        isDisabled={isDisabled}
+        width={width}
       >
-        {Object.entries(groupedOptions).map(([group, groupOptions]) => (
-          <optgroup key={group} label={group === 'default' ? undefined : group}>
-            {groupOptions.map((option) => (
-              <option 
-                key={option.value} 
-                value={option.value}
+        {label && (
+          <FormLabel
+            id={labelId}
+            htmlFor={fieldId}
+            mb={1}
+          >
+            {label}
+          </FormLabel>
+        )}
+
+        <Select
+          as="select"
+          ref={ref}
+          id={fieldId}
+          name={name}
+          value={internalValue}
+          onChange={handleChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          size={size}
+          width="100%"
+          isDisabled={isDisabled || isLoading}
+          isRequired={isRequired}
+          variant={error ? 'outline' : undefined}
+          focusBorderColor={error ? 'red.500' : 'blue.500'}
+          errorBorderColor="red.500"
+          aria-label={accessibleName}
+          aria-labelledby={label ? labelId : undefined}
+          aria-describedby={
+            [
+              helperText ? helperId : null,
+              error ? errorId : null
+            ].filter(Boolean).join(' ') || undefined
+          }
+          aria-invalid={!!error}
+          data-testid={`select-${name || fieldId}`}
+          {...props}
+        >
+          {placeholder && (
+            <option value="" disabled={isRequired}>
+              {placeholder}
+            </option>
+          )}
+          {Object.entries(groupedOptions).map(([group, groupOptions]) => (
+            group === 'default' ? (
+              groupOptions.map((option) => (
+                <option 
+                  key={option.value} 
+                  value={option.value}
+                >
+                  {option.label}
+                </option>
+              ))
+            ) : (
+              <optgroup 
+                key={group} 
+                label={group}
               >
-                {option.label}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </Select>
+                {groupOptions.map((option) => (
+                  <option 
+                    key={option.value} 
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
+            )
+          ))}
+        </Select>
+
+        {error && (
+          <FormErrorMessage id={errorId}>
+            {error}
+          </FormErrorMessage>
+        )}
+        
+        {helperText && !error && (
+          <FormHelperText id={helperId}>
+            {helperText}
+          </FormHelperText>
+        )}
+      </FormControl>
     );
   }
 );
 
-BaseSelectField.displayName = 'BaseSelectField';
+SelectField.displayName = 'SelectField';
 
-export const SelectField = withAccessibility(BaseSelectField); 
+export const SelectFieldWithAccessibility = withAccessibility(SelectField); 

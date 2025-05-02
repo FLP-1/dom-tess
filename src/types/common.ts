@@ -1,7 +1,7 @@
-import { InputProps, SelectProps } from '@chakra-ui/react';
+import { InputProps, SelectProps as ChakraSelectProps } from '@chakra-ui/react';
 
 // Tipo para regras de validação
-export type ValidationRule<T = any> = (value: T) => string | undefined;
+export type ValidationRule = (value: any) => string | undefined;
 
 // Props base para todos os campos
 export interface BaseFieldProps {
@@ -12,12 +12,15 @@ export interface BaseFieldProps {
   isDisabled?: boolean;
   isLoading?: boolean;
   id?: string;
-  name: string;
+  name?: string;
   width?: string | number;
   size?: 'sm' | 'md' | 'lg';
   validationRules?: ValidationRule[];
   'aria-label'?: string;
   'aria-describedby'?: string;
+  'aria-labelledby'?: string;
+  title?: string;
+  role?: string;
 }
 
 // Props base para campos de entrada
@@ -27,9 +30,9 @@ export interface BaseInputProps extends BaseFieldProps {
   onChange?: (value: string) => void;
   onBlur?: (value: string) => void;
   onFocus?: (value: string) => void;
-  onKeyDown?: (event: React.KeyboardEvent) => void;
-  onKeyUp?: (event: React.KeyboardEvent) => void;
-  onKeyPress?: (event: React.KeyboardEvent) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyUp?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyPress?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   maxLength?: number;
   minLength?: number;
   pattern?: string;
@@ -40,7 +43,7 @@ export interface BaseInputProps extends BaseFieldProps {
 }
 
 // Props base para campos de seleção
-export interface BaseSelectProps extends BaseFieldProps {
+export interface BaseSelectProps extends Omit<ChakraSelectProps, keyof BaseFieldProps>, BaseFieldProps {
   options: Array<{ value: string | number; label: string; group?: string }>;
   value?: string | number;
   placeholder?: string;

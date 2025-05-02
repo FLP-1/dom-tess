@@ -1,3 +1,13 @@
+export interface Endereco {
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+}
+
 export interface CertificadoDigital {
   id: string;
   nome: string;
@@ -20,15 +30,7 @@ export interface DadosEmpregador {
     orgaoEmissor: string;
     dataEmissao: Date;
   };
-  endereco: {
-    logradouro: string;
-    numero: string;
-    complemento?: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    cep: string;
-  };
+  endereco: Endereco;
   contato: {
     telefone: string;
     email?: string;
@@ -70,15 +72,7 @@ export interface DadosEmpregado {
     orgaoEmissor: string;
     dataEmissao: Date;
   };
-  endereco: {
-    logradouro: string;
-    numero: string;
-    complemento?: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    cep: string;
-  };
+  endereco: Endereco;
   contato: {
     telefone: string;
     email?: string;

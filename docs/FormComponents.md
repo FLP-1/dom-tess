@@ -193,36 +193,37 @@ import { FormInput } from '../components/common/FormInput';
 import { MaskedInput } from '../components/common/MaskedInput';
 import { SelectField } from '../components/common/SelectField';
 
-<FormContainer onSubmit={handleSubmit}>
-  <FormInput
-    name="nome"
-    label="Nome Completo"
-    isRequired
-    validationRules={[validateRequired()]}
-  />
-  
-  <MaskedInput
-    name="cpf"
-    label="CPF"
-    mask="cpf"
-    isRequired
-    validationRules={[validateRequired(), validateCPF()]}
-  />
-  
-  <SelectField
-    name="estado"
-    label="Estado"
-    options={estados}
-    isRequired
-    validationRules={[validateRequired()]}
-  />
-  
-  <AutocompleteInput
-    name="cidade"
-    label="Cidade"
-    options={cidades}
-    minCharsToSearch={3}
-    isRequired
-  />
-</FormContainer>
-``` 
+const MyForm = () => {
+  const handleSubmit = async (values) => {
+    // Lógica de submissão
+  };
+
+  return (
+    <FormContainer
+      onSubmit={handleSubmit}
+      initialValues={{
+        nome: '',
+        cpf: '',
+        estado: ''
+      }}
+    >
+      <FormInput
+        label="Nome"
+        name="nome"
+        isRequired
+      />
+      <MaskedInput
+        label="CPF"
+        name="cpf"
+        mask="cpf"
+        isRequired
+      />
+      <SelectField
+        label="Estado"
+        name="estado"
+        options={estados}
+        isRequired
+      />
+    </FormContainer>
+  );
+};

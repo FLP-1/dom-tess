@@ -18,7 +18,7 @@ O `SelectField` é um componente reutilizável que encapsula as boas práticas d
 import { SelectField } from '@/components/SelectField';
 ```
 
-2. Defina as opções:
+1. Defina as opções:
 
 ```typescript
 const options = [
@@ -27,7 +27,7 @@ const options = [
 ];
 ```
 
-3. Use o componente:
+1. Use o componente:
 
 ```typescript
 <SelectField
@@ -110,4 +110,4 @@ O componente implementa as seguintes práticas de acessibilidade:
 - IDs únicos gerados automaticamente
 - Atributos ARIA apropriados
 - Suporte a navegação por teclado
-- Estados visuais claros 
+- Estados visuais claros

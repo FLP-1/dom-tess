@@ -15,6 +15,11 @@ export interface CCT {
   updatedAt: Date;
 }
 
+export interface ExpiredCCT extends CCT {
+  isExpired: boolean;
+  daysUntilExpiration: number;
+}
+
 export const cctService = {
   async createCCT(cct: Omit<CCT, 'id' | 'createdAt' | 'updatedAt'>) {
     const cctsRef = collection(db, 'ccts');
@@ -82,7 +87,7 @@ export const cctService = {
     })) as CCT[];
   },
 
-  async getExpiredCCTs() {
+  async getExpiredCCTs(): Promise<ExpiredCCT[]> {
     const cctsRef = collection(db, 'ccts');
     const q = query(cctsRef, orderBy('validityEnd', 'desc'));
     const querySnapshot = await getDocs(q);
@@ -90,16 +95,18 @@ export const cctService = {
 
     const expiredCCTs = querySnapshot.docs
       .map(doc => {
-        const cct = doc.data();
-        const validityEnd = cct.validityEnd?.toDate();
+        const data = doc.data();
+        const validityEnd = data.validityEnd?.toDate();
         return {
           id: doc.id,
-          ...cct,
-          validityStart: cct.validityStart?.toDate(),
+          state: data.state,
+          position: data.position,
+          salary: data.salary,
+          validityStart: data.validityStart?.toDate(),
           validityEnd,
-          document: cct.document,
-          createdAt: cct.createdAt?.toDate(),
-          updatedAt: cct.updatedAt?.toDate(),
+          document: data.document,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
           isExpired: validityEnd ? now > validityEnd : false,
           daysUntilExpiration: validityEnd ? Math.ceil((validityEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0,
         };

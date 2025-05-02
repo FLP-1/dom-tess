@@ -1,11 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import { Input } from '@chakra-ui/react';
+import { Input, InputProps } from '@chakra-ui/react';
 import { BaseMaskedInputProps } from '../../types/common';
 import { withAccessibility } from '../../hocs/withAccessibility';
 import { MaskType, maskFunctions } from '../../utils/maskTypes';
 
-export interface MaskedInputProps extends BaseMaskedInputProps {
+export interface MaskedInputProps extends Omit<BaseMaskedInputProps, keyof InputProps>, Omit<InputProps, keyof BaseMaskedInputProps> {
   mask?: MaskType;
+  value?: string;
+  onChange?: (value: string) => void;
+  onBlur?: (value: string) => void;
 }
 
 const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
@@ -46,6 +49,15 @@ const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       [mask, onChange]
     );
 
+    const handleBlur = useCallback(
+      (e: React.FocusEvent<HTMLInputElement>) => {
+        if (onBlur) {
+          onBlur(e.target.value);
+        }
+      },
+      [onBlur]
+    );
+
     return (
       <Input
         ref={ref}
@@ -53,7 +65,7 @@ const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         name={name}
         value={internalValue}
         onChange={handleChange}
-        onBlur={(e) => onBlur?.(e.target.value)}
+        onBlur={handleBlur}
         placeholder={placeholder}
         size={size}
         width={width}

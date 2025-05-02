@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 export function generateEmail(cpf: string): string {
   const cleanCPF = cpf.replace(/\D/g, '');
   return `${cleanCPF}@domservicos.com.br`;
@@ -67,13 +69,13 @@ export function validateCPF(cpf: string): boolean {
 
   // Verifica se tem 11 dígitos
   if (cpfLimpo.length !== 11) {
-    console.log('CPF inválido: não tem 11 dígitos');
+    logger.warn('CPF inválido: não tem 11 dígitos', { context: 'validateCPF', data: { cpf: cpfLimpo } });
     return false;
   }
 
   // Verifica se todos os dígitos são iguais
   if (/^(\d)\1{10}$/.test(cpfLimpo)) {
-    console.log('CPF inválido: todos os dígitos são iguais');
+    logger.warn('CPF inválido: todos os dígitos são iguais', { context: 'validateCPF', data: { cpf: cpfLimpo } });
     return false;
   }
 
@@ -93,7 +95,7 @@ export function validateCPF(cpf: string): boolean {
   ];
 
   if (invalidCPFs.includes(cpfLimpo)) {
-    console.log('CPF inválido: sequência conhecida');
+    logger.warn('CPF inválido: sequência conhecida', { context: 'validateCPF', data: { cpf: cpfLimpo } });
     return false;
   }
 
@@ -107,7 +109,7 @@ export function validateCPF(cpf: string): boolean {
     let digitoVerificador1 = resto > 9 ? 0 : resto;
     
     if (digitoVerificador1 !== parseInt(cpfLimpo.charAt(9))) {
-      console.log('CPF inválido: primeiro dígito verificador incorreto');
+      logger.warn('CPF inválido: primeiro dígito verificador incorreto', { context: 'validateCPF', data: { cpf: cpfLimpo } });
       return false;
     }
 
@@ -120,14 +122,14 @@ export function validateCPF(cpf: string): boolean {
     let digitoVerificador2 = resto > 9 ? 0 : resto;
     
     if (digitoVerificador2 !== parseInt(cpfLimpo.charAt(10))) {
-      console.log('CPF inválido: segundo dígito verificador incorreto');
+      logger.warn('CPF inválido: segundo dígito verificador incorreto', { context: 'validateCPF', data: { cpf: cpfLimpo } });
       return false;
     }
 
-    console.log('CPF válido:', cpfLimpo);
+    logger.info('CPF válido', { context: 'validateCPF', data: { cpf: cpfLimpo } });
     return true;
   } catch (error) {
-    console.error('Erro ao validar CPF:', error);
+    logger.error('Erro ao validar CPF', error as Error, { context: 'validateCPF', data: { cpf: cpfLimpo } });
     return false;
   }
 }

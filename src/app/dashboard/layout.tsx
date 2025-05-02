@@ -49,9 +49,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </Box>
       {/* Main Content */}
       <Box flex={1} bg="gray.50">
-        <Flex bg="white" p={4} borderBottomWidth={1} borderColor="gray.200" align="center">
-          <Text fontWeight="bold" fontSize="lg">Painel de Controle</Text>
-        </Flex>
         <Box p={6}>{children}</Box>
       </Box>
     </Flex>

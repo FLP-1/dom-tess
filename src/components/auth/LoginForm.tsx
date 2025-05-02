@@ -12,12 +12,16 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  InputLeftElement,
   VStack,
   IconButton,
   Divider,
   Text,
   HStack,
-  Link
+  Link,
+  Tooltip,
+  Image,
+  Flex
 } from '@chakra-ui/react';
 import { FaEye, FaEyeSlash, FaFingerprint, FaCamera } from 'react-icons/fa';
 import { formatCPF, removeCPFFormatting, validateCPF } from '@/utils/cpf';
@@ -92,7 +96,39 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      await signIn(cpfNumerico, password);
+      // Buscar o e-mail pela API
+      const response = await fetch('/api/auth/get-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cpf: cpfNumerico }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        if (response.status === 404) {
+          setCpfError('CPF não cadastrado');
+          notifications.showError(
+            'CPF não cadastrado',
+            'Por favor, verifique o CPF digitado.',
+            { persistent: false }
+          );
+        } else {
+          notifications.showError(
+            'Erro ao verificar CPF',
+            error.error || 'Ocorreu um erro ao verificar o CPF.',
+            { persistent: false }
+          );
+        }
+        setLoading(false);
+        return;
+      }
+
+      const { email } = await response.json();
+
+      // Login com o email encontrado
+      await signIn(email, password);
       notifications.showSuccess(
         'Login realizado com sucesso',
         undefined,
@@ -116,83 +152,133 @@ export function LoginForm() {
   };
 
   return (
-    <AuthLayout title="Faça login para acessar o sistema">
-      <form onSubmit={handleSubmit} autoComplete="off">
-        <VStack spacing={4}>
-          <HStack spacing={8} justify="center" pt={2}>
-            <Tooltip label="Login com digital" hasArrow>
-              <span><FaFingerprint size={28} style={{ cursor: 'pointer', opacity: 0.7 }} onClick={handleBiometricLogin} /></span>
-            </Tooltip>
-            <Tooltip label="Login com reconhecimento facial" hasArrow>
-              <span><FaCamera size={28} style={{ cursor: 'pointer', opacity: 0.7 }} onClick={handleFacialLogin} /></span>
-            </Tooltip>
-          </HStack>
-
-          <FormControl isRequired isInvalid={!!cpfError}>
-            <FormLabel>CPF</FormLabel>
-            <InputGroup>
-              <InputLeftElement pointerEvents="none">
-                <FiUser color="gray.300" />
-              </InputLeftElement>
-              <Input
-                type="text"
-                value={cpf}
-                onChange={(e) => handleCPFChange(e.target.value)}
-                onBlur={handleCPFBlur}
-                placeholder="000.000.000-00"
-                maxLength={14}
-                autoComplete="off"
-                name="cpf-login"
-              />
-            </InputGroup>
-            {cpfError && <Text color="red.500" fontSize="sm">{cpfError}</Text>}
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Senha</FormLabel>
-            <InputGroup>
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="********"
-                autoComplete="off"
-                name="senha-login"
-              />
-              <InputRightElement>
-                <IconButton
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  icon={showPassword ? <FaEyeSlash /> : <FaEye />}
-                  variant="ghost"
-                  onClick={() => setShowPassword(!showPassword)}
-                  size="sm"
-                />
-              </InputRightElement>
-            </InputGroup>
-          </FormControl>
-
-          <Button
-            type="submit"
-            colorScheme="blue"
-            width="full"
-            isLoading={loading}
-            loadingText="Entrando..."
+    <>
+      <Flex 
+        direction="column" 
+        align="center" 
+        width="100%"
+      >
+        <Flex 
+          align="center" 
+          justify="center" 
+          width="100%" 
+          mb={4}
+        >
+          <Image 
+            src="/logo1.png" 
+            alt="DOM Logo" 
+            height="300px"
+            objectFit="contain"
+            mr={8}
+          />
+          <Text
+            fontSize="6xl"
+            fontWeight="bold"
+            color="brand.blue"
+            lineHeight="1"
           >
-            Entrar
-          </Button>
+            DOM
+          </Text>
+        </Flex>
+        <Text
+          fontSize="xl"
+          color="gray.600"
+          textAlign="center"
+          mb={8}
+        >
+          Simplifique a gestão do trabalho doméstico
+        </Text>
 
-          <HStack spacing={2} justify="center">
-            <Text>Não tem uma conta?</Text>
-            <Link as={NextLink} href="/register" color="blue.500">
-              Cadastre-se
-            </Link>
-          </HStack>
+        <Box width="100%" maxW="400px">
+          <form onSubmit={handleSubmit} autoComplete="off">
+            <VStack spacing={4} align="stretch">
+              <HStack spacing={8} justify="center" pt={2}>
+                <Tooltip label="Login com digital" hasArrow>
+                  <span><FaFingerprint size={28} style={{ cursor: 'pointer', opacity: 0.7 }} onClick={handleBiometricLogin} /></span>
+                </Tooltip>
+                <Tooltip label="Login com reconhecimento facial" hasArrow>
+                  <span><FaCamera size={28} style={{ cursor: 'pointer', opacity: 0.7 }} onClick={handleFacialLogin} /></span>
+                </Tooltip>
+              </HStack>
 
-          <Link as={NextLink} href="/forgot-password" color="blue.500">
-            Esqueceu sua senha?
-          </Link>
-        </VStack>
-      </form>
-    </AuthLayout>
+              <FormControl isRequired isInvalid={!!cpfError}>
+                <FormLabel>CPF</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <FiUser color="gray.300" />
+                  </InputLeftElement>
+                  <Input
+                    type="text"
+                    value={cpf}
+                    onChange={(e) => handleCPFChange(e.target.value)}
+                    onBlur={handleCPFBlur}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    autoComplete="off"
+                    name="cpf-login"
+                  />
+                </InputGroup>
+                {cpfError && <Text color="red.500" fontSize="sm">{cpfError}</Text>}
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Senha</FormLabel>
+                <InputGroup>
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="********"
+                    autoComplete="off"
+                    name="senha-login"
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      icon={showPassword ? <FaEyeSlash /> : <FaEye />}
+                      variant="ghost"
+                      onClick={() => setShowPassword(!showPassword)}
+                      size="sm"
+                    />
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
+
+              <Button
+                type="submit"
+                colorScheme="blue"
+                width="full"
+                isLoading={loading}
+                loadingText="Entrando..."
+              >
+                Entrar
+              </Button>
+
+              <HStack spacing={2} justify="center">
+                <Text>Não tem uma conta?</Text>
+                <Link as={NextLink} href="/register" color="blue.500">
+                  Cadastre-se
+                </Link>
+              </HStack>
+
+              <Link as={NextLink} href="/forgot-password" color="blue.500">
+                Esqueceu sua senha?
+              </Link>
+
+              <Text fontSize="xs" color="gray.500" textAlign="center" pt={4}>
+                Ao entrar, você concorda com nossos
+                <Link as={NextLink} href="/termos-de-uso" color="blue.500" textDecor="underline" ml={1} mr={1}>
+                  Termos de Uso
+                </Link>
+                e
+                <Link as={NextLink} href="/politica-privacidade" color="blue.500" textDecor="underline" ml={1}>
+                  Política de Privacidade
+                </Link>.
+              </Text>
+            </VStack>
+          </form>
+        </Box>
+      </Flex>
+    </>
   );
 } 

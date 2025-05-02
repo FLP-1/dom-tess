@@ -15,7 +15,7 @@ export interface DadosEmpregador {
   dataNascimento: Date;
   nacionalidade: string;
   estadoCivil: string;
-  rg?: {
+  rg: {
     numero: string;
     orgaoEmissor: string;
     dataEmissao: Date;
@@ -43,7 +43,7 @@ export interface DadosEmpregador {
     tipoImovel: 'proprio' | 'alugado' | 'cedido';
     numeroEmpregados: number;
   };
-  dadosFamiliares?: {
+  dadosFamiliares: {
     nomeMae: string;
     nomePai: string;
   };
@@ -107,13 +107,19 @@ export interface DadosEmpregado {
     tituloEleitor?: string;
     certificadoReservista?: string;
   };
-  dadosFamiliares?: {
+  dadosFamiliares: {
     nomeMae: string;
     nomePai: string;
   };
   grauInstrucao?: string;
   numeroDependentes?: number;
   informacoesSaude?: string;
+  dependentes?: Array<{
+    nome: string;
+    cpf: string;
+    dataNascimento: Date;
+    parentesco: string;
+  }>;
   status: 'incompleto' | 'completo';
   ultimaAtualizacao?: Date;
 }

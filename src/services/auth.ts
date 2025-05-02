@@ -59,13 +59,15 @@ export class AuthService {
         },
         token: await userCredential.user.getIdToken()
       };
-    } catch (error: any) {
-      if (error.code === 'auth/wrong-password') {
-        throw new Error('Senha incorreta.');
-      } else if (error.code === 'auth/user-not-found') {
-        throw new Error('Usuário não encontrado.');
-      } else if (error.code === 'auth/too-many-requests') {
-        throw new Error('Muitas tentativas. Tente novamente mais tarde.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message.includes('auth/wrong-password')) {
+          throw new Error('Senha incorreta.');
+        } else if (error.message.includes('auth/user-not-found')) {
+          throw new Error('Usuário não encontrado.');
+        } else if (error.message.includes('auth/too-many-requests')) {
+          throw new Error('Muitas tentativas. Tente novamente mais tarde.');
+        }
       }
       throw new Error(AUTH_ERRORS.UNKNOWN_ERROR);
     }

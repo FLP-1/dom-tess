@@ -1,30 +1,74 @@
-import { Input, InputProps } from '@chakra-ui/react';
-import { forwardRef } from 'react';
+import React, { useCallback, useState } from 'react';
+import { Input } from '@chakra-ui/react';
+import { BaseMaskedInputProps } from '../../types/common';
+import { withAccessibility } from '../../hocs/withAccessibility';
+import { MaskType, maskFunctions } from '../../utils/maskTypes';
 
-interface MaskedInputProps extends InputProps {
-  mask: (value: string) => string;
+export interface MaskedInputProps extends BaseMaskedInputProps {
+  mask?: MaskType;
 }
 
-export const MaskedInput = forwardRef<HTMLInputElement, MaskedInputProps>(
-  ({ mask, onChange, value, ...props }, ref) => {
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const maskedValue = mask(e.target.value);
-      e.target.value = maskedValue;
-      onChange?.(e);
-    };
+const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
+  (
+    {
+      value = '',
+      onChange,
+      onBlur,
+      mask,
+      id,
+      name,
+      placeholder,
+      size,
+      width,
+      isDisabled,
+      isRequired,
+      isLoading,
+      ...props
+    },
+    ref
+  ) => {
+    const [internalValue, setInternalValue] = useState(value);
+
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newValue = e.target.value;
+
+        if (mask && maskFunctions[mask]) {
+          newValue = maskFunctions[mask](newValue);
+        }
+
+        setInternalValue(newValue);
+
+        if (onChange) {
+          onChange(newValue);
+        }
+      },
+      [mask, onChange]
+    );
 
     return (
       <Input
         ref={ref}
-        value={value}
+        id={id}
+        name={name}
+        value={internalValue}
         onChange={handleChange}
+        onBlur={(e) => onBlur?.(e.target.value)}
+        placeholder={placeholder}
+        size={size}
+        width={width}
+        isDisabled={isDisabled}
+        isRequired={isRequired}
+        isInvalid={!!props.error}
         {...props}
       />
     );
   }
 );
 
-MaskedInput.displayName = 'MaskedInput';
+BaseMaskedInput.displayName = 'BaseMaskedInput';
+
+export const MaskedInput = withAccessibility(BaseMaskedInput);
 
 // Funções de máscara comuns
 export const masks = {

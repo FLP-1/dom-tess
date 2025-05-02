@@ -4,8 +4,9 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { usePathname } from 'next/navigation';
 import "./globals.css";
+import { AuthProvider } from '@/contexts/AuthContext';
 
-const publicPaths = ['/login', '/register'];
+const publicPaths = ['/login', '/register', '/forgot-password', '/'];
 
 export default function RootLayout({
   children,
@@ -19,11 +20,13 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body>
         <ChakraProvider>
-          {isPublicPath ? (
-            children
-          ) : (
-            <AuthenticatedLayout>{children}</AuthenticatedLayout>
-          )}
+          <AuthProvider>
+            {isPublicPath ? (
+              children
+            ) : (
+              <AuthenticatedLayout>{children}</AuthenticatedLayout>
+            )}
+          </AuthProvider>
         </ChakraProvider>
       </body>
     </html>

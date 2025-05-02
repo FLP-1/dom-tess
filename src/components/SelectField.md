@@ -13,11 +13,13 @@ O `SelectField` é um componente reutilizável que encapsula as boas práticas d
 ## Como Usar
 
 1. Importe o componente:
+
 ```typescript
 import { SelectField } from '@/components/SelectField';
 ```
 
 2. Defina as opções:
+
 ```typescript
 const options = [
   { value: 'valor1', label: 'Label 1' },
@@ -26,6 +28,7 @@ const options = [
 ```
 
 3. Use o componente:
+
 ```typescript
 <SelectField
   label="Nome do Campo"
@@ -53,6 +56,7 @@ const options = [
 ## Exemplos
 
 ### Select Simples
+
 ```typescript
 <SelectField
   label="Status"
@@ -66,6 +70,7 @@ const options = [
 ```
 
 ### Select com Validação
+
 ```typescript
 <SelectField
   label="Tipo de Documento"
@@ -78,6 +83,7 @@ const options = [
 ```
 
 ### Select com Largura Personalizada
+
 ```typescript
 <SelectField
   label="Filtrar por"

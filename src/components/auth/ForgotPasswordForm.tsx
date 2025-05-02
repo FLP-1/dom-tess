@@ -26,6 +26,7 @@ import {
   HStack,
   PinInput,
   PinInputField,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { FiUser, FiMail, FiPhone } from 'react-icons/fi';

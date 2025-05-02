@@ -32,7 +32,8 @@ import {
   ModalCloseButton,
   useDisclosure,
   PinInput,
-  PinInputField
+  PinInputField,
+  Tooltip
 } from '@chakra-ui/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';

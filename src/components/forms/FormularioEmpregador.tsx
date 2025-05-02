@@ -10,34 +10,26 @@ import { useRouter } from 'next/navigation';
 import { DatePicker } from '@mui/x-date-pickers';
 import { CertificadoDigitalUpload } from '../CertificadoDigitalUpload';
 import { toast } from 'react-toastify';
+import { Input } from '@chakra-ui/react';
+import { formatCPF, removeCPFFormatting } from '@/utils/cpf';
+import { formatPhone } from '@/utils/phone';
+import { formatCEP } from '@/utils/cep';
+import { formatRG } from '@/utils/rg';
+import { Box, Button, VStack, Text, useToast } from '@chakra-ui/react';
+import { useForm } from '../../hooks/useForm';
+import { FormInput } from '../common/FormInput';
+import { empregadorValidationRules } from '../../utils/empregadorValidations';
+import { logger } from '../../utils/logger';
 
-type FormValues = Omit<DadosEmpregador, 'id' | 'ultimaAtualizacao' | 'certificadoDigital'>;
-
-const valoresIniciaisVazios: FormValues = {
-  userId: '',
-  cpf: '',
+const initialValues: DadosEmpregador = {
+  tipoEmpregador: 'PF',
   nome: '',
-  dataNascimento: new Date(),
-  nacionalidade: '',
-  estadoCivil: '',
-  rg: {
-    numero: '',
-    orgaoEmissor: '',
-    dataEmissao: new Date()
-  },
-  endereco: {
-    logradouro: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: '',
-    estado: '',
-    cep: ''
-  },
-  contato: {
-    telefone: '',
-    email: ''
-  },
+  cpf: '',
+  razaoSocial: '',
+  cnpj: '',
+  email: '',
+  telefone: '',
+  celular: '',
   dadosBancarios: {
     banco: '',
     agencia: '',
@@ -45,442 +37,455 @@ const valoresIniciaisVazios: FormValues = {
     tipoConta: 'corrente'
   },
   dadosImovel: {
-    tipoImovel: 'proprio',
-    numeroEmpregados: 0
+    endereco: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
+    cep: ''
   },
   dadosFamiliares: {
-    nomeMae: '',
-    nomePai: ''
-  },
-  profissao: '',
-  status: 'incompleto'
+    estadoCivil: 'solteiro',
+    conjuge: {
+      nome: '',
+      cpf: '',
+      rg: ''
+    }
+  }
 };
 
 interface Props {
-  dadosIniciais?: FormValues;
+  dadosIniciais?: Partial<DadosEmpregador>;
   empregadorId?: string;
 }
 
-export function FormularioEmpregador({ dadosIniciais = valoresIniciaisVazios, empregadorId }: Props) {
+export function FormularioEmpregador({ dadosIniciais, empregadorId }: Props) {
   const router = useRouter();
+  const toast = useToast();
 
-  const validarFormulario = (values: FormValues) => {
-    const erros: Record<string, string> = {};
-    
-    // Dados Pessoais
-    if (!values.cpf) erros.cpf = 'CPF é obrigatório';
-    if (!values.nome) erros.nome = 'Nome é obrigatório';
-    if (!values.dataNascimento) erros.dataNascimento = 'Data de nascimento é obrigatória';
-    if (!values.nacionalidade) erros.nacionalidade = 'Nacionalidade é obrigatória';
-    if (!values.estadoCivil) erros.estadoCivil = 'Estado civil é obrigatório';
-
-    // RG
-    if (!values.rg.numero) erros['rg.numero'] = 'Número do RG é obrigatório';
-    if (!values.rg.orgaoEmissor) erros['rg.orgaoEmissor'] = 'Órgão emissor do RG é obrigatório';
-    if (!values.rg.dataEmissao) erros['rg.dataEmissao'] = 'Data de emissão do RG é obrigatória';
-
-    // Endereço
-    if (!values.endereco.logradouro) erros['endereco.logradouro'] = 'Logradouro é obrigatório';
-    if (!values.endereco.numero) erros['endereco.numero'] = 'Número é obrigatório';
-    if (!values.endereco.bairro) erros['endereco.bairro'] = 'Bairro é obrigatório';
-    if (!values.endereco.cidade) erros['endereco.cidade'] = 'Cidade é obrigatória';
-    if (!values.endereco.estado) erros['endereco.estado'] = 'Estado é obrigatório';
-    if (!values.endereco.cep) erros['endereco.cep'] = 'CEP é obrigatório';
-
-    // Contato
-    if (!values.contato.telefone) erros['contato.telefone'] = 'Telefone é obrigatório';
-
-    // Dados Bancários
-    if (!values.dadosBancarios.banco) erros['dadosBancarios.banco'] = 'Banco é obrigatório';
-    if (!values.dadosBancarios.agencia) erros['dadosBancarios.agencia'] = 'Agência é obrigatória';
-    if (!values.dadosBancarios.conta) erros['dadosBancarios.conta'] = 'Conta é obrigatória';
-    if (!values.dadosBancarios.tipoConta) erros['dadosBancarios.tipoConta'] = 'Tipo de conta é obrigatório';
-
-    // Dados do Imóvel
-    if (!values.dadosImovel.tipoImovel) erros['dadosImovel.tipoImovel'] = 'Tipo do imóvel é obrigatório';
-    if (values.dadosImovel.numeroEmpregados < 0) erros['dadosImovel.numeroEmpregados'] = 'Número de empregados deve ser maior ou igual a zero';
-
-    // Dados Familiares
-    if (!values.dadosFamiliares.nomeMae) erros['dadosFamiliares.nomeMae'] = 'Nome da mãe é obrigatório';
-    if (!values.dadosFamiliares.nomePai) erros['dadosFamiliares.nomePai'] = 'Nome do pai é obrigatório';
-    
-    return erros;
-  };
-
-  const handleSubmit = async (values: FormValues) => {
-    try {
-      if (empregadorId) {
-        await EsocialService.atualizarDadosEmpregador(empregadorId, values);
-        toast.success('Dados atualizados com sucesso!');
-      } else {
-        const resultado = await EsocialService.criarDadosEmpregador(values);
-        toast.success('Dados cadastrados com sucesso!');
-        router.push(`/empregador/${resultado.id}`);
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    isSubmitting,
+    isValid
+  } = useForm<DadosEmpregador>({
+    initialValues: { ...initialValues, ...dadosIniciais },
+    validationRules: empregadorValidationRules,
+    onSubmit: async (data) => {
+      try {
+        if (empregadorId) {
+          await EsocialService.atualizarDadosEmpregador(empregadorId, data);
+          toast({
+            title: 'Sucesso',
+            description: 'Dados do empregador atualizados com sucesso',
+            status: 'success',
+            duration: 5000,
+            isClosable: true
+          });
+        } else {
+          const resultado = await EsocialService.criarDadosEmpregador(data);
+          toast({
+            title: 'Sucesso',
+            description: 'Dados do empregador cadastrados com sucesso',
+            status: 'success',
+            duration: 5000,
+            isClosable: true
+          });
+          router.push(`/empregador/${resultado.id}`);
+        }
+      } catch (error) {
+        logger.error('Erro ao salvar dados do empregador', error as Error);
+        toast({
+          title: 'Erro',
+          description: 'Erro ao salvar dados do empregador',
+          status: 'error',
+          duration: 5000,
+          isClosable: true
+        });
       }
-    } catch (error) {
-      console.error('Erro ao salvar dados:', error);
-      toast.error('Erro ao salvar dados. Tente novamente.');
     }
-  };
+  });
 
-  const renderFormulario = (formikProps: FormikProps<FormValues>) => {
+  const renderFormulario = (formikProps: FormikProps<DadosEmpregador>) => {
     const { values, handleChange, handleBlur, touched, errors, setFieldValue } = formikProps;
 
+    const handleMaskedChange = (field: string, mask: (value: string) => string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const maskedValue = mask(e.target.value);
+      setFieldValue(field, maskedValue);
+    };
+
     return (
-      <Grid container spacing={2}>
-        {/* Dados Pessoais */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Dados Pessoais</Typography>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="cpf"
-            label="CPF"
-            value={values.cpf}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.cpf && !!errors.cpf}
-            helperText={touched.cpf && errors.cpf}
-          />
-        </Grid>
+      <Box as="form" onSubmit={handleSubmit} width="100%">
+        <VStack spacing={4} align="stretch">
+          <Text fontSize="xl" fontWeight="bold">
+            {empregadorId ? 'Editar Dados do Empregador' : 'Cadastro de Empregador'}
+          </Text>
 
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="nome"
-            label="Nome Completo"
-            value={values.nome}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.nome && !!errors.nome}
-            helperText={touched.nome && errors.nome}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <DatePicker
-            label="Data de Nascimento"
-            value={values.dataNascimento}
-            onChange={(date) => setFieldValue('dataNascimento', date)}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="nacionalidade"
-            label="Nacionalidade"
-            value={values.nacionalidade}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.nacionalidade && !!errors.nacionalidade}
-            helperText={touched.nacionalidade && errors.nacionalidade}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth>
-            <InputLabel>Estado Civil</InputLabel>
+          <FormControl isInvalid={touched.tipoEmpregador && !!errors.tipoEmpregador}>
+            <FormLabel htmlFor="tipoEmpregador">Tipo de Empregador</FormLabel>
             <Select
-              name="estadoCivil"
-              value={values.estadoCivil}
+              id="tipoEmpregador"
+              name="tipoEmpregador"
+              value={values.tipoEmpregador}
               onChange={handleChange}
-              label="Estado Civil"
+              onBlur={handleBlur}
+              isRequired
             >
-              <MenuItem value="solteiro">Solteiro(a)</MenuItem>
-              <MenuItem value="casado">Casado(a)</MenuItem>
-              <MenuItem value="divorciado">Divorciado(a)</MenuItem>
-              <MenuItem value="viuvo">Viúvo(a)</MenuItem>
-              <MenuItem value="uniao_estavel">União Estável</MenuItem>
+              <option value="PF">Pessoa Física</option>
+              <option value="PJ">Pessoa Jurídica</option>
             </Select>
+            {touched.tipoEmpregador && errors.tipoEmpregador && (
+              <FormErrorMessage>{errors.tipoEmpregador}</FormErrorMessage>
+            )}
           </FormControl>
-        </Grid>
 
-        {/* RG */}
-        <Grid item xs={12}>
-          <Typography variant="subtitle1" gutterBottom>Documento de Identidade (RG)</Typography>
-        </Grid>
+          {values.tipoEmpregador === 'PF' ? (
+            <>
+              <FormInput
+                label="Nome"
+                name="nome"
+                value={values.nome}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.nome}
+                touched={touched.nome}
+                isRequired
+              />
 
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="rg.numero"
-            label="Número do RG"
-            value={values.rg.numero}
+              <FormInput
+                label="CPF"
+                name="cpf"
+                value={values.cpf}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.cpf}
+                touched={touched.cpf}
+                mask={formatCPF}
+                isRequired
+              />
+            </>
+          ) : (
+            <>
+              <FormInput
+                label="Razão Social"
+                name="razaoSocial"
+                value={values.razaoSocial}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.razaoSocial}
+                touched={touched.razaoSocial}
+                isRequired
+              />
+
+              <FormInput
+                label="CNPJ"
+                name="cnpj"
+                value={values.cnpj}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.cnpj}
+                touched={touched.cnpj}
+                mask="cnpj"
+                isRequired
+              />
+            </>
+          )}
+
+          <FormInput
+            label="Email"
+            name="email"
+            type="email"
+            value={values.email}
             onChange={handleChange}
             onBlur={handleBlur}
+            error={errors.email}
+            touched={touched.email}
+            isRequired
           />
-        </Grid>
 
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="rg.orgaoEmissor"
-            label="Órgão Emissor"
-            value={values.rg.orgaoEmissor}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <DatePicker
-            label="Data de Emissão"
-            value={values.rg.dataEmissao}
-            onChange={(date) => setFieldValue('rg.dataEmissao', date)}
-          />
-        </Grid>
-
-        {/* Endereço */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Endereço</Typography>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <TextField
-            fullWidth
-            name="endereco.logradouro"
-            label="Logradouro"
-            value={values.endereco.logradouro}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="endereco.numero"
-            label="Número"
-            value={values.endereco.numero}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="endereco.complemento"
-            label="Complemento"
-            value={values.endereco.complemento}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="endereco.bairro"
-            label="Bairro"
-            value={values.endereco.bairro}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="endereco.cep"
-            label="CEP"
-            value={values.endereco.cep}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="endereco.cidade"
-            label="Cidade"
-            value={values.endereco.cidade}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="endereco.estado"
-            label="Estado"
-            value={values.endereco.estado}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        {/* Contato */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Contato</Typography>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="contato.telefone"
+          <FormInput
             label="Telefone"
-            value={values.contato.telefone}
+            name="telefone"
+            value={values.telefone}
             onChange={handleChange}
             onBlur={handleBlur}
+            error={errors.telefone}
+            touched={touched.telefone}
+            mask={formatPhone}
+            isRequired
           />
-        </Grid>
 
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="contato.email"
-            label="E-mail"
-            value={values.contato.email}
+          <FormInput
+            label="Celular"
+            name="celular"
+            value={values.celular}
             onChange={handleChange}
             onBlur={handleBlur}
+            error={errors.celular}
+            touched={touched.celular}
+            mask={formatPhone}
           />
-        </Grid>
 
-        {/* Dados Bancários */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Dados Bancários</Typography>
-        </Grid>
+          <Box>
+            <Text fontSize="lg" fontWeight="bold" mb={4}>Dados Bancários</Text>
+            <VStack spacing={4}>
+              <FormInput
+                label="Banco"
+                name="dadosBancarios.banco"
+                value={values.dadosBancarios.banco}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosBancarios?.banco}
+                touched={touched.dadosBancarios?.banco}
+                isRequired
+              />
 
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="dadosBancarios.banco"
-            label="Banco"
-            value={values.dadosBancarios.banco}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
+              <FormInput
+                label="Agência"
+                name="dadosBancarios.agencia"
+                value={values.dadosBancarios.agencia}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosBancarios?.agencia}
+                touched={touched.dadosBancarios?.agencia}
+                required
+                aria-required="true"
+              />
 
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="dadosBancarios.agencia"
-            label="Agência"
-            value={values.dadosBancarios.agencia}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
+              <FormInput
+                label="Conta"
+                name="dadosBancarios.conta"
+                value={values.dadosBancarios.conta}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosBancarios?.conta}
+                touched={touched.dadosBancarios?.conta}
+                required
+                aria-required="true"
+              />
 
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            name="dadosBancarios.conta"
-            label="Conta"
-            value={values.dadosBancarios.conta}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
+              <FormInput
+                label="Tipo de Conta"
+                name="dadosBancarios.tipoConta"
+                value={values.dadosBancarios.tipoConta}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosBancarios?.tipoConta}
+                touched={touched.dadosBancarios?.tipoConta}
+                as={Select}
+                required
+                aria-required="true"
+              >
+                <option value="CORRENTE">Conta Corrente</option>
+                <option value="POUPANCA">Conta Poupança</option>
+              </FormInput>
+            </VStack>
+          </Box>
 
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth>
-            <InputLabel>Tipo de Conta</InputLabel>
-            <Select
-              name="dadosBancarios.tipoConta"
-              value={values.dadosBancarios.tipoConta}
-              onChange={handleChange}
-              label="Tipo de Conta"
+          <Box>
+            <Text fontSize="lg" fontWeight="bold" mb={4}>Dados do Imóvel</Text>
+            <VStack spacing={4}>
+              <FormInput
+                label="Endereço"
+                name="dadosImovel.endereco"
+                value={values.dadosImovel.endereco}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.endereco}
+                touched={touched.dadosImovel?.endereco}
+                isRequired
+              />
+
+              <FormInput
+                label="Número"
+                name="dadosImovel.numero"
+                value={values.dadosImovel.numero}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.numero}
+                touched={touched.dadosImovel?.numero}
+                isRequired
+              />
+
+              <FormInput
+                label="Complemento"
+                name="dadosImovel.complemento"
+                value={values.dadosImovel.complemento}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.complemento}
+                touched={touched.dadosImovel?.complemento}
+              />
+
+              <FormInput
+                label="Bairro"
+                name="dadosImovel.bairro"
+                value={values.dadosImovel.bairro}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.bairro}
+                touched={touched.dadosImovel?.bairro}
+                isRequired
+              />
+
+              <FormInput
+                label="Cidade"
+                name="dadosImovel.cidade"
+                value={values.dadosImovel.cidade}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.cidade}
+                touched={touched.dadosImovel?.cidade}
+                isRequired
+              />
+
+              <FormInput
+                label="Estado"
+                name="dadosImovel.estado"
+                value={values.dadosImovel.estado}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.estado}
+                touched={touched.dadosImovel?.estado}
+                as={Select}
+                isRequired
+                title="Selecione o estado"
+              >
+                <option value="">Selecione...</option>
+                <option value="AC">Acre</option>
+                <option value="AL">Alagoas</option>
+                <option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option>
+                <option value="BA">Bahia</option>
+                <option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option>
+                <option value="ES">Espírito Santo</option>
+                <option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option>
+                <option value="MT">Mato Grosso</option>
+                <option value="MS">Mato Grosso do Sul</option>
+                <option value="MG">Minas Gerais</option>
+                <option value="PA">Pará</option>
+                <option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option>
+                <option value="PE">Pernambuco</option>
+                <option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option>
+                <option value="RN">Rio Grande do Norte</option>
+                <option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option>
+                <option value="RR">Roraima</option>
+                <option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option>
+                <option value="SE">Sergipe</option>
+                <option value="TO">Tocantins</option>
+              </FormInput>
+
+              <FormInput
+                label="CEP"
+                name="dadosImovel.cep"
+                value={values.dadosImovel.cep}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosImovel?.cep}
+                touched={touched.dadosImovel?.cep}
+                mask={formatCEP}
+                isRequired
+              />
+            </VStack>
+          </Box>
+
+          <Box>
+            <Text fontSize="lg" fontWeight="bold" mb={4}>Dados Familiares</Text>
+            <VStack spacing={4}>
+              <FormInput
+                label="Estado Civil"
+                name="dadosFamiliares.estadoCivil"
+                value={values.dadosFamiliares.estadoCivil}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.dadosFamiliares?.estadoCivil}
+                touched={touched.dadosFamiliares?.estadoCivil}
+                as={Select}
+                isRequired
+                title="Selecione o estado civil"
+              >
+                <option value="solteiro">Solteiro(a)</option>
+                <option value="casado">Casado(a)</option>
+                <option value="divorciado">Divorciado(a)</option>
+                <option value="viuvo">Viúvo(a)</option>
+              </FormInput>
+
+              {values.dadosFamiliares.estadoCivil === 'casado' && (
+                <>
+                  <FormInput
+                    label="Nome do Cônjuge"
+                    name="dadosFamiliares.conjuge.nome"
+                    value={values.dadosFamiliares.conjuge?.nome}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.dadosFamiliares?.conjuge?.nome}
+                    touched={touched.dadosFamiliares?.conjuge?.nome}
+                    isRequired
+                  />
+
+                  <FormInput
+                    label="CPF do Cônjuge"
+                    name="dadosFamiliares.conjuge.cpf"
+                    value={values.dadosFamiliares.conjuge?.cpf}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.dadosFamiliares?.conjuge?.cpf}
+                    touched={touched.dadosFamiliares?.conjuge?.cpf}
+                    mask={formatCPF}
+                    isRequired
+                  />
+
+                  <FormInput
+                    label="RG do Cônjuge"
+                    name="dadosFamiliares.conjuge.rg"
+                    value={values.dadosFamiliares.conjuge?.rg}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.dadosFamiliares?.conjuge?.rg}
+                    touched={touched.dadosFamiliares?.conjuge?.rg}
+                    isRequired
+                  />
+                </>
+              )}
+            </VStack>
+          </Box>
+
+          <Box display="flex" justifyContent="space-between" mt={8}>
+            {empregadorId && (
+              <Button onClick={() => router.push('/empregadores')} variant="outline">
+                Voltar
+              </Button>
+            )}
+            <Button
+              type="submit"
+              colorScheme="blue"
+              isDisabled={!isValid}
             >
-              <MenuItem value="corrente">Conta Corrente</MenuItem>
-              <MenuItem value="poupanca">Conta Poupança</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
-        {/* Dados do Imóvel */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Dados do Imóvel</Typography>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <InputLabel>Tipo do Imóvel</InputLabel>
-            <Select
-              name="dadosImovel.tipoImovel"
-              value={values.dadosImovel.tipoImovel}
-              onChange={handleChange}
-              label="Tipo do Imóvel"
-            >
-              <MenuItem value="proprio">Próprio</MenuItem>
-              <MenuItem value="alugado">Alugado</MenuItem>
-              <MenuItem value="cedido">Cedido</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="dadosImovel.numeroEmpregados"
-            label="Número de Empregados"
-            type="number"
-            value={values.dadosImovel.numeroEmpregados}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        {/* Dados Familiares */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Dados Familiares</Typography>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="dadosFamiliares.nomeMae"
-            label="Nome da Mãe"
-            value={values.dadosFamiliares.nomeMae}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            name="dadosFamiliares.nomePai"
-            label="Nome do Pai"
-            value={values.dadosFamiliares.nomePai}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-
-        {/* Profissão */}
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Profissão</Typography>
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            name="profissao"
-            label="Profissão"
-            value={values.profissao}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </Grid>
-      </Grid>
+              Salvar
+            </Button>
+          </Box>
+        </VStack>
+      </Box>
     );
   };
 
   return (
-    <FormularioBase<FormValues>
+    <FormularioBase<DadosEmpregador>
       titulo={empregadorId ? 'Editar Dados do Empregador' : 'Cadastro de Empregador'}
       valoresIniciais={dadosIniciais}
       validacao={validarFormulario}
       onSubmit={handleSubmit}
-      botaoSubmit={empregadorId ? 'Atualizar' : 'Cadastrar'}
     >
       {renderFormulario}
     </FormularioBase>

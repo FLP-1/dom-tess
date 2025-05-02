@@ -3,8 +3,8 @@ import { db } from '@/lib/firebase';
 import { DadosEmpregado } from '@/types/esocial';
 import { useAppNotifications } from '@/hooks/useAppNotifications';
 
-export class EmployeeService {
-  private static collection = collection(db, 'empregados');
+class EmployeeService {
+  private collection = collection(db, 'empregados');
   private notifications = useAppNotifications();
 
   async getEmployeeById(id: string): Promise<DadosEmpregado | null> {
@@ -53,6 +53,28 @@ export class EmployeeService {
     }
   }
 
+  async createEmployee(data: Partial<DadosEmpregado>): Promise<string> {
+    try {
+      const employeeData = {
+        ...data,
+        status: 'completo',
+        dataCriacao: new Date(),
+        ultimaAtualizacao: new Date(),
+      };
+
+      const docRef = doc(this.collection);
+      await setDoc(docRef, employeeData);
+      return docRef.id;
+    } catch (error) {
+      this.notifications.showError(
+        'Erro ao criar empregado',
+        'Não foi possível criar o cadastro do empregado',
+        { persistent: true }
+      );
+      throw error;
+    }
+  }
+
   async saveEmployee(data: Partial<DadosEmpregado>, isComplete: boolean = false): Promise<string> {
     try {
       const employeeData = {
@@ -63,11 +85,13 @@ export class EmployeeService {
 
       if (data.id) {
         // Atualiza documento existente
-        await updateDoc(doc(this.collection, data.id), employeeData);
+        const docRef = doc(this.collection, data.id);
+        await updateDoc(docRef, employeeData);
         return data.id;
       } else {
         // Cria novo documento
-        const docRef = await setDoc(doc(this.collection), employeeData);
+        const docRef = doc(this.collection);
+        await setDoc(docRef, employeeData);
         return docRef.id;
       }
     } catch (error) {
@@ -101,4 +125,6 @@ export class EmployeeService {
       throw error;
     }
   }
-} 
+}
+
+export const employeeService = new EmployeeService(); 

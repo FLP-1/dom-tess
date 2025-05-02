@@ -16,9 +16,8 @@ import {
   FormHelperText,
   Spinner,
   Select,
-  Option,
-  OptionGroup,
   Icon,
+  Input,
 } from '@chakra-ui/react';
 import { Familiar } from '@/types/esocial';
 import { MaskedInput, masks } from '@/components/common/MaskedInput';
@@ -104,7 +103,7 @@ export function FormularioFamiliar({
     empregadorId,
     nome: dadosIniciais?.nome || '',
     parentesco: dadosIniciais?.parentesco || '',
-    dataNascimento: dadosIniciais?.dataNascimento || '',
+    dataNascimento: dadosIniciais?.dataNascimento || new Date(),
     cpf: dadosIniciais?.cpf || '',
     telefone: dadosIniciais?.telefone || '',
     email: dadosIniciais?.email || '',
@@ -115,7 +114,8 @@ export function FormularioFamiliar({
   const toast = useToast();
   const router = useRouter();
 
-  const validateDate = (date: string) => {
+  const validateDate = (date: Date | undefined) => {
+    if (!date) return 0;
     const today = new Date();
     const birthDate = new Date(date);
     const age = today.getFullYear() - birthDate.getFullYear();
@@ -177,9 +177,7 @@ export function FormularioFamiliar({
       }
     }
 
-    if (!formData.email) {
-      newErrors.email = 'E-mail é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'E-mail inválido';
     }
 
@@ -251,15 +249,15 @@ export function FormularioFamiliar({
         <FormControl isInvalid={!!errors.dataNascimento}>
           <FormLabel>Data de Nascimento</FormLabel>
           <Tooltip label="Selecione a data de nascimento do familiar">
-            <MaskedInput
+            <Input
               type="date"
-              value={formData.dataNascimento}
+              value={formData.dataNascimento?.toISOString().split('T')[0] || ''}
               onChange={e => handleChange('dataNascimento', e.target.value)}
               aria-label="Data de Nascimento"
-              aria-describedby="data-nascimento-helper"
+              aria-describedby="data-nascimento-help"
             />
           </Tooltip>
-          <FormHelperText id="data-nascimento-helper">
+          <FormHelperText id="data-nascimento-help">
             Data de nascimento do familiar
           </FormHelperText>
           <FormErrorMessage>{errors.dataNascimento}</FormErrorMessage>
@@ -272,12 +270,12 @@ export function FormularioFamiliar({
               value={formData.cpf}
               onChange={e => handleChange('cpf', e.target.value)}
               placeholder="000.000.000-00"
-              mask={masks.cpf}
               aria-label="CPF"
-              aria-describedby="cpf-helper"
+              aria-describedby="cpf-help"
+              mask={masks.cpf}
             />
           </Tooltip>
-          <FormHelperText id="cpf-helper">CPF do familiar</FormHelperText>
+          <FormHelperText id="cpf-help">CPF do familiar</FormHelperText>
           <FormErrorMessage>{errors.cpf}</FormErrorMessage>
         </FormControl>
 
@@ -288,12 +286,12 @@ export function FormularioFamiliar({
               value={formData.telefone}
               onChange={e => handleChange('telefone', e.target.value)}
               placeholder="(00) 00000-0000"
-              mask={masks.cellphone}
               aria-label="Telefone"
-              aria-describedby="telefone-helper"
+              aria-describedby="telefone-help"
+              mask={masks.phone}
             />
           </Tooltip>
-          <FormHelperText id="telefone-helper">
+          <FormHelperText id="telefone-help">
             Telefone para contato do familiar
           </FormHelperText>
           <FormErrorMessage>{errors.telefone}</FormErrorMessage>
@@ -302,16 +300,16 @@ export function FormularioFamiliar({
         <FormControl isInvalid={!!errors.email}>
           <FormLabel>E-mail</FormLabel>
           <Tooltip label="Digite o e-mail do familiar">
-            <MaskedInput
+            <Input
               value={formData.email}
               onChange={e => handleChange('email', e.target.value)}
-              placeholder="Digite o e-mail"
+              placeholder="seu@email.com"
               type="email"
               aria-label="E-mail"
-              aria-describedby="email-helper"
+              aria-describedby="email-help"
             />
           </Tooltip>
-          <FormHelperText id="email-helper">
+          <FormHelperText id="email-help">
             E-mail para contato do familiar
           </FormHelperText>
           <FormErrorMessage>{errors.email}</FormErrorMessage>

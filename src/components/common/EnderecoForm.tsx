@@ -48,19 +48,18 @@ const ESTADOS = [
 ];
 
 interface EnderecoFormProps {
-  enderecoInicial?: Partial<Endereco>;
+  endereco: Partial<Endereco>;
   onChange: (endereco: Partial<Endereco>) => void;
+  errors?: Record<string, string>;
 }
 
-export function EnderecoForm({ enderecoInicial, onChange }: EnderecoFormProps) {
+export function EnderecoForm({ endereco, onChange, errors = {} }: EnderecoFormProps) {
   const {
-    endereco,
-    errors,
     loading,
     handleChange,
     buscarCEP,
   } = useEndereco({
-    enderecoInicial,
+    enderecoInicial: endereco,
     onEnderecoChange: onChange,
   });
 

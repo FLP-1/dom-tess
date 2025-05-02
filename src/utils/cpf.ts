@@ -49,4 +49,8 @@ export function formatAndValidateCPF(value: string): { formattedCPF: string; isV
   const formattedCPF = formatCPF(value);
   const isValid = validateCPF(value);
   return { formattedCPF, isValid };
+}
+
+export function removeCPFFormatting(cpf: string): string {
+  return cpf.replace(/\D/g, '');
 } 

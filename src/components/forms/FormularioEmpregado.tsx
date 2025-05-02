@@ -58,7 +58,7 @@ const TIPO_CONTA_OPTIONS = [
 interface Dependente {
   nome: string;
   cpf: string;
-  dataNascimento: string;
+  dataNascimento: Date;
   parentesco: string;
 }
 
@@ -71,13 +71,13 @@ export function FormularioEmpregado({
   const [formData, setFormData] = useState<Partial<DadosEmpregado>>({
     nome: initialData?.nome || '',
     cpf: initialData?.cpf || '',
-    dataNascimento: initialData?.dataNascimento || '',
+    dataNascimento: initialData?.dataNascimento || new Date(),
     nacionalidade: initialData?.nacionalidade || '',
     estadoCivil: initialData?.estadoCivil || '',
     rg: {
       numero: initialData?.rg?.numero || '',
       orgaoEmissor: initialData?.rg?.orgaoEmissor || '',
-      dataEmissao: initialData?.rg?.dataEmissao || '',
+      dataEmissao: initialData?.rg?.dataEmissao || new Date(),
     },
     endereco: {
       logradouro: initialData?.endereco?.logradouro || '',
@@ -96,7 +96,7 @@ export function FormularioEmpregado({
       banco: initialData?.dadosBancarios?.banco || '',
       agencia: initialData?.dadosBancarios?.agencia || '',
       conta: initialData?.dadosBancarios?.conta || '',
-      tipoConta: initialData?.dadosBancarios?.tipoConta || '',
+      tipoConta: initialData?.dadosBancarios?.tipoConta || 'corrente',
     },
     dadosFamiliares: {
       nomeMae: initialData?.dadosFamiliares?.nomeMae || '',
@@ -113,7 +113,7 @@ export function FormularioEmpregado({
     initialData?.dependentes?.map(d => ({
       nome: d.nome || '',
       cpf: d.cpf || '',
-      dataNascimento: d.dataNascimento || '',
+      dataNascimento: d.dataNascimento || new Date(),
       parentesco: d.parentesco || '',
     })) || []
   );
@@ -160,9 +160,7 @@ export function FormularioEmpregado({
     }
 
     // Contato
-    if (!formData.contato?.email) {
-      newErrors['contato.email'] = 'E-mail é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(formData.contato.email)) {
+    if (formData.contato?.email && !/\S+@\S+\.\S+/.test(formData.contato.email)) {
       newErrors['contato.email'] = 'E-mail inválido';
     }
 
@@ -200,7 +198,7 @@ export function FormularioEmpregado({
     setDependentes(prev => {
       const novos = [
         ...prev,
-        { nome: '', cpf: '', dataNascimento: '', parentesco: '' },
+        { nome: '', cpf: '', dataNascimento: new Date(), parentesco: '' },
       ];
       toast({
         title: 'Dependente adicionado',
@@ -280,37 +278,21 @@ export function FormularioEmpregado({
     });
   };
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: keyof DadosEmpregado, value: string | number | Date) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value,
+      [field]: value
     }));
-
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
   };
 
-  const handleNestedChange = (parent: string, field: string, value: string) => {
+  const handleNestedChange = (parent: keyof DadosEmpregado, field: string, value: string | number | Date) => {
     setFormData(prev => ({
       ...prev,
       [parent]: {
         ...prev[parent],
-        [field]: value,
-      },
+        [field]: value
+      }
     }));
-
-    if (errors[`${parent}.${field}`]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[`${parent}.${field}`];
-        return newErrors;
-      });
-    }
   };
 
   const handleEnderecoChange = (endereco: Partial<DadosEmpregado['endereco']>) => {
@@ -318,22 +300,20 @@ export function FormularioEmpregado({
       ...prev,
       endereco: {
         ...prev.endereco,
-        ...endereco,
-      },
+        ...endereco
+      }
     }));
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit}>
-      <VStack spacing={4} align="stretch">
-        <Text fontSize="lg" fontWeight="bold">Dados Pessoais</Text>
-
+    <Box>
+      <VStack spacing={4}>
         <FormControl isInvalid={!!errors.nome}>
           <FormLabel>Nome Completo</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.nome}
             onChange={e => handleChange('nome', e.target.value)}
-            placeholder="Digite o nome completo"
+            placeholder="Nome Completo"
             aria-label="Nome Completo"
           />
           <FormErrorMessage>{errors.nome}</FormErrorMessage>
@@ -345,8 +325,8 @@ export function FormularioEmpregado({
             value={formData.cpf}
             onChange={e => handleChange('cpf', e.target.value)}
             placeholder="000.000.000-00"
-            mask={masks.cpf}
             aria-label="CPF"
+            mask="999.999.999-99"
           />
           <FormErrorMessage>{errors.cpf}</FormErrorMessage>
         </FormControl>
@@ -355,8 +335,8 @@ export function FormularioEmpregado({
           <FormLabel>Data de Nascimento</FormLabel>
           <Input
             type="date"
-            value={formData.dataNascimento}
-            onChange={e => handleChange('dataNascimento', e.target.value)}
+            value={formData.dataNascimento?.toISOString().split('T')[0] || ''}
+            onChange={e => handleChange('dataNascimento', new Date(e.target.value))}
             aria-label="Data de Nascimento"
           />
           <FormErrorMessage>{errors.dataNascimento}</FormErrorMessage>
@@ -364,47 +344,46 @@ export function FormularioEmpregado({
 
         <FormControl isInvalid={!!errors.nacionalidade}>
           <FormLabel>Nacionalidade</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.nacionalidade}
             onChange={e => handleChange('nacionalidade', e.target.value)}
-            placeholder="Digite a nacionalidade"
+            placeholder="Nacionalidade"
             aria-label="Nacionalidade"
           />
           <FormErrorMessage>{errors.nacionalidade}</FormErrorMessage>
         </FormControl>
 
-        <SelectField
-          label="Estado Civil"
-          name="estadoCivil"
-          value={formData.estadoCivil || ''}
-          onChange={(value) => handleChange('estadoCivil', value)}
-          options={ESTADO_CIVIL_OPTIONS}
-          placeholder="Selecione o estado civil"
-          error={errors.estadoCivil}
-          isRequired
-          aria-label="Estado Civil"
-        />
+        <FormControl isInvalid={!!errors.estadoCivil}>
+          <FormLabel>Estado Civil</FormLabel>
+          <SelectField
+            value={formData.estadoCivil}
+            onChange={value => handleChange('estadoCivil', value)}
+            options={ESTADO_CIVIL_OPTIONS}
+            placeholder="Selecione o estado civil"
+          />
+          <FormErrorMessage>{errors.estadoCivil}</FormErrorMessage>
+        </FormControl>
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Documentos</Text>
+        <Divider />
 
         <FormControl isInvalid={!!errors['rg.numero']}>
-          <FormLabel>Número do RG</FormLabel>
+          <FormLabel>RG</FormLabel>
           <MaskedInput
             value={formData.rg?.numero}
             onChange={e => handleNestedChange('rg', 'numero', e.target.value)}
-            placeholder="Digite o número do RG"
+            placeholder="Número do RG"
             aria-label="Número do RG"
+            mask="99.999.999-9"
           />
           <FormErrorMessage>{errors['rg.numero']}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors['rg.orgaoEmissor']}>
           <FormLabel>Órgão Emissor</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.rg?.orgaoEmissor}
             onChange={e => handleNestedChange('rg', 'orgaoEmissor', e.target.value)}
-            placeholder="Digite o órgão emissor"
+            placeholder="Órgão Emissor"
             aria-label="Órgão Emissor"
           />
           <FormErrorMessage>{errors['rg.orgaoEmissor']}</FormErrorMessage>
@@ -414,35 +393,22 @@ export function FormularioEmpregado({
           <FormLabel>Data de Emissão</FormLabel>
           <Input
             type="date"
-            value={formData.rg?.dataEmissao}
-            onChange={e => handleNestedChange('rg', 'dataEmissao', e.target.value)}
+            value={formData.rg?.dataEmissao?.toISOString().split('T')[0] || ''}
+            onChange={e => handleNestedChange('rg', 'dataEmissao', new Date(e.target.value))}
             aria-label="Data de Emissão"
           />
           <FormErrorMessage>{errors['rg.dataEmissao']}</FormErrorMessage>
         </FormControl>
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Endereço</Text>
+        <Divider />
 
         <EnderecoForm
-          enderecoInicial={formData.endereco}
+          endereco={formData.endereco}
           onChange={handleEnderecoChange}
+          errors={errors}
         />
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Contato</Text>
-
-        <FormControl isInvalid={!!errors['contato.email']}>
-          <FormLabel>E-mail</FormLabel>
-          <MaskedInput
-            value={formData.contato?.email}
-            onChange={e => handleNestedChange('contato', 'email', e.target.value)}
-            placeholder="Digite o e-mail"
-            type="email"
-            aria-label="E-mail"
-          />
-          <FormErrorMessage>{errors['contato.email']}</FormErrorMessage>
-        </FormControl>
+        <Divider />
 
         <FormControl isInvalid={!!errors['contato.telefone']}>
           <FormLabel>Telefone</FormLabel>
@@ -450,21 +416,32 @@ export function FormularioEmpregado({
             value={formData.contato?.telefone}
             onChange={e => handleNestedChange('contato', 'telefone', e.target.value)}
             placeholder="(00) 00000-0000"
-            mask={masks.cellphone}
             aria-label="Telefone"
+            mask="(99) 99999-9999"
           />
           <FormErrorMessage>{errors['contato.telefone']}</FormErrorMessage>
         </FormControl>
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Dados Bancários</Text>
+        <FormControl isInvalid={!!errors['contato.email']}>
+          <FormLabel>E-mail</FormLabel>
+          <Input
+            type="email"
+            value={formData.contato?.email}
+            onChange={e => handleNestedChange('contato', 'email', e.target.value)}
+            placeholder="E-mail"
+            aria-label="E-mail"
+          />
+          <FormErrorMessage>{errors['contato.email']}</FormErrorMessage>
+        </FormControl>
+
+        <Divider />
 
         <FormControl isInvalid={!!errors['dadosBancarios.banco']}>
           <FormLabel>Banco</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.dadosBancarios?.banco}
             onChange={e => handleNestedChange('dadosBancarios', 'banco', e.target.value)}
-            placeholder="Digite o banco"
+            placeholder="Banco"
             aria-label="Banco"
           />
           <FormErrorMessage>{errors['dadosBancarios.banco']}</FormErrorMessage>
@@ -475,8 +452,9 @@ export function FormularioEmpregado({
           <MaskedInput
             value={formData.dadosBancarios?.agencia}
             onChange={e => handleNestedChange('dadosBancarios', 'agencia', e.target.value)}
-            placeholder="Digite a agência"
+            placeholder="Agência"
             aria-label="Agência"
+            mask="9999-9"
           />
           <FormErrorMessage>{errors['dadosBancarios.agencia']}</FormErrorMessage>
         </FormControl>
@@ -486,175 +464,163 @@ export function FormularioEmpregado({
           <MaskedInput
             value={formData.dadosBancarios?.conta}
             onChange={e => handleNestedChange('dadosBancarios', 'conta', e.target.value)}
-            placeholder="Digite a conta"
+            placeholder="Conta"
             aria-label="Conta"
+            mask="999999-9"
           />
           <FormErrorMessage>{errors['dadosBancarios.conta']}</FormErrorMessage>
         </FormControl>
 
-        <SelectField
-          label="Tipo de Conta"
-          name="dadosBancarios.tipoConta"
-          value={formData.dadosBancarios?.tipoConta || ''}
-          onChange={(value) => handleNestedChange('dadosBancarios', 'tipoConta', value)}
-          options={TIPO_CONTA_OPTIONS}
-          placeholder="Selecione o tipo de conta"
-          error={errors['dadosBancarios.tipoConta']}
-          isRequired
-          aria-label="Tipo de Conta"
-        />
+        <FormControl isInvalid={!!errors['dadosBancarios.tipoConta']}>
+          <FormLabel>Tipo de Conta</FormLabel>
+          <SelectField
+            value={formData.dadosBancarios?.tipoConta}
+            onChange={value => handleNestedChange('dadosBancarios', 'tipoConta', value)}
+            options={TIPO_CONTA_OPTIONS}
+            placeholder="Selecione o tipo de conta"
+          />
+          <FormErrorMessage>{errors['dadosBancarios.tipoConta']}</FormErrorMessage>
+        </FormControl>
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Dados Familiares</Text>
+        <Divider />
 
         <FormControl isInvalid={!!errors['dadosFamiliares.nomeMae']}>
           <FormLabel>Nome da Mãe</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.dadosFamiliares?.nomeMae}
             onChange={e => handleNestedChange('dadosFamiliares', 'nomeMae', e.target.value)}
-            placeholder="Digite o nome da mãe"
+            placeholder="Nome da Mãe"
             aria-label="Nome da Mãe"
           />
           <FormErrorMessage>{errors['dadosFamiliares.nomeMae']}</FormErrorMessage>
         </FormControl>
 
-        <FormControl>
+        <FormControl isInvalid={!!errors['dadosFamiliares.nomePai']}>
           <FormLabel>Nome do Pai</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.dadosFamiliares?.nomePai}
             onChange={e => handleNestedChange('dadosFamiliares', 'nomePai', e.target.value)}
-            placeholder="Digite o nome do pai"
+            placeholder="Nome do Pai"
             aria-label="Nome do Pai"
           />
+          <FormErrorMessage>{errors['dadosFamiliares.nomePai']}</FormErrorMessage>
         </FormControl>
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Dados Complementares</Text>
+        <Divider />
 
-        <SelectField
-          label="Grau de Instrução"
-          name="grauInstrucao"
-          value={formData.grauInstrucao || ''}
-          onChange={(value) => handleChange('grauInstrucao', value)}
-          options={GRAU_INSTRUCAO_OPTIONS}
-          placeholder="Selecione o grau de instrução"
-          error={errors.grauInstrucao}
-          aria-label="Grau de Instrução"
-        />
+        <FormControl>
+          <FormLabel>Grau de Instrução</FormLabel>
+          <SelectField
+            value={formData.grauInstrucao}
+            onChange={value => handleChange('grauInstrucao', value)}
+            options={GRAU_INSTRUCAO_OPTIONS}
+            placeholder="Selecione o grau de instrução"
+          />
+        </FormControl>
 
         <FormControl>
           <FormLabel>Número de Dependentes</FormLabel>
           <Input
             type="number"
-            value={dependentes.length}
-            isReadOnly
+            value={formData.numeroDependentes}
+            onChange={e => handleChange('numeroDependentes', parseInt(e.target.value))}
+            placeholder="Número de Dependentes"
             aria-label="Número de Dependentes"
+            min={0}
           />
         </FormControl>
 
         <FormControl>
           <FormLabel>Informações de Saúde</FormLabel>
-          <MaskedInput
+          <Input
             value={formData.informacoesSaude}
             onChange={e => handleChange('informacoesSaude', e.target.value)}
-            placeholder="Digite informações relevantes sobre saúde"
+            placeholder="Informações de Saúde"
             aria-label="Informações de Saúde"
           />
         </FormControl>
 
-        <Divider my={4} />
-        <Text fontSize="lg" fontWeight="bold">Dependentes</Text>
+        <Divider />
 
-        {dependentes.map((dependente, index) => (
-          <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
-            <HStack justify="space-between" mb={4}>
-              <Text fontWeight="bold">Dependente {index + 1}</Text>
-              <IconButton
-                aria-label="Remover dependente"
-                icon={<FaTrash />}
-                onClick={() => handleRemoveDependente(index)}
-                colorScheme="red"
-                variant="ghost"
-              />
-            </HStack>
-            <VStack spacing={4} align="stretch">
-              <FormControl isInvalid={!!errors[`dependentes.${index}.nome`]}>
-                <FormLabel>Nome Completo</FormLabel>
-                <MaskedInput
-                  value={dependente.nome}
-                  onChange={(e) => handleDependenteChange(index, 'nome', e.target.value)}
-                  placeholder="Digite o nome completo"
-                  aria-label="Nome Completo"
-                />
-                <FormErrorMessage>{errors[`dependentes.${index}.nome`]}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors[`dependentes.${index}.cpf`]}>
-                <FormLabel>CPF</FormLabel>
-                <MaskedInput
-                  value={dependente.cpf}
-                  onChange={(e) => handleDependenteChange(index, 'cpf', e.target.value)}
-                  placeholder="000.000.000-00"
-                  mask={masks.cpf}
-                  aria-label="CPF"
-                />
-                <FormErrorMessage>{errors[`dependentes.${index}.cpf`]}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors[`dependentes.${index}.dataNascimento`]}>
-                <FormLabel>Data de Nascimento</FormLabel>
-                <Input
-                  type="date"
-                  value={dependente.dataNascimento}
-                  onChange={(e) => handleDependenteChange(index, 'dataNascimento', e.target.value)}
-                  aria-label="Data de Nascimento"
-                />
-                <FormErrorMessage>{errors[`dependentes.${index}.dataNascimento`]}</FormErrorMessage>
-              </FormControl>
-              <ParentescoSelect
-                value={dependente.parentesco}
-                onChange={(value) => handleDependenteChange(index, 'parentesco', value)}
-                error={errors[`dependentes.${index}.parentesco`]}
-                isRequired
-                label="Parentesco"
-                helperText="Selecione o grau de parentesco com o empregado"
-              />
-            </VStack>
-          </Box>
-        ))}
-
-        <Button
-          leftIcon={<FaPlus />}
-          onClick={handleAddDependente}
-          variant="outline"
-          colorScheme="blue"
-        >
-          Adicionar Dependente
-        </Button>
-
-        <HStack justify="space-between" mt={4}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            isDisabled={!onBack}
-          >
-            Voltar
-          </Button>
-
-          <HStack>
-            {onSaveDraft && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onSaveDraft}
-              >
-                Salvar Rascunho
-              </Button>
-            )}
-
-            <Button type="submit" colorScheme="blue">
-              Próximo
-            </Button>
+        <Box width="100%">
+          <HStack justify="space-between" mb={4}>
+            <Text fontSize="lg" fontWeight="bold">Dependentes</Text>
+            <IconButton
+              aria-label="Adicionar dependente"
+              icon={<FaPlus />}
+              onClick={handleAddDependente}
+            />
           </HStack>
+
+          {dependentes.map((dependente, index) => (
+            <Box key={index} p={4} borderWidth={1} borderRadius="md" mb={4}>
+              <HStack justify="space-between" mb={4}>
+                <Text fontWeight="bold">Dependente {index + 1}</Text>
+                <IconButton
+                  aria-label="Remover dependente"
+                  icon={<FaTrash />}
+                  onClick={() => handleRemoveDependente(index)}
+                />
+              </HStack>
+
+              <VStack spacing={4}>
+                <FormControl>
+                  <FormLabel>Nome</FormLabel>
+                  <Input
+                    value={dependente.nome}
+                    onChange={e => handleDependenteChange(index, 'nome', e.target.value)}
+                    placeholder="Nome do Dependente"
+                    aria-label="Nome do Dependente"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>CPF</FormLabel>
+                  <MaskedInput
+                    value={dependente.cpf}
+                    onChange={e => handleDependenteChange(index, 'cpf', e.target.value)}
+                    placeholder="000.000.000-00"
+                    aria-label="CPF do Dependente"
+                    mask="999.999.999-99"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Data de Nascimento</FormLabel>
+                  <Input
+                    type="date"
+                    value={dependente.dataNascimento.toISOString().split('T')[0]}
+                    onChange={e => handleDependenteChange(index, 'dataNascimento', new Date(e.target.value))}
+                    aria-label="Data de Nascimento do Dependente"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Parentesco</FormLabel>
+                  <ParentescoSelect
+                    value={dependente.parentesco}
+                    onChange={value => handleDependenteChange(index, 'parentesco', value)}
+                  />
+                </FormControl>
+              </VStack>
+            </Box>
+          ))}
+        </Box>
+
+        <HStack spacing={4} width="100%" justify="flex-end">
+          {onBack && (
+            <Button onClick={onBack} variant="outline">
+              Voltar
+            </Button>
+          )}
+          {onSaveDraft && (
+            <Button onClick={onSaveDraft} variant="outline">
+              Salvar Rascunho
+            </Button>
+          )}
+          <Button onClick={handleSubmit} colorScheme="blue">
+            Salvar
+          </Button>
         </HStack>
       </VStack>
     </Box>

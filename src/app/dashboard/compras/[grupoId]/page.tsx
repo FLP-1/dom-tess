@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 import { Box, Heading, VStack, Flex, Text, Button, Checkbox, Input, FormLabel, Spinner, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, useDisclosure, FormControl } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -48,7 +50,7 @@ export default function GrupoComprasPage() {
       setLoading(false);
     }
     fetchGrupo();
-  }, [grupoId]);
+  }, [grupoId, setLoading, setGrupoNome, setProdutos]);
 
   useEffect(() => {
     async function fetchCatalogo() {
@@ -56,7 +58,7 @@ export default function GrupoComprasPage() {
       setCatalogo(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Produto)));
     }
     fetchCatalogo();
-  }, []);
+  }, [fetchCatalogo, setCatalogo]);
 
   const produtosFiltrados = produtos
     .filter(p =>

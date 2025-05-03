@@ -87,7 +87,7 @@ export function useRegistros(userId: string, dataInicio?: Date, dataFim?: Date) 
         unsubscribe();
       }
     };
-  }, [userId, dataInicio, dataFim]);
+  }, [userId, dataInicio, dataFim, setRegistros, setHorasTrabalhadas, setError, setLoading]);
 
   const registrosHoje = registros.filter(registro => {
     const hoje = new Date();

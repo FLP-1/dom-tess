@@ -1,3 +1,4 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
 import {
   FormControl,
   FormLabel,
@@ -16,6 +17,7 @@ import { InfoIcon } from '@chakra-ui/icons';
 import { MaskedInput, masks } from './MaskedInput';
 import { AutocompleteInput } from './AutocompleteInput';
 import { useCidades } from '@/hooks/useCidades';
+import { SelectCustom } from './SelectCustom';
 
 const ESTADOS = [
   { value: 'AC', label: 'Acre' },
@@ -166,17 +168,15 @@ export function EnderecoForm({ endereco, onChange, errors = {} }: EnderecoFormPr
         <FormErrorMessage>{errors.cidade}</FormErrorMessage>
       </FormControl>
 
-      <SelectField
-        label="UF"
-        name="uf"
+      <SelectCustom
+        label="Estado"
+        options={ESTADOS.map(estado => ({
+          value: estado.value,
+          label: estado.label
+        }))}
         value={endereco.uf || ''}
-        onChange={(value) => handleChange('uf', value)}
-        options={ESTADOS}
-        placeholder="Selecione o estado"
-        error={errors.uf}
+        onChange={(e) => handleChange('uf', e.target.value)}
         isRequired
-        isDisabled={loading}
-        aria-label="Estado"
       />
 
       <FormControl>

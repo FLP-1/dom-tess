@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -25,6 +27,7 @@ import {
 import { FiSearch, FiDownload, FiEdit, FiTrash, FiEye } from 'react-icons/fi';
 import { usePermissions } from '@/hooks/usePermissions';
 import { DocumentViewer } from './DocumentViewer';
+import { SelectCustom } from '../common/SelectCustom';
 
 interface Document {
   id: string;
@@ -136,18 +139,17 @@ export function DocumentList() {
         />
         <FormControl>
           <FormLabel id="label-filtro" htmlFor="filtro">Filtrar por</FormLabel>
-          <Select
-            id="filtro"
-            aria-labelledby="label-filtro"
-            aria-label="Filtrar por"
+          <SelectCustom
             value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
-            maxW="200px"
-          >
-            <option value="name">Nome</option>
-            <option value="responsible">Responsável</option>
-            <option value="date">Data</option>
-          </Select>
+            options={[
+              { value: 'name', label: 'Nome' },
+              { value: 'responsible', label: 'Responsável' },
+              { value: 'date', label: 'Data' }
+            ]}
+            placeholder="Filtrar por"
+            width="200px"
+          />
         </FormControl>
         <FormControl>
           <FormLabel id="label-categoria" htmlFor="categoria">Categoria</FormLabel>
@@ -155,6 +157,7 @@ export function DocumentList() {
             id="categoria"
             aria-labelledby="label-categoria"
             aria-label="Categoria"
+            title="Categoria"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             maxW="200px"

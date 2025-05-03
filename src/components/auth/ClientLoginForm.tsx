@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -54,7 +56,7 @@ export function ClientLoginForm() {
     if (cpfInputRef.current) {
       cpfInputRef.current.value = '';
     }
-  }, []);
+  }, [checkBiometricAvailability, cpfInputRef]);
 
   const checkBiometricAvailability = async () => {
     try {

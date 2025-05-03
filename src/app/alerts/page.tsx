@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { Box, Container, Heading, Button, VStack, useToast, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, Input } from '@chakra-ui/react';
@@ -18,7 +19,7 @@ export default function AlertsPage() {
   useEffect(() => {
     const unsubscribe = listenAlerts(setAlerts);
     return () => unsubscribe();
-  }, []);
+  }, [setAlerts]);
 
   const filteredAlerts = alerts.filter(alert =>
     alert.title.toLowerCase().includes(search.toLowerCase()) ||

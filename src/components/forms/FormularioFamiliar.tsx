@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   FormControl,
@@ -20,11 +20,12 @@ import {
   Input,
 } from '@chakra-ui/react';
 import { Familiar } from '@/types/esocial';
-import { MaskedInput, masks } from '@/components/common/MaskedInput';
+import { MaskedInput } from '@/components/common/MaskedInput';
 import { formatCPF, removeCPFFormatting, validateCPF } from '@/utils/cpf';
 import { useRouter } from 'next/navigation';
 import { FaUser, FaUserFriends, FaUserTie, FaUserGraduate } from 'react-icons/fa';
 import { ParentescoSelect } from '@/components/common/ParentescoSelect';
+import { MaskType } from '@/utils/maskTypes';
 
 const PARENTESCO_OPTIONS = [
   {
@@ -52,7 +53,7 @@ const PARENTESCO_OPTIONS = [
       { value: 'NETO', label: 'Neto(a)', icon: FaUserGraduate },
     ],
   },
-];
+] as const;
 
 const PARENTESCO_DESCRICOES = {
   CONJUGE: 'Cônjuge ou companheiro(a) do empregador',
@@ -65,7 +66,7 @@ const PARENTESCO_DESCRICOES = {
   SOGRO: 'Sogro(a) do empregador',
   GENRO: 'Genro do empregador',
   NORA: 'Nora do empregador',
-};
+} as const;
 
 const PARENTESCO_LIMITES = {
   CONJUGE: { min: 18, max: null },
@@ -78,7 +79,12 @@ const PARENTESCO_LIMITES = {
   SOGRO: { min: 40, max: null },
   GENRO: { min: 18, max: null },
   NORA: { min: 18, max: null },
-};
+} as const;
+
+const masks = {
+  cpf: 'cpf' as MaskType,
+  phone: 'phone' as MaskType,
+} as const;
 
 interface FormularioFamiliarProps {
   dadosIniciais?: Partial<Familiar>;
@@ -99,32 +105,22 @@ export function FormularioFamiliar({
   onSaveDraft,
   isLoading = false,
 }: FormularioFamiliarProps) {
-  const [formData, setFormData] = React.useState<Partial<Familiar>>({
-    empregadorId,
-    nome: dadosIniciais?.nome || '',
-    parentesco: dadosIniciais?.parentesco || '',
-    dataNascimento: dadosIniciais?.dataNascimento || new Date(),
-    cpf: dadosIniciais?.cpf || '',
-    telefone: dadosIniciais?.telefone || '',
-    email: dadosIniciais?.email || '',
-    status: dadosIniciais?.status || 'ativo',
-  });
-
-  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Partial<Familiar>>(dadosIniciais);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const toast = useToast();
   const router = useRouter();
 
+  const handleChange = (field: keyof Familiar, value: string | Date) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const validateDate = (date: Date | undefined) => {
-    if (!date) return 0;
+    if (!date) return false;
     const today = new Date();
-    const birthDate = new Date(date);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return age - 1;
-    }
-    return age;
+    return date <= today;
   };
 
   const validateForm = () => {
@@ -132,34 +128,6 @@ export function FormularioFamiliar({
 
     if (!formData.nome) {
       newErrors.nome = 'Nome é obrigatório';
-    } else if (formData.nome.length < 3) {
-      newErrors.nome = 'Nome deve ter pelo menos 3 caracteres';
-    }
-
-    if (!formData.parentesco) {
-      newErrors.parentesco = 'Parentesco é obrigatório';
-    } else {
-      const age = validateDate(formData.dataNascimento);
-      const limites = PARENTESCO_LIMITES[formData.parentesco as keyof typeof PARENTESCO_LIMITES];
-      
-      if (limites.min !== null && age < limites.min) {
-        newErrors.dataNascimento = `Idade mínima para ${formData.parentesco.toLowerCase()} é ${limites.min} anos`;
-      }
-      
-      if (limites.max !== null && age > limites.max) {
-        newErrors.dataNascimento = `Idade máxima para ${formData.parentesco.toLowerCase()} é ${limites.max} anos`;
-      }
-    }
-
-    if (!formData.dataNascimento) {
-      newErrors.dataNascimento = 'Data de nascimento é obrigatória';
-    } else {
-      const birthDate = new Date(formData.dataNascimento);
-      const today = new Date();
-      
-      if (birthDate > today) {
-        newErrors.dataNascimento = 'Data de nascimento não pode ser futura';
-      }
     }
 
     if (!formData.cpf) {
@@ -168,17 +136,14 @@ export function FormularioFamiliar({
       newErrors.cpf = 'CPF inválido';
     }
 
-    if (!formData.telefone) {
-      newErrors.telefone = 'Telefone é obrigatório';
-    } else {
-      const phone = formData.telefone.replace(/\D/g, '');
-      if (phone.length < 10 || phone.length > 11) {
-        newErrors.telefone = 'Telefone inválido';
-      }
+    if (!formData.parentesco) {
+      newErrors.parentesco = 'Parentesco é obrigatório';
     }
 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'E-mail inválido';
+    if (!formData.dataNascimento) {
+      newErrors.dataNascimento = 'Data de nascimento é obrigatória';
+    } else if (!validateDate(formData.dataNascimento)) {
+      newErrors.dataNascimento = 'Data de nascimento inválida';
     }
 
     setErrors(newErrors);
@@ -189,29 +154,6 @@ export function FormularioFamiliar({
     e.preventDefault();
     if (validateForm()) {
       onSubmit(formData);
-    } else {
-      toast({
-        title: 'Erro de validação',
-        description: 'Por favor, corrija os campos destacados em vermelho',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
     }
   };
 
@@ -225,10 +167,10 @@ export function FormularioFamiliar({
           <Tooltip label="Digite o nome completo do familiar">
             <MaskedInput
               value={formData.nome}
-              onChange={e => handleChange('nome', e.target.value)}
-              placeholder="Digite o nome completo"
-              aria-label="Nome Completo"
-              aria-describedby="nome-helper"
+              onChange={value => handleChange('nome', value)}
+              _placeholder="Digite o nome completo"
+              aria-label="Nome completo"
+              aria-describedby="nome-error"
             />
           </Tooltip>
           <FormHelperText id="nome-helper">Nome completo do familiar</FormHelperText>
@@ -242,111 +184,79 @@ export function FormularioFamiliar({
             error={errors.parentesco}
             isRequired
             label="Parentesco"
-            helperText={formData.parentesco ? `Selecione o grau de parentesco com o empregador` : undefined}
           />
+          <FormErrorMessage>{errors.parentesco}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.dataNascimento}>
           <FormLabel>Data de Nascimento</FormLabel>
-          <Tooltip label="Selecione a data de nascimento do familiar">
-            <Input
-              type="date"
-              value={formData.dataNascimento?.toISOString().split('T')[0] || ''}
-              onChange={e => handleChange('dataNascimento', e.target.value)}
-              aria-label="Data de Nascimento"
-              aria-describedby="data-nascimento-help"
-            />
-          </Tooltip>
-          <FormHelperText id="data-nascimento-help">
-            Data de nascimento do familiar
-          </FormHelperText>
+          <Input
+            type="date"
+            value={formData.dataNascimento ? new Date(formData.dataNascimento).toISOString().split('T')[0] : ''}
+            onChange={e => handleChange('dataNascimento', new Date(e.target.value))}
+            aria-label="Data de nascimento"
+            aria-describedby="dataNascimento-error"
+          />
           <FormErrorMessage>{errors.dataNascimento}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.cpf}>
           <FormLabel>CPF</FormLabel>
-          <Tooltip label="Digite o CPF do familiar">
-            <MaskedInput
-              value={formData.cpf}
-              onChange={e => handleChange('cpf', e.target.value)}
-              placeholder="000.000.000-00"
-              aria-label="CPF"
-              aria-describedby="cpf-help"
-              mask={masks.cpf}
-            />
-          </Tooltip>
-          <FormHelperText id="cpf-help">CPF do familiar</FormHelperText>
+          <MaskedInput
+            value={formData.cpf}
+            onChange={value => handleChange('cpf', value)}
+            mask={masks.cpf}
+            _placeholder="000.000.000-00"
+            aria-label="CPF"
+            aria-describedby="cpf-error"
+          />
           <FormErrorMessage>{errors.cpf}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.telefone}>
           <FormLabel>Telefone</FormLabel>
-          <Tooltip label="Digite o telefone do familiar">
-            <MaskedInput
-              value={formData.telefone}
-              onChange={e => handleChange('telefone', e.target.value)}
-              placeholder="(00) 00000-0000"
-              aria-label="Telefone"
-              aria-describedby="telefone-help"
-              mask={masks.phone}
-            />
-          </Tooltip>
-          <FormHelperText id="telefone-help">
-            Telefone para contato do familiar
-          </FormHelperText>
+          <MaskedInput
+            value={formData.telefone}
+            onChange={value => handleChange('telefone', value)}
+            mask={masks.phone}
+            _placeholder="(00) 00000-0000"
+            aria-label="Telefone"
+            aria-describedby="telefone-error"
+          />
           <FormErrorMessage>{errors.telefone}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.email}>
           <FormLabel>E-mail</FormLabel>
-          <Tooltip label="Digite o e-mail do familiar">
-            <Input
-              value={formData.email}
-              onChange={e => handleChange('email', e.target.value)}
-              placeholder="seu@email.com"
-              type="email"
-              aria-label="E-mail"
-              aria-describedby="email-help"
-            />
-          </Tooltip>
-          <FormHelperText id="email-help">
-            E-mail para contato do familiar
-          </FormHelperText>
+          <Input
+            type="email"
+            value={formData.email}
+            onChange={e => handleChange('email', e.target.value)}
+            placeholder="Digite o e-mail"
+            aria-label="E-mail"
+            aria-describedby="email-error"
+          />
           <FormErrorMessage>{errors.email}</FormErrorMessage>
         </FormControl>
 
-        <HStack justify="space-between" mt={4}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            isDisabled={!onBack || isLoading}
-          >
-            Voltar
-          </Button>
-
-          <HStack>
-            {onSaveDraft && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onSaveDraft}
-                isDisabled={isLoading}
-              >
-                Salvar Rascunho
-              </Button>
-            )}
-
-            <Button 
-              type="submit" 
-              colorScheme="blue"
-              isLoading={isLoading}
-              loadingText="Salvando..."
-              leftIcon={isLoading ? <Spinner size="sm" /> : undefined}
-            >
-              {familiarId ? 'Atualizar' : 'Cadastrar'}
+        <HStack spacing={4} justify="flex-end">
+          {onBack && (
+            <Button variant="outline" onClick={onBack}>
+              Voltar
             </Button>
-          </HStack>
+          )}
+          {onSaveDraft && (
+            <Button variant="outline" onClick={onSaveDraft}>
+              Salvar Rascunho
+            </Button>
+          )}
+          <Button
+            type="submit"
+            colorScheme="blue"
+            isLoading={isLoading}
+          >
+            {familiarId ? 'Atualizar' : 'Cadastrar'}
+          </Button>
         </HStack>
       </VStack>
     </Box>

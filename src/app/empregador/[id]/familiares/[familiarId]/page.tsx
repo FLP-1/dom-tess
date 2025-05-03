@@ -38,7 +38,7 @@ export default function FamiliarPage({ params }: Props) {
 
       carregarFamiliar();
     }
-  }, [params.id, params.familiarId, isNovo, router]);
+  }, [params.id, params.familiarId, isNovo, router, carregarFamiliar, setFamiliar]);
 
   return (
     <Container maxWidth="lg">

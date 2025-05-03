@@ -1,6 +1,6 @@
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, Timestamp, DocumentData, Query, CollectionReference, QuerySnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Task, TaskStatus } from '../types/task';
+import { ITask, ETaskStatus, ETaskPriority } from '../types/task';
 
 export interface UserPoints {
   userId: string;
@@ -14,14 +14,15 @@ export class PointsService {
   private static readonly COLLECTION_NAME = 'user_points';
   private static readonly POINTS_PER_LEVEL = 1000;
   private static readonly POINTS_RULES = {
-    [TaskStatus.COMPLETED]: 100,
-    [TaskStatus.IN_PROGRESS]: 50,
-    [TaskPriority.HIGH]: 50,
-    [TaskPriority.MEDIUM]: 30,
-    [TaskPriority.LOW]: 10,
+    [ETaskStatus.COMPLETED]: 100,
+    [ETaskStatus.IN_PROGRESS]: 50,
+    [ETaskPriority.URGENT]: 100,
+    [ETaskPriority.HIGH]: 50,
+    [ETaskPriority.MEDIUM]: 30,
+    [ETaskPriority.LOW]: 10,
   };
 
-  static async updateUserPoints(userId: string, task: Task, action: 'create' | 'update' | 'complete'): Promise<void> {
+  static async updateUserPoints(userId: string, task: ITask, action: 'create' | 'update' | 'complete'): Promise<void> {
     const pointsRef = doc(db, this.COLLECTION_NAME, userId);
     const pointsDoc = await getDocs(pointsRef);
     
@@ -29,8 +30,8 @@ export class PointsService {
     let currentLevel = 1;
     let achievements: string[] = [];
 
-    if (pointsDoc.exists()) {
-      const data = pointsDoc.data();
+    if (!pointsDoc.empty) {
+      const data = pointsDoc.docs[0].data();
       currentPoints = data.totalPoints || 0;
       currentLevel = data.level || 1;
       achievements = data.achievements || [];
@@ -46,7 +47,7 @@ export class PointsService {
         pointsToAdd = this.POINTS_RULES[task.priority] * 0.5;
         break;
       case 'complete':
-        pointsToAdd = this.POINTS_RULES[TaskStatus.COMPLETED];
+        pointsToAdd = this.POINTS_RULES[ETaskStatus.COMPLETED];
         break;
     }
 
@@ -95,23 +96,23 @@ export class PointsService {
     const pointsRef = doc(db, this.COLLECTION_NAME, userId);
     const pointsDoc = await getDocs(pointsRef);
 
-    if (!pointsDoc.exists()) {
-      return null;
+    if (!pointsDoc.empty) {
+      const data = pointsDoc.docs[0].data();
+      return {
+        userId,
+        totalPoints: data.totalPoints || 0,
+        level: data.level || 1,
+        achievements: data.achievements || [],
+        lastUpdated: data.lastUpdated.toDate(),
+      };
     }
 
-    const data = pointsDoc.data();
-    return {
-      userId,
-      totalPoints: data.totalPoints || 0,
-      level: data.level || 1,
-      achievements: data.achievements || [],
-      lastUpdated: data.lastUpdated.toDate(),
-    };
+    return null;
   }
 
   static async getLeaderboard(limit: number = 10): Promise<UserPoints[]> {
-    const q = query(
-      collection(db, this.COLLECTION_NAME),
+    const q: Query<DocumentData> = query(
+      collection(db, this.COLLECTION_NAME) as CollectionReference<DocumentData>,
       orderBy('totalPoints', 'desc'),
       limit(limit)
     );

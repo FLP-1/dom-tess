@@ -17,10 +17,10 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+if (!loading && !user) {
       router.push('/login');
     }
-  }, [loading, user, router]);
+}, [loading, user, router]);
 
   if (loading) {
     return <LoadingSpinner />;

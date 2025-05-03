@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -104,7 +106,7 @@ export function RegisterForm() {
   });
 
   useEffect(() => {
-    // Resetar o formulário ao abrir a tela de cadastro
+// Resetar o formulário ao abrir a tela de cadastro
     setFormData({
       nome: '',
       cpf: '',
@@ -120,7 +122,7 @@ export function RegisterForm() {
     setPasswordConfirmationError(null);
     setAcceptedTerms(false);
     // Não faz mais verificação automática de empregador aqui
-  }, []);
+}, [Resetar, o, formul, rio, ao, abrir, a, tela, de, cadastro, setFormData, nome, cpf, email, celular, password, passwordConfirmation, isEmailVerified, false, isPhoneVerified, setCpfError, null, setPasswordError, setPasswordConfirmationError, setAcceptedTerms, N, faz, mais, verifica, autom, tica, empregador, aqui]);
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, nome: e.target.value }));

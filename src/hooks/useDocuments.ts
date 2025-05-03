@@ -10,7 +10,7 @@ export function useDocuments(userId: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(
+const q = query(
       collection(db, 'documents'),
       where('userId', '==', userId)
     );
@@ -35,7 +35,7 @@ export function useDocuments(userId: string) {
     );
 
     return () => unsubscribe();
-  }, [userId]);
+}, [userId, setDocuments, setLoading, setError]);
 
   const deleteDocument = async (documentId: string) => {
     try {

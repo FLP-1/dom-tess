@@ -63,7 +63,7 @@ export function useHorarios(userId: string) {
         unsubscribe();
       }
     };
-  }, [userId]);
+  }, [userId, setHorarios, setError, setLoading]);
 
   const horarioAtual = horarios[0] || null;
 

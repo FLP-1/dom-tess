@@ -21,7 +21,7 @@ export default function EditAlertPage() {
       setAlert(a);
       setLoading(false);
     });
-  }, [id]);
+  }, [id, getAlert, setAlert, setLoading]);
 
   const handleSubmit = async (data: { title: string; description: string; sendPush: boolean; sendSMS: boolean }) => {
     try {

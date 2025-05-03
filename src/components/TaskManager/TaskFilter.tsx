@@ -1,12 +1,9 @@
 import React from 'react';
-import { Box, HStack, Input, InputGroup, InputLeftElement, Select } from '@chakra-ui/react';
-import { FiSearch, FiFilter } from 'react-icons/fi';
-import { SelectField } from '@/components/SelectField';
-import { TaskStatus, TaskPriority } from '../../types/task';
+import { Box, HStack, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
+import { FiSearch } from 'react-icons/fi';
+import { SelectCustom } from '../common/SelectCustom';
+import { ETaskStatus, ETaskPriority } from '../../types/task';
 import styles from './TaskFilter.module.css';
-
-const { Search } = Input;
-const { Option } = Select;
 
 interface TaskFilterProps {
   searchTerm: string;
@@ -19,16 +16,16 @@ interface TaskFilterProps {
 
 const statusOptions = [
   { value: 'all', label: 'Todos os Status' },
-  { value: 'pending', label: 'Pendente' },
-  { value: 'in_progress', label: 'Em Andamento' },
-  { value: 'completed', label: 'Concluído' }
+  { value: ETaskStatus.PENDING, label: 'Pendente' },
+  { value: ETaskStatus.IN_PROGRESS, label: 'Em Andamento' },
+  { value: ETaskStatus.COMPLETED, label: 'Concluído' }
 ];
 
 const priorityOptions = [
   { value: 'all', label: 'Todas as Prioridades' },
-  { value: 'high', label: 'Alta' },
-  { value: 'medium', label: 'Média' },
-  { value: 'low', label: 'Baixa' }
+  { value: ETaskPriority.HIGH, label: 'Alta' },
+  { value: ETaskPriority.MEDIUM, label: 'Média' },
+  { value: ETaskPriority.LOW, label: 'Baixa' }
 ];
 
 export function TaskFilter({
@@ -53,20 +50,20 @@ export function TaskFilter({
           />
         </InputGroup>
 
-        <SelectField
+        <SelectCustom
           label="Status"
           options={statusOptions}
           value={statusFilter}
           onChange={(e) => onStatusFilterChange(e.target.value)}
-          formControlProps={{ width: "auto" }}
+          width="auto"
         />
 
-        <SelectField
+        <SelectCustom
           label="Prioridade"
           options={priorityOptions}
           value={priorityFilter}
           onChange={(e) => onPriorityFilterChange(e.target.value)}
-          formControlProps={{ width: "auto" }}
+          width="auto"
         />
       </HStack>
     </Box>

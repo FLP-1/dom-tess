@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 import { Box, Heading, VStack, Flex, Text, Button, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,7 @@ export default function ComprasPage() {
       setLoading(false);
     }
     fetchGrupos();
-  }, []);
+  }, [fetchGrupos, setLoading]);
 
   return (
     <Box>

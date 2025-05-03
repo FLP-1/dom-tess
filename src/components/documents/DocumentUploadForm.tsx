@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -22,6 +24,7 @@ import { useDropzone } from 'react-dropzone';
 import { DatePicker } from '@/components/form/DatePicker';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAppNotifications } from '@/hooks/useAppNotifications';
+import { SelectCustom } from '../common/SelectCustom';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = [
@@ -226,18 +229,18 @@ export function DocumentUploadForm() {
 
         <FormControl>
           <FormLabel id="label-categoria" htmlFor="categoria">Categoria</FormLabel>
-          <Select
-            id="categoria"
-            aria-labelledby="label-categoria"
-            aria-label="Categoria"
+          <SelectCustom
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="contrato">Contratos</option>
-            <option value="fiscal">Documentos Fiscais</option>
-            <option value="rh">RH</option>
-            <option value="outros">Outros</option>
-          </Select>
+            options={[
+              { value: 'contrato', label: 'Contratos' },
+              { value: 'fiscal', label: 'Documentos Fiscais' },
+              { value: 'rh', label: 'RH' },
+              { value: 'outros', label: 'Outros' },
+            ]}
+            placeholder="Selecione a categoria"
+            isRequired
+          />
         </FormControl>
 
         <FormControl>

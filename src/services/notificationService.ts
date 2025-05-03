@@ -1,30 +1,183 @@
-import { collection, addDoc, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  getDocs, 
+  getDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  Timestamp,
+  DocumentData,
+  QueryConstraint
+} from 'firebase/firestore';
+import { db } from '@/config/firebase';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { Task } from '../types/task';
+
+export enum NotificationType {
+  TASK = 'TASK',
+  DOCUMENT = 'DOCUMENT',
+  SYSTEM = 'SYSTEM',
+  ALERT = 'ALERT'
+}
+
+export enum NotificationStatus {
+  UNREAD = 'UNREAD',
+  READ = 'READ',
+  ARCHIVED = 'ARCHIVED'
+}
 
 export interface Notification {
   id: string;
   userId: string;
+  type: NotificationType;
   title: string;
   message: string;
-  type: 'task' | 'chat' | 'system';
-  read: boolean;
-  data?: any;
+  status: NotificationStatus;
+  data?: Record<string, any>;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NotificationFilter {
+  type?: NotificationType;
+  status?: NotificationStatus;
+  startDate?: Date;
+  endDate?: Date;
+  userId?: string;
+}
+
+export interface NotificationListResponse {
+  notifications: Notification[];
+  total: number;
 }
 
 export class NotificationService {
   private static readonly COLLECTION_NAME = 'notifications';
-  private static messaging: any;
+
+  static async createNotification(notification: Omit<Notification, 'id'>): Promise<Notification> {
+    const docRef = doc(db, this.COLLECTION_NAME);
+    const newNotification: Notification = {
+      ...notification,
+      id: docRef.id,
+      status: NotificationStatus.UNREAD,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    await setDoc(docRef, newNotification);
+    return newNotification;
+  }
+
+  static async getNotifications(filter: NotificationFilter = {}): Promise<NotificationListResponse> {
+    const constraints: QueryConstraint[] = [];
+
+    if (filter.type) {
+      constraints.push(where('type', '==', filter.type));
+    }
+
+    if (filter.status) {
+      constraints.push(where('status', '==', filter.status));
+    }
+
+    if (filter.startDate) {
+      constraints.push(where('createdAt', '>=', Timestamp.fromDate(filter.startDate)));
+    }
+
+    if (filter.endDate) {
+      constraints.push(where('createdAt', '<=', Timestamp.fromDate(filter.endDate)));
+    }
+
+    if (filter.userId) {
+      constraints.push(where('userId', '==', filter.userId));
+    }
+
+    constraints.push(orderBy('createdAt', 'desc'));
+
+    const q = query(collection(db, this.COLLECTION_NAME), ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    const notifications = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt.toDate(),
+      updatedAt: doc.data().updatedAt.toDate(),
+    })) as Notification[];
+
+    return {
+      notifications,
+      total: notifications.length
+    };
+  }
+
+  static async getNotificationById(id: string): Promise<Notification | null> {
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...data,
+      createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt.toDate(),
+    } as Notification;
+  }
+
+  static async updateNotification(id: string, data: Partial<Notification>): Promise<void> {
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    await setDoc(
+      docRef,
+      {
+        ...data,
+        updatedAt: new Date()
+      },
+      { merge: true }
+    );
+  }
+
+  static async markAsRead(id: string): Promise<void> {
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    await setDoc(
+      docRef,
+      {
+        status: NotificationStatus.READ,
+        updatedAt: new Date()
+      },
+      { merge: true }
+    );
+  }
+
+  static async markAsArchived(id: string): Promise<void> {
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    await setDoc(
+      docRef,
+      {
+        status: NotificationStatus.ARCHIVED,
+        updatedAt: new Date()
+      },
+      { merge: true }
+    );
+  }
+
+  static async deleteNotification(id: string): Promise<void> {
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    await deleteDoc(docRef);
+  }
 
   static async initialize() {
     if (typeof window !== 'undefined') {
-      this.messaging = getMessaging();
+      const messaging = getMessaging();
       
       // Solicitar permissão para notificações
       try {
-        const token = await getToken(this.messaging, {
+        const token = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
         console.log('Token de notificação:', token);
@@ -33,41 +186,12 @@ export class NotificationService {
       }
 
       // Configurar listener para mensagens em primeiro plano
-      onMessage(this.messaging, (payload) => {
+      onMessage(messaging, (payload) => {
         console.log('Mensagem recebida:', payload);
         // Aqui você pode implementar a lógica para mostrar a notificação
         // usando a API de notificações do navegador
       });
     }
-  }
-
-  static async createNotification(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<string> {
-    const notificationRef = await addDoc(collection(db, this.COLLECTION_NAME), {
-      ...notification,
-      createdAt: Timestamp.now(),
-    });
-    return notificationRef.id;
-  }
-
-  static async getUnreadNotifications(userId: string): Promise<Notification[]> {
-    const q = query(
-      collection(db, this.COLLECTION_NAME),
-      where('userId', '==', userId),
-      where('read', '==', false),
-      orderBy('createdAt', 'desc')
-    );
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt.toDate(),
-    })) as Notification[];
-  }
-
-  static async markAsRead(notificationId: string): Promise<void> {
-    const notificationRef = doc(db, this.COLLECTION_NAME, notificationId);
-    await updateDoc(notificationRef, { read: true });
   }
 
   static async sendTaskNotification(task: Task, type: 'created' | 'updated' | 'assigned' | 'completed'): Promise<void> {
@@ -91,8 +215,8 @@ export class NotificationService {
         userId,
         title,
         message,
-        type: 'task',
-        read: false,
+        type: NotificationType.TASK,
+        status: NotificationStatus.UNREAD,
         data: { taskId: task.id },
       });
     }

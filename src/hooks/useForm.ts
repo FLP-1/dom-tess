@@ -198,24 +198,8 @@ export function useForm<T extends Record<string, any>>({
     }));
   }, []);
 
-  useEffect(() => {
-    if (validateOnChange) {
-      const errors = validateForm();
-      setState((prev) => ({
-        ...prev,
-        errors,
-        isValid: Object.keys(errors).length === 0,
-      }));
-    }
-  }, [validateOnChange, validateForm]);
-
   return {
-    values: state.values,
-    errors: state.errors,
-    touched: state.touched,
-    isValid: state.isValid,
-    isSubmitting: state.isSubmitting,
-    isDirty: state.isDirty,
+    ...state,
     handleChange,
     handleBlur,
     handleSubmit,
@@ -223,5 +207,7 @@ export function useForm<T extends Record<string, any>>({
     setFieldValue,
     setFieldError,
     setFieldTouched,
+    validateField,
+    validateForm,
   };
 } 

@@ -13,7 +13,6 @@ import {
   Tr,
   Th,
   Td,
-  Select,
   Input,
   useToast,
   FormControl,
@@ -23,6 +22,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { SelectCustom } from '../common/SelectCustom';
 
 interface RegistroPonto {
   id: string;
@@ -90,7 +90,7 @@ export function RelatoriosPonto({ userId }: RelatoriosPontoProps) {
 
   useEffect(() => {
     buscarRegistros();
-  }, [periodo, dataInicio, dataFim]);
+  }, [periodo, dataInicio, dataFim, buscarRegistros]);
 
   const exportarCSV = () => {
     const headers = ['Data/Hora', 'Tipo', 'Localização', 'WiFi', 'Observação'];
@@ -124,16 +124,17 @@ export function RelatoriosPonto({ userId }: RelatoriosPontoProps) {
         <HStack spacing={4}>
           <FormControl>
             <FormLabel id="label-periodo-select" htmlFor="periodo-select">Período</FormLabel>
-            <Select
-              id="periodo-select"
-              title="Período"
+            <SelectCustom
               value={periodo}
               onChange={(e) => setPeriodo(e.target.value)}
-              width="200px"
-            >
-              <option value="hoje">Hoje</option>
-              <option value="personalizado">Período Personalizado</option>
-            </Select>
+              options={[
+                { value: 'diario', label: 'Diário' },
+                { value: 'semanal', label: 'Semanal' },
+                { value: 'mensal', label: 'Mensal' }
+              ]}
+              placeholder="Selecione o período"
+              isRequired
+            />
           </FormControl>
 
           {periodo === 'personalizado' && (

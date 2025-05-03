@@ -9,15 +9,16 @@ import {
   Text,
   useToast,
   Switch,
+  Select,
   FormControl,
   FormLabel,
-  Select,
 } from '@chakra-ui/react';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Task } from '../../types/task';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiCalendar, FiRefreshCw } from 'react-icons/fi';
+import { SelectCustom } from '../common/SelectCustom';
 
 export const CalendarIntegration: React.FC = () => {
   const { user } = useAuth();
@@ -26,16 +27,18 @@ export const CalendarIntegration: React.FC = () => {
   const [calendarType, setCalendarType] = useState<'google' | 'outlook'>('google');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    checkCalendarConnection();
-  }, []);
+  const [calendars, setCalendars] = useState([]);
+  const [calendarId, setCalendarId] = useState('');
 
   const checkCalendarConnection = async () => {
     // Aqui você implementaria a lógica para verificar se o usuário já está conectado
     // com algum serviço de calendário
     setIsConnected(false);
   };
+
+  useEffect(() => {
+    checkCalendarConnection();
+  }, [checkCalendarConnection]);
 
   const handleConnectCalendar = async () => {
     try {
@@ -117,14 +120,16 @@ export const CalendarIntegration: React.FC = () => {
           <>
             <FormControl>
               <FormLabel>Selecione o Calendário</FormLabel>
-              <Select
-                value={calendarType}
-                onChange={(e) => setCalendarType(e.target.value as 'google' | 'outlook')}
-                disabled={!isConnected}
-              >
-                <option value="google">Google Calendar</option>
-                <option value="outlook">Outlook Calendar</option>
-              </Select>
+              <SelectCustom
+                value={calendarId}
+                onChange={(e) => setCalendarId(e.target.value)}
+                options={calendars.map(calendar => ({
+                  value: calendar.id,
+                  label: calendar.summary
+                }))}
+                placeholder="Selecione o calendário"
+                isDisabled={!isConnected}
+              />
             </FormControl>
 
             <Button

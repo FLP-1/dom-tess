@@ -1,6 +1,6 @@
 import { collection, addDoc, query, where, orderBy, getDocs, Timestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Task } from '../types/task';
+import { ITask } from '../types/task';
 
 export interface ChatMessage {
   id: string;
@@ -60,7 +60,7 @@ export class ChatService {
     return unsubscribe;
   }
 
-  static async sendTaskMessage(task: Task, userId: string, content: string): Promise<void> {
+  static async sendTaskMessage(task: ITask, userId: string, content: string): Promise<void> {
     await this.sendMessage({
       taskId: task.id,
       userId,
@@ -68,7 +68,7 @@ export class ChatService {
     });
   }
 
-  static async sendTaskAttachment(task: Task, userId: string, attachment: { type: string; url: string; name: string }): Promise<void> {
+  static async sendTaskAttachment(task: ITask, userId: string, attachment: { type: string; url: string; name: string }): Promise<void> {
     await this.sendMessage({
       taskId: task.id,
       userId,

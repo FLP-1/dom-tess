@@ -1,37 +1,37 @@
 import React from 'react';
 import { Tag } from '@chakra-ui/react';
-import { TaskPriority } from '../../types/task';
+import { ETaskPriority } from '../../types/task';
 
 interface TaskPriorityBadgeProps {
-  priority: TaskPriority;
+  priority: ETaskPriority;
   size?: 'sm' | 'md' | 'lg';
 }
 
 export const TaskPriorityBadge: React.FC<TaskPriorityBadgeProps> = ({ priority, size = 'sm' }) => {
-  const getPriorityColor = (priority: TaskPriority) => {
+  const getPriorityColor = (priority: ETaskPriority) => {
     switch (priority) {
-      case TaskPriority.LOW:
+      case ETaskPriority.LOW:
         return 'green';
-      case TaskPriority.MEDIUM:
+      case ETaskPriority.MEDIUM:
         return 'yellow';
-      case TaskPriority.HIGH:
+      case ETaskPriority.HIGH:
         return 'orange';
-      case TaskPriority.URGENT:
+      case ETaskPriority.URGENT:
         return 'red';
       default:
         return 'gray';
     }
   };
 
-  const getPriorityLabel = (priority: TaskPriority) => {
+  const getPriorityLabel = (priority: ETaskPriority) => {
     switch (priority) {
-      case TaskPriority.LOW:
+      case ETaskPriority.LOW:
         return 'Baixa';
-      case TaskPriority.MEDIUM:
+      case ETaskPriority.MEDIUM:
         return 'Média';
-      case TaskPriority.HIGH:
+      case ETaskPriority.HIGH:
         return 'Alta';
-      case TaskPriority.URGENT:
+      case ETaskPriority.URGENT:
         return 'Urgente';
       default:
         return '';

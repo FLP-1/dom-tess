@@ -14,19 +14,61 @@ import {
   MenuList,
   MenuItem,
   IconButton,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiBell, FiCheck, FiX } from 'react-icons/fi';
-import { collection, query, where, onSnapshot, Timestamp, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
-import { Task, TaskStatus } from '../../types/task';
+import { collection, query, where, onSnapshot, Timestamp, updateDoc, doc, getDocs } from 'firebase/firestore';
+import { db } from '@/config/firebase';
+import { ITask, ETaskStatus } from '../../types/task';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppNotifications } from '@/hooks/useAppNotifications';
+import { TaskStatusBadge } from './TaskStatusBadge';
 
-export const TaskNotifications: React.FC = () => {
+interface TaskNotificationsProps {
+  userId: string;
+}
+
+export const TaskNotifications: React.FC<TaskNotificationsProps> = ({ userId }) => {
   const { user } = useAuth();
   const notifications = useAppNotifications();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<ITask[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const bgColor = useColorModeValue('white', 'gray.700');
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchTasks = async () => {
+      const q = query(
+        collection(db, 'tasks'),
+        where('assignedTo', '==', userId),
+        where('status', 'in', [ETaskStatus.PENDING, ETaskStatus.IN_PROGRESS])
+      );
+
+      const querySnapshot = await getDocs(q);
+      const tasks: ITask[] = [];
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        tasks.push({
+          id: doc.id,
+          title: data.title,
+          description: data.description,
+          status: data.status,
+          priority: data.priority,
+          dueDate: data.dueDate.toDate(),
+          assignedTo: data.assignedTo,
+          createdBy: data.createdBy,
+          createdAt: data.createdAt.toDate(),
+          updatedAt: data.updatedAt.toDate()
+        } as ITask);
+      });
+
+      setTasks(tasks);
+    };
+
+    fetchTasks();
+  }, [userId]);
 
   useEffect(() => {
     if (!user) return;
@@ -34,11 +76,11 @@ export const TaskNotifications: React.FC = () => {
     const q = query(
       collection(db, 'tasks'),
       where('assignedTo', 'array-contains', user.uid),
-      where('status', 'in', [TaskStatus.PENDING, TaskStatus.IN_PROGRESS])
+      where('status', 'in', [ETaskStatus.PENDING, ETaskStatus.IN_PROGRESS])
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tasks: Task[] = [];
+      const tasks: ITask[] = [];
       let unread = 0;
 
       snapshot.forEach((doc) => {
@@ -46,7 +88,7 @@ export const TaskNotifications: React.FC = () => {
           id: doc.id,
           ...doc.data(),
           dueDate: doc.data().dueDate.toDate(),
-        } as Task;
+        } as ITask;
 
         // Verificar se a tarefa está próxima do vencimento
         const now = new Date();

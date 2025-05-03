@@ -18,29 +18,54 @@ import {
   InputLeftElement,
   FormControl,
   FormLabel,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { collection, query, where, orderBy, getDocs, Timestamp, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Task, TaskStatus, TaskPriority } from '../../types/task';
+import { ITask, ETaskPriority } from '../../types/task';
+import { EStatus } from '../../types/common';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
-import { FiPlus, FiSearch, FiFilter } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiFilter, FiMoreVertical } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 import { DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided } from '@hello-pangea/dnd';
+import { SelectCustom } from '../common/SelectCustom';
+import { TaskStatusBadge } from './TaskStatusBadge';
+import { TaskPriorityBadge } from './TaskPriorityBadge';
 
-export const TaskList: React.FC = () => {
+interface TaskListProps {
+  tasks: ITask[];
+  onEdit: (task: ITask) => void;
+  onDelete: (taskId: string) => void;
+  onStatusChange: (taskId: string, status: EStatus) => void;
+}
+
+export const TaskList: React.FC<TaskListProps> = ({
+  tasks: initialTasks,
+  onEdit,
+  onDelete,
+  onStatusChange
+}) => {
   const { user } = useAuth();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<ITask[]>(initialTasks);
   const [searchTerm, setSearchTerm] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'ALL'>('ALL');
-  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const [priorityFilter, setPriorityFilter] = useState<ETaskPriority | 'ALL'>('ALL');
+  const [selectedTask, setSelectedTask] = useState<ITask | undefined>();
+  const [sortBy, setSortBy] = useState('dueDate');
+  const bgColor = useColorModeValue('white', 'gray.700');
 
   const fetchTasks = async () => {
     try {
@@ -58,7 +83,7 @@ export const TaskList: React.FC = () => {
         dueDate: doc.data().dueDate.toDate(),
         createdAt: doc.data().createdAt.toDate(),
         updatedAt: doc.data().updatedAt.toDate(),
-      })) as Task[];
+      })) as ITask[];
 
       setTasks(tasksData);
     } catch (error) {
@@ -74,7 +99,11 @@ export const TaskList: React.FC = () => {
     }
   };
 
-  const handleEditTask = (task: Task) => {
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  const handleEditTask = (task: ITask) => {
     setSelectedTask(task);
     onOpen();
   };
@@ -89,21 +118,24 @@ export const TaskList: React.FC = () => {
     onClose();
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
 
-    const { source, destination } = result;
-    const taskId = result.draggableId;
-    const newStatus = destination.droppableId as TaskStatus;
+    const { source, destination, draggableId } = result;
+    const newStatus = destination.droppableId as EStatus;
+    const oldStatus = source.droppableId as EStatus;
 
-    // Atualizar o status da tarefa no banco de dados
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      updateTaskStatus(taskId, newStatus);
+    if (newStatus === oldStatus) return;
+
+    try {
+      await updateTaskStatus(draggableId, newStatus);
+      // ... existing code ...
+    } catch (error) {
+      // ... existing code ...
     }
   };
 
-  const updateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
+  const updateTaskStatus = async (taskId: string, newStatus: EStatus) => {
     try {
       await updateDoc(doc(db, 'tasks', taskId), {
         status: newStatus,
@@ -128,16 +160,14 @@ export const TaskList: React.FC = () => {
     return matchesSearch && matchesPriority;
   });
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return filteredTasks.filter(task => task.status === status);
+  const getTasksByStatus = (tasks: ITask[], status: EStatus) => {
+    return tasks.filter(task => task.status === status);
   };
 
-  const statusColumns = [
-    { id: TaskStatus.NOT_STARTED, title: 'Não Iniciado' },
-    { id: TaskStatus.PENDING, title: 'Pendente' },
-    { id: TaskStatus.IN_PROGRESS, title: 'Em Andamento' },
-    { id: TaskStatus.COMPLETED, title: 'Concluído' },
-    { id: TaskStatus.CANCELLED, title: 'Cancelado' },
+  const columns = [
+    { id: EStatus.NOT_STARTED, title: 'Não Iniciadas' },
+    { id: EStatus.IN_PROGRESS, title: 'Em Andamento' },
+    { id: EStatus.COMPLETED, title: 'Concluídas' }
   ];
 
   return (
@@ -168,29 +198,31 @@ export const TaskList: React.FC = () => {
           <Box width="200px">
             <FormControl isRequired>
               <FormLabel htmlFor="priority-filter" id="priority-filter-label">Filtrar por prioridade</FormLabel>
-              <Select
+              <SelectCustom
                 id="priority-filter"
                 name="priority-filter"
                 value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | 'ALL')}
-                aria-labelledby="priority-filter-label"
+                onChange={(e) => setPriorityFilter(e.target.value as ETaskPriority | 'ALL')}
+                options={[
+                  { value: 'ALL', label: 'Todas as prioridades' },
+                  { value: ETaskPriority.LOW, label: 'Baixa' },
+                  { value: ETaskPriority.MEDIUM, label: 'Média' },
+                  { value: ETaskPriority.HIGH, label: 'Alta' },
+                  { value: ETaskPriority.URGENT, label: 'Urgente' }
+                ]}
+                placeholder="Selecione uma prioridade"
                 aria-label="Filtrar por prioridade"
+                aria-labelledby="priority-filter-label"
                 title="Filtrar por prioridade"
-              >
-                <option value="ALL">Todas as prioridades</option>
-                <option value={TaskPriority.LOW}>Baixa</option>
-                <option value={TaskPriority.MEDIUM}>Média</option>
-                <option value={TaskPriority.HIGH}>Alta</option>
-                <option value={TaskPriority.URGENT}>Urgente</option>
-              </Select>
+              />
             </FormControl>
           </Box>
         </HStack>
 
         <DragDropContext onDragEnd={handleDragEnd}>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 5 }} spacing={4}>
-            {statusColumns.map((column) => (
-              <Box key={column.id} p={2} bg="gray.50" borderRadius="md">
+            {columns.map((column) => (
+              <Box key={column.id} p={2} bg={bgColor} borderRadius="md">
                 <Heading size="sm" mb={4}>{column.title}</Heading>
                 <Droppable droppableId={column.id}>
                   {(provided: DroppableProvided) => (
@@ -199,7 +231,7 @@ export const TaskList: React.FC = () => {
                       {...provided.droppableProps}
                       minH="200px"
                     >
-                      {getTasksByStatus(column.id).map((task, index) => (
+                      {getTasksByStatus(tasks, column.id).map((task, index) => (
                         <Draggable
                           key={task.id}
                           draggableId={task.id}

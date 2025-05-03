@@ -1,9 +1,9 @@
 import {
-  FormControl,
-  FormLabel,
   Select,
   SelectProps,
-  FormControlProps
+  FormControlProps,
+  FormControl,
+  FormLabel
 } from '@chakra-ui/react';
 
 interface Option {

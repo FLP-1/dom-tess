@@ -33,7 +33,7 @@ export function useAuthState() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setUser, setError]);
 
   return { user, loading, error };
 } 

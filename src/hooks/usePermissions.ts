@@ -20,7 +20,7 @@ export function usePermissions() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [auth, setIsEmployer]);
 
   return {
     isEmployer,

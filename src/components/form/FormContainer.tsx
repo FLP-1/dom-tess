@@ -1,3 +1,5 @@
+'use client';
+
 import React, { forwardRef } from 'react';
 import {
   Box,
@@ -11,19 +13,20 @@ import {
   Text,
   VStack,
   useToast,
+  Input,
 } from '@chakra-ui/react';
 import { useForm } from '../../hooks/useForm';
 import { ValidationRule } from '../../utils/validations';
 import { SelectField } from '../common/SelectField';
-import { AutocompleteInput, AutocompleteOption } from '../common/AutocompleteInput';
-import { MaskedInput } from '../common/MaskedInput';
+import { AutocompleteInput } from '../common/AutocompleteInput';
+import { MaskType } from '@/utils/maskTypes';
 
 export interface FormField {
   name: string;
   label?: string;
   type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'date' | 'select' | 'autocomplete';
-  mask?: 'cpf' | 'cnpj' | 'phone' | 'date' | 'currency' | 'percentage' | 'zipcode' | 'time' | 'creditcard' | 'numbers' | 'letters' | 'lettersAndNumbers' | 'removeAccents' | 'uppercase' | 'lowercase' | 'capitalize';
-  validationRules?: ValidationRule<string>[];
+  mask?: MaskType;
+  validationRules?: ValidationRule[];
   helperText?: string;
   options?: Array<{ value: string | number; label: string; group?: string }>;
   minCharsToSearch?: number;
@@ -152,8 +155,11 @@ export const FormContainer = forwardRef<HTMLFormElement, FormContainerProps>(
                     name={field.name}
                     value={value}
                     options={field.options || []}
-                    onChange={(value: string) => setFieldValue(field.name, value)}
-                    onBlur={(value: string) => setFieldTouched(field.name, true)}
+                    onChange={(value) => setFieldValue(field.name, value)}
+                    onBlur={(e) => {
+                      handleBlur(field.name);
+                      e.preventDefault();
+                    }}
                     isRequired={field.isRequired}
                     isDisabled={field.isDisabled || field.isLoading}
                     width={field.width}
@@ -167,28 +173,30 @@ export const FormContainer = forwardRef<HTMLFormElement, FormContainerProps>(
                       value: String(option.value),
                       label: option.label
                     }))}
-                    mask={field.mask}
-                    validationRules={field.validationRules}
-                    onChange={(value: string) => setFieldValue(field.name, value)}
-                    onBlur={(value: string) => setFieldTouched(field.name, true)}
+                    onChange={(newValue) => setFieldValue(field.name, newValue)}
+                    onBlur={() => handleBlur(field.name)}
                     minCharsToSearch={field.minCharsToSearch}
                     isRequired={field.isRequired}
                     isDisabled={field.isDisabled || field.isLoading}
                     width={field.width}
                   />
                 ) : (
-                  <MaskedInput
+                  <Input
                     id={field.name}
                     name={field.name}
-                    type={field.type}
                     value={value}
-                    mask={field.mask}
-                    validationRules={field.validationRules}
-                    onChange={(value: string) => setFieldValue(field.name, value)}
-                    onBlur={(value: string) => setFieldTouched(field.name, true)}
-                    isRequired={field.isRequired}
-                    isDisabled={field.isDisabled || field.isLoading}
+                    onChange={(e) => setFieldValue(field.name, e.target.value)}
+                    onBlur={() => handleBlur(field.name)}
+                    placeholder={field.label}
+                    type={field.type}
                     width={field.width}
+                    isDisabled={field.isDisabled || field.isLoading}
+                    isRequired={field.isRequired}
+                    isInvalid={!!error && isTouched}
+                    {...(field.mask && {
+                      as: 'input',
+                      'data-mask': field.mask
+                    })}
                   />
                 )}
                 {error && isTouched && <FormErrorMessage>{error}</FormErrorMessage>}
@@ -196,26 +204,26 @@ export const FormContainer = forwardRef<HTMLFormElement, FormContainerProps>(
               </FormControl>
             );
           })}
-          <Box display="flex" gap={4} justifyContent="flex-end">
+          <Box display="flex" gap={4} mt={4}>
+            <Button
+              type="submit"
+              colorScheme="blue"
+              isLoading={isSubmitting}
+              isDisabled={!isValid || !isDirty}
+              {...submitButtonProps}
+            >
+              {submitLabel}
+            </Button>
             {onReset && (
               <Button
                 type="reset"
                 variant="outline"
-                isDisabled={!isDirty || isSubmitting}
+                isDisabled={!isDirty}
                 {...resetButtonProps}
               >
                 {resetLabel}
               </Button>
             )}
-            <Button
-              type="submit"
-              colorScheme="blue"
-              isDisabled={!isValid || isSubmitting}
-              isLoading={isSubmitting}
-              {...submitButtonProps}
-            >
-              {submitLabel}
-            </Button>
           </Box>
         </VStack>
       </Box>

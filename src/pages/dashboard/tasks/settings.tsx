@@ -1,14 +1,12 @@
+import { FormControl, FormLabel, Button } from '@chakra-ui/react';
 import React from 'react';
 import {
   Box,
   VStack,
   Heading,
   Divider,
-  FormControl,
-  FormLabel,
   Switch,
   Select,
-  Button,
   useToast,
 } from '@chakra-ui/react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';

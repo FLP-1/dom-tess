@@ -30,7 +30,7 @@ export function useAuth() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [auth, setUser, setLoading]);
 
   return { user, loading };
 } 

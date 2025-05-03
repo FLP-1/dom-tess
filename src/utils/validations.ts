@@ -1,17 +1,19 @@
 'use client';
 
 import { logger } from './logger';
-import { ValidationRule } from '../types/common';
 
-export function createValidationRule<T>(
-  validate: (value: T) => boolean,
+// Definição local de ValidationRule
+export type ValidationRule = (value: any) => string | undefined;
+
+export function createValidationRule(
+  validate: (value: any) => boolean,
   message: string
-): ValidationRule<T> {
-  return (value: T) => validate(value) ? undefined : message;
+): ValidationRule {
+  return (value: any) => validate(value) ? undefined : message;
 }
 
-export const validateRequired = <T>(message = 'Campo obrigatório'): ValidationRule<T> =>
-  createValidationRule<T>(
+export const validateRequired = (message = 'Campo obrigatório'): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (value === undefined || value === null) return false;
       if (typeof value === 'string') return value.trim() !== '';
@@ -23,8 +25,8 @@ export const validateRequired = <T>(message = 'Campo obrigatório'): ValidationR
     message
   );
 
-export const validateCPF = (message = 'CPF inválido'): ValidationRule<string> =>
-  createValidationRule<string>(
+export const validateCPF = (message = 'CPF inválido'): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
       const cpf = value.replace(/\D/g, '');
@@ -56,8 +58,8 @@ export const validateCPF = (message = 'CPF inválido'): ValidationRule<string> =
     message
   );
 
-export const validateEmail = (message = 'Email inválido'): ValidationRule<string> =>
-  createValidationRule<string>(
+export const validateEmail = (message = 'Email inválido'): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -66,8 +68,8 @@ export const validateEmail = (message = 'Email inválido'): ValidationRule<strin
     message
   );
 
-export const validatePhone = (message = 'Telefone inválido'): ValidationRule<string> =>
-  createValidationRule<string>(
+export const validatePhone = (message = 'Telefone inválido'): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
       const phone = value.replace(/\D/g, '');
@@ -76,17 +78,21 @@ export const validatePhone = (message = 'Telefone inválido'): ValidationRule<st
     message
   );
 
-export const validateDate = (message = 'Data inválida', options?: { min?: Date; max?: Date }) =>
-  createValidationRule<string | Date>(
+export const validateDate = (message = 'Data inválida', options?: { min?: string; max?: string }) =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
-      const date = value instanceof Date ? value : new Date(value);
-      if (isNaN(date.getTime())) return false;
-      
-      if (options?.min && date < options.min) return false;
-      if (options?.max && date > options.max) return false;
-      
-      return true;
+      try {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return false;
+        
+        if (options?.min && date < new Date(options.min)) return false;
+        if (options?.max && date > new Date(options.max)) return false;
+        
+        return true;
+      } catch {
+        return false;
+      }
     },
     message
   );
@@ -100,8 +106,8 @@ export const validateNumber = (
     positive?: boolean;
     negative?: boolean;
   }
-): ValidationRule<string | number> =>
-  createValidationRule<string | number>(
+): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (value === undefined || value === null) return false;
       const num = typeof value === 'string' ? Number(value) : value;
@@ -118,36 +124,48 @@ export const validateNumber = (
     message
   );
 
-export const validateLength = (
-  options: {
-    min?: number;
-    max?: number;
-    exact?: number;
-  },
-  message?: string
-): ValidationRule<string | any[]> =>
-  createValidationRule<string | any[]>(
+export const validateLength = (min: number, max: number, message?: string): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
-      const length = Array.isArray(value) ? value.length : value.toString().length;
-      
-      if (options.exact !== undefined) return length === options.exact;
-      if (options.min !== undefined && length < options.min) return false;
-      if (options.max !== undefined && length > options.max) return false;
-      
-      return true;
+      const length = String(value).length;
+      return length >= min && length <= max;
     },
-    message || `Deve ter ${options.exact !== undefined ? 'exatamente ' + options.exact : 
-      options.min !== undefined && options.max !== undefined ? 'entre ' + options.min + ' e ' + options.max :
-      options.min !== undefined ? 'no mínimo ' + options.min :
-      'no máximo ' + options.max} caracteres`
+    message || `Deve ter entre ${min} e ${max} caracteres`
+  );
+
+export const validateMinLength = (min: number, message?: string): ValidationRule =>
+  createValidationRule(
+    (value) => {
+      if (!value) return false;
+      return String(value).length >= min;
+    },
+    message || `Deve ter no mínimo ${min} caracteres`
+  );
+
+export const validateMaxLength = (max: number, message?: string): ValidationRule =>
+  createValidationRule(
+    (value) => {
+      if (!value) return false;
+      return String(value).length <= max;
+    },
+    message || `Deve ter no máximo ${max} caracteres`
+  );
+
+export const validateExactLength = (length: number, message?: string): ValidationRule =>
+  createValidationRule(
+    (value) => {
+      if (!value) return false;
+      return String(value).length === length;
+    },
+    message || `Deve ter exatamente ${length} caracteres`
   );
 
 export const validateRegex = (
   regex: RegExp,
   message = 'Formato inválido'
-): ValidationRule<string> =>
-  createValidationRule<string>(
+): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
       return regex.test(value);
@@ -156,7 +174,7 @@ export const validateRegex = (
   );
 
 export const validatePassword = (message = 'Senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais') =>
-  createValidationRule<string>(
+  createValidationRule(
     (value) => {
       if (!value) return false;
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -166,13 +184,13 @@ export const validatePassword = (message = 'Senha deve conter pelo menos 8 carac
   );
 
 export const validateConfirmPassword = (password: string, message = 'As senhas não conferem') =>
-  createValidationRule<string>(
+  createValidationRule(
     (value) => value === password,
     message
   );
 
-export const validateURL = (message = 'URL inválida'): ValidationRule<string> =>
-  createValidationRule<string>(
+export const validateURL = (message = 'URL inválida'): ValidationRule =>
+  createValidationRule(
     (value) => {
       if (!value) return false;
       try {
@@ -186,7 +204,7 @@ export const validateURL = (message = 'URL inválida'): ValidationRule<string> =
   );
 
 export const validateFileSize = (maxSizeInMB: number, message = `Arquivo deve ter no máximo ${maxSizeInMB}MB`) =>
-  createValidationRule<File>(
+  createValidationRule(
     (file) => {
       if (!file) return false;
       const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
@@ -196,7 +214,7 @@ export const validateFileSize = (maxSizeInMB: number, message = `Arquivo deve te
   );
 
 export const validateFileType = (allowedTypes: string[], message = `Tipo de arquivo não permitido. Tipos permitidos: ${allowedTypes.join(', ')}`) =>
-  createValidationRule<File>(
+  createValidationRule(
     (file) => {
       if (!file) return false;
       return allowedTypes.includes(file.type);
@@ -236,8 +254,6 @@ export const generateDefaultEmail = (cpf: string): string => {
   const cleanCPF = cpf.replace(/[^\d]/g, '');
   return `${cleanCPF}@dom.com.br`;
 };
-
-export type ValidationRule = (value: any) => string | undefined;
 
 export const required = (value: any): string | undefined => {
   if (value === undefined || value === null || value === '') {
@@ -333,9 +349,9 @@ export const currency = (value: string): string | undefined => {
 };
 
 export const composeValidations = (...validations: ValidationRule[]) => (value: any): string | undefined => {
-  for (const validation of validations) {
-    const error = validation(value);
-    if (error) return error;
+  for (const validate of validations) {
+    const result = validate(value);
+    if (result) return result;
   }
   return undefined;
 }; 

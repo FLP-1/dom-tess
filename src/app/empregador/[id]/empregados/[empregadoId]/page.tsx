@@ -38,7 +38,7 @@ export default function EmpregadoPage({ params }: Props) {
 
       carregarEmpregado();
     }
-  }, [params.id, params.empregadoId, isNovo, router]);
+  }, [params.id, params.empregadoId, isNovo, router, carregarEmpregado, setEmpregado]);
 
   return (
     <Container maxWidth="lg">

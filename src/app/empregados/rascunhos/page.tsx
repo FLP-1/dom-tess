@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -46,7 +47,7 @@ export default function RascunhosPage() {
     if (user) {
       loadRascunhos();
     }
-  }, [user]);
+  }, [user, loadRascunhos]);
 
   const loadRascunhos = async () => {
     try {

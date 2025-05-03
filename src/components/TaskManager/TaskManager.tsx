@@ -1,138 +1,168 @@
 'use client';
 
-import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Task, TaskStatus, TaskPriority } from '../../types/task';
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  Heading,
+  VStack,
+  HStack,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  ModalCloseButton,
+  useToast
+} from '@chakra-ui/react';
+import { FiPlus } from 'react-icons/fi';
+import { ITask, ETaskPriority } from '../../types/task';
+import { EStatus } from '../../types/common';
 import { useTask } from '../../contexts/TaskContext';
-import { TaskForm } from './TaskForm';
-import { TaskCard } from './TaskCard';
+import { TaskList } from './TaskList';
 import { TaskFilter } from './TaskFilter';
-import { Button, Modal, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import styles from './TaskManager.module.css';
+import { TaskForm } from './TaskForm';
 
-const statusColumns = [
-  { id: TaskStatus.NOT_STARTED, title: 'Não Iniciado' },
-  { id: TaskStatus.PENDING, title: 'Pendente' },
-  { id: TaskStatus.IN_PROGRESS, title: 'Em Andamento' },
-  { id: TaskStatus.COMPLETED, title: 'Concluído' },
-  { id: TaskStatus.CANCELLED, title: 'Cancelado' },
-];
+interface TaskFilters {
+  status: EStatus[];
+  priority: ETaskPriority[];
+  search: string;
+}
 
-export const TaskManager: React.FC = () => {
-  const { tasks, loading, error, updateTaskStatus, filterTasks } = useTask();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [filters, setFilters] = useState({
+interface TaskManagerProps {
+  onFilterChange?: (filters: TaskFilters) => void;
+}
+
+export const TaskManager: React.FC<TaskManagerProps> = ({ onFilterChange }) => {
+  const { tasks, loading, error, updateTaskStatus, loadTasks } = useTask();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedTask, setSelectedTask] = useState<ITask | null>(null);
+  const [filters, setFilters] = useState<TaskFilters>({
     status: [],
     priority: [],
-    search: '',
+    search: ''
   });
+  const toast = useToast();
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const handleDragEnd = async (result: any) => {
-    if (!result.destination) return;
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
-    const taskId = result.draggableId;
-    const newStatus = result.destination.droppableId as TaskStatus;
-
+  const handleStatusChange = async (taskId: string, status: EStatus) => {
     try {
-      await updateTaskStatus(taskId, newStatus);
-      message.success('Status da tarefa atualizado com sucesso');
+      await updateTaskStatus(taskId, status);
+      toast({
+        title: 'Status atualizado',
+        description: 'Status da tarefa atualizado com sucesso',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
     } catch (err) {
-      message.error('Erro ao atualizar status da tarefa');
+      toast({
+        title: 'Erro',
+        description: 'Erro ao atualizar status da tarefa',
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      });
     }
   };
 
-  const handleFilterChange = (newFilters: any) => {
+  const handleEdit = (task: ITask) => {
+    setSelectedTask(task);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = async (taskId: string) => {
+    try {
+      await updateTaskStatus(taskId, EStatus.DELETED);
+      toast({
+        title: 'Tarefa excluída',
+        description: 'Tarefa excluída com sucesso',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao excluir tarefa',
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      });
+    }
+  };
+
+  const handleFilterChange = (newFilters: TaskFilters) => {
     setFilters(newFilters);
-    filterTasks(newFilters);
   };
 
   const filteredTasks = tasks.filter(task => {
     if (filters.status.length && !filters.status.includes(task.status)) return false;
     if (filters.priority.length && !filters.priority.includes(task.priority)) return false;
-    if (filters.search && !task.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      return (
+        task.title.toLowerCase().includes(searchLower) ||
+        task.description.toLowerCase().includes(searchLower)
+      );
+    }
     return true;
   });
 
-  const tasksByStatus = statusColumns.reduce((acc, column) => {
-    acc[column.id] = filteredTasks.filter(task => task.status === column.id);
-    return acc;
-  }, {} as Record<TaskStatus, Task[]>);
-
-  if (loading) return <div>Carregando...</div>;
-  if (error) return <div>Erro: {error}</div>;
+  const handleCreateTask = () => {
+    setSelectedTask(null);
+    setIsFormOpen(true);
+  };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Gerenciamento de Tarefas</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setSelectedTask(null);
-            setIsModalVisible(true);
-          }}
-        >
-          Nova Tarefa
-        </Button>
-      </div>
+    <Box p={4}>
+      <VStack spacing={4} align="stretch">
+        <HStack justify="space-between">
+          <Heading size="lg">Gerenciador de Tarefas</Heading>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="blue"
+            onClick={handleCreateTask}
+          >
+            Nova Tarefa
+          </Button>
+        </HStack>
 
-      <TaskFilter onFilterChange={handleFilterChange} />
+        <TaskFilter onFilterChange={handleFilterChange} />
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className={styles.board}>
-          {statusColumns.map(column => (
-            <div key={column.id} className={styles.column}>
-              <h2>{column.title}</h2>
-              <Droppable droppableId={column.id}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={styles.taskList}
-                  >
-                    {tasksByStatus[column.id].map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id} index={index}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <TaskCard
-                              task={task}
-                              onClick={() => {
-                                setSelectedTask(task);
-                                setIsModalVisible(true);
-                              }}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </div>
-      </DragDropContext>
+        {loading ? (
+          <Box textAlign="center">Carregando...</Box>
+        ) : error ? (
+          <Box textAlign="center" color="red.500">
+            {error}
+          </Box>
+        ) : (
+          <TaskList
+            tasks={filteredTasks}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+          />
+        )}
 
-      <Modal
-        title={selectedTask ? 'Editar Tarefa' : 'Nova Tarefa'}
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        <TaskForm
-          task={selectedTask}
-          onClose={() => setIsModalVisible(false)}
-        />
-      </Modal>
-    </div>
+        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody p={6}>
+              <TaskForm
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                task={selectedTask || undefined}
+              />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      </VStack>
+    </Box>
   );
 }; 

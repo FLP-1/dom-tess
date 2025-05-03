@@ -1,5 +1,5 @@
 import { useToast } from '@chakra-ui/react';
-import { NotificationService } from '@/services/notificationService';
+import { NotificationService, sendPushNotification, sendSMS } from '@/services/notificationService';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface NotificationOptions {
@@ -35,12 +35,12 @@ export function useAppNotifications() {
 
     // Envia push notification se solicitado
     if (options.pushNotification) {
-      await NotificationService.sendPushNotification({ title, description: message || title });
+      await sendPushNotification({ title, description: message || title });
     }
 
     // Envia SMS se solicitado
     if (options.sms) {
-      await NotificationService.sendSMS({ title, description: message || title });
+      await sendSMS({ title, description: message || title });
     }
   };
 
@@ -89,7 +89,7 @@ export function useAppNotifications() {
 
     // Envia push notification se solicitado
     if (options.pushNotification) {
-      await NotificationService.sendPushNotification({ title, description: message || title });
+      await sendPushNotification({ title, description: message || title });
     }
   };
 

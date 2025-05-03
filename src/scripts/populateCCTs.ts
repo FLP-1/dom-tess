@@ -1,4 +1,6 @@
 import { cctService } from '@/services/cctService';
+import { Document } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
 
 const exampleCCTs = [
   {
@@ -7,7 +9,16 @@ const exampleCCTs = [
     salary: 1500.00,
     validityStart: new Date('2023-01-01'),
     validityEnd: new Date('2023-12-31'),
-    documentUrl: 'https://example.com/cct-sp-2023.pdf',
+    document: {
+      id: uuidv4(),
+      type: 'contract',
+      title: 'CCT SP - Empregada Doméstica',
+      url: 'https://example.com/cct-sp-2023.pdf',
+      userId: 'admin',
+      uploadedAt: new Date(),
+      expiresAt: new Date('2023-12-31'),
+      size: 1024
+    } as Document
   },
   {
     state: 'SP',
@@ -15,7 +26,16 @@ const exampleCCTs = [
     salary: 1800.00,
     validityStart: new Date('2023-01-01'),
     validityEnd: new Date('2023-12-31'),
-    documentUrl: 'https://example.com/cct-sp-2023.pdf',
+    document: {
+      id: uuidv4(),
+      type: 'contract',
+      title: 'CCT SP - Cozinheira',
+      url: 'https://example.com/cct-sp-2023.pdf',
+      userId: 'admin',
+      uploadedAt: new Date(),
+      expiresAt: new Date('2023-12-31'),
+      size: 1024
+    } as Document
   },
   {
     state: 'RJ',
@@ -23,7 +43,16 @@ const exampleCCTs = [
     salary: 1600.00,
     validityStart: new Date('2023-01-01'),
     validityEnd: new Date('2023-12-31'),
-    documentUrl: 'https://example.com/cct-rj-2023.pdf',
+    document: {
+      id: uuidv4(),
+      type: 'contract',
+      title: 'CCT RJ - Empregada Doméstica',
+      url: 'https://example.com/cct-rj-2023.pdf',
+      userId: 'admin',
+      uploadedAt: new Date(),
+      expiresAt: new Date('2023-12-31'),
+      size: 1024
+    } as Document
   },
   {
     state: 'RJ',
@@ -31,8 +60,17 @@ const exampleCCTs = [
     salary: 1900.00,
     validityStart: new Date('2023-01-01'),
     validityEnd: new Date('2023-12-31'),
-    documentUrl: 'https://example.com/cct-rj-2023.pdf',
-  },
+    document: {
+      id: uuidv4(),
+      type: 'contract',
+      title: 'CCT RJ - Cozinheira',
+      url: 'https://example.com/cct-rj-2023.pdf',
+      userId: 'admin',
+      uploadedAt: new Date(),
+      expiresAt: new Date('2023-12-31'),
+      size: 1024
+    } as Document
+  }
 ];
 
 export async function populateCCTs() {

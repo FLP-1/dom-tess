@@ -19,13 +19,15 @@ import {
   ModalCloseButton,
   Textarea,
   useDisclosure,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { FaClock, FaMapMarkerAlt, FaWifi, FaStickyNote } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { criarRegistro, verificarRegistrosDoDia } from '@/services/registros';
 import { criarNotificacaoHorario } from '@/services/notificacoes';
-import { useAppNotifications } from '@/contexts/AppNotificationsContext';
+// import { useAppNotifications } from '@/contexts/AppNotificationsContext';
 
 interface RegistroPontoProps {
   userId: string;
@@ -71,7 +73,7 @@ export function RegistroPonto({ userId }: RegistroPontoProps) {
 
     // Verificar registros do dia
     verificarRegistrosDoDia(userId).then(setRegistrosHoje);
-  }, [userId]);
+  }, [userId, setLocalizacao, setWifi, setRegistrosHoje]);
 
   const registrarPonto = async (tipo: 'entrada' | 'saida' | 'intervalo') => {
     if (!localizacao) {

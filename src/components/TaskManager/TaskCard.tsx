@@ -2,11 +2,11 @@ import React from 'react';
 import { Card, CardBody, CardHeader, Heading, Text, Flex, Box, Icon } from '@chakra-ui/react';
 import { TaskStatusBadge } from './TaskStatusBadge';
 import { TaskPriorityBadge } from './TaskPriorityBadge';
-import { Task } from '../../types/task';
+import { ITask } from '../../types/task';
 import { FiCalendar, FiDollarSign, FiClock } from 'react-icons/fi';
 
 interface TaskCardProps {
-  task: Task;
+  task: ITask;
   onClick: () => void;
 }
 

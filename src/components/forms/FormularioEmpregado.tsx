@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Box,
   FormControl,
@@ -14,16 +14,24 @@ import {
   Button,
   IconButton,
   Input,
+  Grid,
+  GridItem,
+  Stack,
 } from '@chakra-ui/react';
 import { DadosEmpregado } from '@/types/esocial';
-import { MaskedInput, masks } from '@/components/common/MaskedInput';
-import { SelectField } from '@/components/common/SelectField';
+import { MaskedInput } from '@/components/common/MaskedInput';
+import { MaskType } from '@/utils/maskTypes';
+import { SelectCustom } from '../common/SelectCustom';
 import { EnderecoForm } from '@/components/common/EnderecoForm';
 import { ParentescoSelect } from '@/components/common/ParentescoSelect';
 import { formatCPF, removeCPFFormatting, validateCPF } from '@/utils/cpf';
 import { formatCurrency } from '@/utils/currency';
 import { useRouter } from 'next/navigation';
 import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FormInput } from '../common/FormInput';
+import { SelectField } from '../common/SelectField';
+import { useForm } from '@/hooks/useForm';
+import { validacoes } from '@/utils/validacoes/empregado';
 
 interface FormularioEmpregadoProps {
   initialData?: Partial<DadosEmpregado>;
@@ -38,7 +46,7 @@ const ESTADO_CIVIL_OPTIONS = [
   { value: 'DIVORCIADO', label: 'Divorciado(a)' },
   { value: 'VIUVO', label: 'Viúvo(a)' },
   { value: 'UNIAO_ESTAVEL', label: 'União Estável' },
-];
+] as const;
 
 const GRAU_INSTRUCAO_OPTIONS = [
   { value: 'FUNDAMENTAL_INCOMPLETO', label: 'Fundamental Incompleto' },
@@ -48,12 +56,12 @@ const GRAU_INSTRUCAO_OPTIONS = [
   { value: 'SUPERIOR_INCOMPLETO', label: 'Superior Incompleto' },
   { value: 'SUPERIOR_COMPLETO', label: 'Superior Completo' },
   { value: 'POS_GRADUACAO', label: 'Pós-graduação' },
-];
+] as const;
 
 const TIPO_CONTA_OPTIONS = [
   { value: 'CORRENTE', label: 'Conta Corrente' },
   { value: 'POUPANCA', label: 'Conta Poupança' },
-];
+] as const;
 
 interface Dependente {
   nome: string;
@@ -68,46 +76,7 @@ export function FormularioEmpregado({
   onBack,
   onSaveDraft,
 }: FormularioEmpregadoProps) {
-  const [formData, setFormData] = useState<Partial<DadosEmpregado>>({
-    nome: initialData?.nome || '',
-    cpf: initialData?.cpf || '',
-    dataNascimento: initialData?.dataNascimento || new Date(),
-    nacionalidade: initialData?.nacionalidade || '',
-    estadoCivil: initialData?.estadoCivil || '',
-    rg: {
-      numero: initialData?.rg?.numero || '',
-      orgaoEmissor: initialData?.rg?.orgaoEmissor || '',
-      dataEmissao: initialData?.rg?.dataEmissao || new Date(),
-    },
-    endereco: {
-      logradouro: initialData?.endereco?.logradouro || '',
-      numero: initialData?.endereco?.numero || '',
-      complemento: initialData?.endereco?.complemento || '',
-      bairro: initialData?.endereco?.bairro || '',
-      cidade: initialData?.endereco?.cidade || '',
-      estado: initialData?.endereco?.estado || '',
-      cep: initialData?.endereco?.cep || '',
-    },
-    contato: {
-      telefone: initialData?.contato?.telefone || '',
-      email: initialData?.contato?.email || '',
-    },
-    dadosBancarios: {
-      banco: initialData?.dadosBancarios?.banco || '',
-      agencia: initialData?.dadosBancarios?.agencia || '',
-      conta: initialData?.dadosBancarios?.conta || '',
-      tipoConta: initialData?.dadosBancarios?.tipoConta || 'corrente',
-    },
-    dadosFamiliares: {
-      nomeMae: initialData?.dadosFamiliares?.nomeMae || '',
-      nomePai: initialData?.dadosFamiliares?.nomePai || '',
-    },
-    grauInstrucao: initialData?.grauInstrucao || '',
-    numeroDependentes: initialData?.numeroDependentes || 0,
-    informacoesSaude: initialData?.informacoesSaude || '',
-    dependentes: initialData?.dependentes || [],
-  });
-
+  const [formData, setFormData] = useState<Partial<DadosEmpregado>>(initialData || {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dependentes, setDependentes] = useState<Dependente[]>(
     initialData?.dependentes?.map(d => ({
@@ -223,12 +192,12 @@ export function FormularioEmpregado({
     });
   };
 
-  const handleDependenteChange = (index: number, field: keyof Dependente, value: string) => {
+  const handleDependenteChange = (index: number, field: keyof Dependente, value: string | Date) => {
     setDependentes(prev => {
       const newDependentes = [...prev];
       newDependentes[index] = {
         ...newDependentes[index],
-        [field]: value,
+        [field]: value
       };
       return newDependentes;
     });
@@ -251,8 +220,8 @@ export function FormularioEmpregado({
         newErrors[`dependentes.${index}.cpf`] = 'CPF é obrigatório';
       } else if (!validateCPF(removeCPFFormatting(dependente.cpf))) {
         newErrors[`dependentes.${index}.cpf`] = 'CPF inválido';
-      } else if (cpfs.filter(c => c === removeCPFFormatting(dependente.cpf)).length > 1) {
-        newErrors[`dependentes.${index}.cpf`] = 'CPF duplicado entre dependentes';
+      } else if (cpfs.filter(cpf => cpf === removeCPFFormatting(dependente.cpf)).length > 1) {
+        newErrors[`dependentes.${index}.cpf`] = 'CPF já cadastrado para outro dependente';
       }
       if (!dependente.dataNascimento) {
         newErrors[`dependentes.${index}.dataNascimento`] = 'Data de nascimento é obrigatória';
@@ -261,31 +230,31 @@ export function FormularioEmpregado({
         newErrors[`dependentes.${index}.parentesco`] = 'Parentesco é obrigatório';
       }
     });
-    return newErrors;
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const dependentesErrors = validateDependentes();
-    if (Object.keys(dependentesErrors).length > 0) {
-      setErrors(dependentesErrors);
-      return;
+    if (validateForm() && validateDependentes()) {
+      onSubmit({
+        ...formData,
+        dependentes: dependentes.map(d => ({
+          ...d,
+          dataNascimento: d.dataNascimento,
+        })),
+      });
     }
-    onSubmit({
-      ...formData,
-      dependentes,
-      numeroDependentes: dependentes.length,
-    });
   };
 
-  const handleChange = (field: keyof DadosEmpregado, value: string | number | Date) => {
+  const handleChange = (field: keyof DadosEmpregado, value: string | Date) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleNestedChange = (parent: keyof DadosEmpregado, field: string, value: string | number | Date) => {
+  const handleNestedChange = useCallback((parent: keyof DadosEmpregado, field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [parent]: {
@@ -293,7 +262,7 @@ export function FormularioEmpregado({
         [field]: value
       }
     }));
-  };
+  }, []);
 
   const handleEnderecoChange = (endereco: Partial<DadosEmpregado['endereco']>) => {
     setFormData(prev => ({
@@ -305,324 +274,319 @@ export function FormularioEmpregado({
     }));
   };
 
+  const handleSelectChange = (field: keyof DadosEmpregado, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
+
+  const handleNestedSelectChange = (parent: keyof DadosEmpregado, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [field]: value
+      }
+    }));
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[`${parent}.${field}`];
+      return newErrors;
+    });
+  };
+
   return (
-    <Box>
-      <VStack spacing={4}>
-        <FormControl isInvalid={!!errors.nome}>
-          <FormLabel>Nome Completo</FormLabel>
-          <Input
-            value={formData.nome}
-            onChange={e => handleChange('nome', e.target.value)}
-            placeholder="Nome Completo"
-            aria-label="Nome Completo"
-          />
-          <FormErrorMessage>{errors.nome}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.cpf}>
-          <FormLabel>CPF</FormLabel>
-          <MaskedInput
-            value={formData.cpf}
-            onChange={e => handleChange('cpf', e.target.value)}
-            placeholder="000.000.000-00"
-            aria-label="CPF"
-            mask="999.999.999-99"
-          />
-          <FormErrorMessage>{errors.cpf}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.dataNascimento}>
-          <FormLabel>Data de Nascimento</FormLabel>
-          <Input
-            type="date"
-            value={formData.dataNascimento?.toISOString().split('T')[0] || ''}
-            onChange={e => handleChange('dataNascimento', new Date(e.target.value))}
-            aria-label="Data de Nascimento"
-          />
-          <FormErrorMessage>{errors.dataNascimento}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.nacionalidade}>
-          <FormLabel>Nacionalidade</FormLabel>
-          <Input
-            value={formData.nacionalidade}
-            onChange={e => handleChange('nacionalidade', e.target.value)}
-            placeholder="Nacionalidade"
-            aria-label="Nacionalidade"
-          />
-          <FormErrorMessage>{errors.nacionalidade}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.estadoCivil}>
-          <FormLabel>Estado Civil</FormLabel>
-          <SelectField
-            value={formData.estadoCivil}
-            onChange={value => handleChange('estadoCivil', value)}
-            options={ESTADO_CIVIL_OPTIONS}
-            placeholder="Selecione o estado civil"
-          />
-          <FormErrorMessage>{errors.estadoCivil}</FormErrorMessage>
-        </FormControl>
-
-        <Divider />
-
-        <FormControl isInvalid={!!errors['rg.numero']}>
-          <FormLabel>RG</FormLabel>
-          <MaskedInput
-            value={formData.rg?.numero}
-            onChange={e => handleNestedChange('rg', 'numero', e.target.value)}
-            placeholder="Número do RG"
-            aria-label="Número do RG"
-            mask="99.999.999-9"
-          />
-          <FormErrorMessage>{errors['rg.numero']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['rg.orgaoEmissor']}>
-          <FormLabel>Órgão Emissor</FormLabel>
-          <Input
-            value={formData.rg?.orgaoEmissor}
-            onChange={e => handleNestedChange('rg', 'orgaoEmissor', e.target.value)}
-            placeholder="Órgão Emissor"
-            aria-label="Órgão Emissor"
-          />
-          <FormErrorMessage>{errors['rg.orgaoEmissor']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['rg.dataEmissao']}>
-          <FormLabel>Data de Emissão</FormLabel>
-          <Input
-            type="date"
-            value={formData.rg?.dataEmissao?.toISOString().split('T')[0] || ''}
-            onChange={e => handleNestedChange('rg', 'dataEmissao', new Date(e.target.value))}
-            aria-label="Data de Emissão"
-          />
-          <FormErrorMessage>{errors['rg.dataEmissao']}</FormErrorMessage>
-        </FormControl>
-
-        <Divider />
-
-        <EnderecoForm
-          endereco={formData.endereco}
-          onChange={handleEnderecoChange}
-          errors={errors}
-        />
-
-        <Divider />
-
-        <FormControl isInvalid={!!errors['contato.telefone']}>
-          <FormLabel>Telefone</FormLabel>
-          <MaskedInput
-            value={formData.contato?.telefone}
-            onChange={e => handleNestedChange('contato', 'telefone', e.target.value)}
-            placeholder="(00) 00000-0000"
-            aria-label="Telefone"
-            mask="(99) 99999-9999"
-          />
-          <FormErrorMessage>{errors['contato.telefone']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['contato.email']}>
-          <FormLabel>E-mail</FormLabel>
-          <Input
-            type="email"
-            value={formData.contato?.email}
-            onChange={e => handleNestedChange('contato', 'email', e.target.value)}
-            placeholder="E-mail"
-            aria-label="E-mail"
-          />
-          <FormErrorMessage>{errors['contato.email']}</FormErrorMessage>
-        </FormControl>
-
-        <Divider />
-
-        <FormControl isInvalid={!!errors['dadosBancarios.banco']}>
-          <FormLabel>Banco</FormLabel>
-          <Input
-            value={formData.dadosBancarios?.banco}
-            onChange={e => handleNestedChange('dadosBancarios', 'banco', e.target.value)}
-            placeholder="Banco"
-            aria-label="Banco"
-          />
-          <FormErrorMessage>{errors['dadosBancarios.banco']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['dadosBancarios.agencia']}>
-          <FormLabel>Agência</FormLabel>
-          <MaskedInput
-            value={formData.dadosBancarios?.agencia}
-            onChange={e => handleNestedChange('dadosBancarios', 'agencia', e.target.value)}
-            placeholder="Agência"
-            aria-label="Agência"
-            mask="9999-9"
-          />
-          <FormErrorMessage>{errors['dadosBancarios.agencia']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['dadosBancarios.conta']}>
-          <FormLabel>Conta</FormLabel>
-          <MaskedInput
-            value={formData.dadosBancarios?.conta}
-            onChange={e => handleNestedChange('dadosBancarios', 'conta', e.target.value)}
-            placeholder="Conta"
-            aria-label="Conta"
-            mask="999999-9"
-          />
-          <FormErrorMessage>{errors['dadosBancarios.conta']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['dadosBancarios.tipoConta']}>
-          <FormLabel>Tipo de Conta</FormLabel>
-          <SelectField
-            value={formData.dadosBancarios?.tipoConta}
-            onChange={value => handleNestedChange('dadosBancarios', 'tipoConta', value)}
-            options={TIPO_CONTA_OPTIONS}
-            placeholder="Selecione o tipo de conta"
-          />
-          <FormErrorMessage>{errors['dadosBancarios.tipoConta']}</FormErrorMessage>
-        </FormControl>
-
-        <Divider />
-
-        <FormControl isInvalid={!!errors['dadosFamiliares.nomeMae']}>
-          <FormLabel>Nome da Mãe</FormLabel>
-          <Input
-            value={formData.dadosFamiliares?.nomeMae}
-            onChange={e => handleNestedChange('dadosFamiliares', 'nomeMae', e.target.value)}
-            placeholder="Nome da Mãe"
-            aria-label="Nome da Mãe"
-          />
-          <FormErrorMessage>{errors['dadosFamiliares.nomeMae']}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors['dadosFamiliares.nomePai']}>
-          <FormLabel>Nome do Pai</FormLabel>
-          <Input
-            value={formData.dadosFamiliares?.nomePai}
-            onChange={e => handleNestedChange('dadosFamiliares', 'nomePai', e.target.value)}
-            placeholder="Nome do Pai"
-            aria-label="Nome do Pai"
-          />
-          <FormErrorMessage>{errors['dadosFamiliares.nomePai']}</FormErrorMessage>
-        </FormControl>
-
-        <Divider />
-
-        <FormControl>
-          <FormLabel>Grau de Instrução</FormLabel>
-          <SelectField
-            value={formData.grauInstrucao}
-            onChange={value => handleChange('grauInstrucao', value)}
-            options={GRAU_INSTRUCAO_OPTIONS}
-            placeholder="Selecione o grau de instrução"
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Número de Dependentes</FormLabel>
-          <Input
-            type="number"
-            value={formData.numeroDependentes}
-            onChange={e => handleChange('numeroDependentes', parseInt(e.target.value))}
-            placeholder="Número de Dependentes"
-            aria-label="Número de Dependentes"
-            min={0}
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Informações de Saúde</FormLabel>
-          <Input
-            value={formData.informacoesSaude}
-            onChange={e => handleChange('informacoesSaude', e.target.value)}
-            placeholder="Informações de Saúde"
-            aria-label="Informações de Saúde"
-          />
-        </FormControl>
-
-        <Divider />
-
-        <Box width="100%">
-          <HStack justify="space-between" mb={4}>
-            <Text fontSize="lg" fontWeight="bold">Dependentes</Text>
-            <IconButton
-              aria-label="Adicionar dependente"
-              icon={<FaPlus />}
-              onClick={handleAddDependente}
-            />
-          </HStack>
-
-          {dependentes.map((dependente, index) => (
-            <Box key={index} p={4} borderWidth={1} borderRadius="md" mb={4}>
-              <HStack justify="space-between" mb={4}>
-                <Text fontWeight="bold">Dependente {index + 1}</Text>
-                <IconButton
-                  aria-label="Remover dependente"
-                  icon={<FaTrash />}
-                  onClick={() => handleRemoveDependente(index)}
-                />
-              </HStack>
-
-              <VStack spacing={4}>
-                <FormControl>
-                  <FormLabel>Nome</FormLabel>
-                  <Input
-                    value={dependente.nome}
-                    onChange={e => handleDependenteChange(index, 'nome', e.target.value)}
-                    placeholder="Nome do Dependente"
-                    aria-label="Nome do Dependente"
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel>CPF</FormLabel>
-                  <MaskedInput
-                    value={dependente.cpf}
-                    onChange={e => handleDependenteChange(index, 'cpf', e.target.value)}
-                    placeholder="000.000.000-00"
-                    aria-label="CPF do Dependente"
-                    mask="999.999.999-99"
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel>Data de Nascimento</FormLabel>
-                  <Input
-                    type="date"
-                    value={dependente.dataNascimento.toISOString().split('T')[0]}
-                    onChange={e => handleDependenteChange(index, 'dataNascimento', new Date(e.target.value))}
-                    aria-label="Data de Nascimento do Dependente"
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel>Parentesco</FormLabel>
-                  <ParentescoSelect
-                    value={dependente.parentesco}
-                    onChange={value => handleDependenteChange(index, 'parentesco', value)}
-                  />
-                </FormControl>
-              </VStack>
-            </Box>
-          ))}
+    <Box as="form" onSubmit={handleSubmit} width="100%">
+      <Stack spacing={6}>
+        {/* Dados Pessoais */}
+        <Box>
+          <Text fontSize="xl" fontWeight="bold" mb={4}>
+            Dados Pessoais
+          </Text>
+          <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <GridItem>
+              <FormInput
+                label="Nome Completo"
+                value={formData.nome}
+                onChange={(value) => handleChange('nome', value)}
+                isRequired
+                _placeholder="Digite o nome completo"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="CPF"
+                value={formData.cpf}
+                onChange={(value) => handleChange('cpf', value)}
+                mask="cpf"
+                isRequired
+                _placeholder="Digite o CPF"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="RG"
+                value={formData.rg?.numero}
+                onChange={(value) => handleNestedChange('rg', 'numero', value)}
+                mask="rg"
+                isRequired
+                _placeholder="Digite o RG"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="Órgão Emissor"
+                value={formData.rg?.orgaoEmissor}
+                onChange={(value) => handleNestedChange('rg', 'orgaoEmissor', value)}
+                isRequired
+                _placeholder="Digite o órgão emissor"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="Data de Nascimento"
+                value={formData.dataNascimento?.toISOString().split('T')[0]}
+                onChange={(value) => handleChange('dataNascimento', new Date(value))}
+                type="date"
+                isRequired
+              />
+            </GridItem>
+            <GridItem>
+              <SelectField
+                label="Estado Civil"
+                value={formData.estadoCivil}
+                onChange={(value) => handleChange('estadoCivil', value)}
+                options={[
+                  { value: 'SOLTEIRO', label: 'Solteiro(a)' },
+                  { value: 'CASADO', label: 'Casado(a)' },
+                  { value: 'DIVORCIADO', label: 'Divorciado(a)' },
+                  { value: 'VIUVO', label: 'Viúvo(a)' },
+                  { value: 'UNIAO_ESTAVEL', label: 'União Estável' },
+                ]}
+                isRequired
+                _placeholder="Selecione o estado civil"
+              />
+            </GridItem>
+          </Grid>
         </Box>
 
-        <HStack spacing={4} width="100%" justify="flex-end">
+        {/* Endereço */}
+        <Box>
+          <Text fontSize="xl" fontWeight="bold" mb={4}>
+            Endereço
+          </Text>
+          <EnderecoForm
+            endereco={formData.endereco || {}}
+            onChange={handleEnderecoChange}
+            errors={errors}
+          />
+        </Box>
+
+        {/* Contato */}
+        <Box>
+          <Text fontSize="xl" fontWeight="bold" mb={4}>
+            Contato
+          </Text>
+          <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <GridItem>
+              <FormInput
+                label="Telefone"
+                value={formData.contato?.telefone}
+                onChange={(value) => handleNestedChange('contato', 'telefone', value)}
+                mask="phone"
+                isRequired
+                _placeholder="Digite o telefone"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="Email"
+                value={formData.contato?.email}
+                onChange={(value) => handleNestedChange('contato', 'email', value)}
+                type="email"
+                isRequired
+                _placeholder="Digite o email"
+              />
+            </GridItem>
+          </Grid>
+        </Box>
+
+        {/* Dados Bancários */}
+        <Box>
+          <Text fontSize="xl" fontWeight="bold" mb={4}>
+            Dados Bancários
+          </Text>
+          <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+            <GridItem>
+              <FormInput
+                label="Banco"
+                value={formData.dadosBancarios?.banco}
+                onChange={(value) => handleNestedChange('dadosBancarios', 'banco', value)}
+                isRequired
+                _placeholder="Digite o nome do banco"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="Agência"
+                value={formData.dadosBancarios?.agencia}
+                onChange={(value) => handleNestedChange('dadosBancarios', 'agencia', value)}
+                mask="numbers"
+                isRequired
+                _placeholder="Digite a agência"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="Conta"
+                value={formData.dadosBancarios?.conta}
+                onChange={(value) => handleNestedChange('dadosBancarios', 'conta', value)}
+                mask="numbers"
+                isRequired
+                _placeholder="Digite a conta"
+              />
+            </GridItem>
+          </Grid>
+        </Box>
+
+        {/* Dados Familiares */}
+        <Box>
+          <Text fontSize="xl" fontWeight="bold" mb={4}>
+            Dados Familiares
+          </Text>
+          <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <GridItem>
+              <FormInput
+                label="Nome da Mãe"
+                value={formData.dadosFamiliares?.nomeMae}
+                onChange={(value) => handleNestedChange('dadosFamiliares', 'nomeMae', value)}
+                isRequired
+                _placeholder="Digite o nome da mãe"
+              />
+            </GridItem>
+            <GridItem>
+              <FormInput
+                label="Nome do Pai"
+                value={formData.dadosFamiliares?.nomePai}
+                onChange={(value) => handleNestedChange('dadosFamiliares', 'nomePai', value)}
+                _placeholder="Digite o nome do pai"
+              />
+            </GridItem>
+          </Grid>
+        </Box>
+
+        {/* Dependentes */}
+        <Box>
+          <Text fontSize="xl" fontWeight="bold" mb={4}>
+            Dependentes
+          </Text>
+          {formData.dependentes?.map((dependente, index) => (
+            <Box key={index} p={4} borderWidth={1} borderRadius="md" mb={4}>
+              <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                <GridItem>
+                  <FormInput
+                    label="Nome do Dependente"
+                    value={dependente.nome}
+                    onChange={(value) => handleDependenteChange(index, 'nome', value)}
+                    isRequired
+                    _placeholder="Digite o nome do dependente"
+                  />
+                </GridItem>
+                <GridItem>
+                  <FormInput
+                    label="CPF do Dependente"
+                    value={dependente.cpf}
+                    onChange={(value) => handleDependenteChange(index, 'cpf', value)}
+                    mask="cpf"
+                    isRequired
+                    _placeholder="Digite o CPF do dependente"
+                  />
+                </GridItem>
+                <GridItem>
+                  <SelectField
+                    label="Parentesco"
+                    value={dependente.parentesco}
+                    onChange={(value) => handleDependenteChange(index, 'parentesco', value)}
+                    options={[
+                      { value: 'FILHO', label: 'Filho(a)' },
+                      { value: 'CONJUGE', label: 'Cônjuge' },
+                      { value: 'PAI', label: 'Pai' },
+                      { value: 'MAE', label: 'Mãe' },
+                      { value: 'OUTRO', label: 'Outro' }
+                    ]}
+                    isRequired
+                    _placeholder="Selecione o parentesco"
+                  />
+                </GridItem>
+                <GridItem>
+                  <FormInput
+                    label="Data de Nascimento"
+                    value={dependente.dataNascimento?.toISOString().split('T')[0]}
+                    onChange={(value) => handleDependenteChange(index, 'dataNascimento', new Date(value))}
+                    type="date"
+                    isRequired
+                  />
+                </GridItem>
+              </Grid>
+              <Button
+                mt={2}
+                colorScheme="red"
+                size="sm"
+                onClick={() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    dependentes: prev.dependentes?.filter((_, i) => i !== index)
+                  }));
+                }}
+              >
+                Remover Dependente
+              </Button>
+            </Box>
+          ))}
+          <Button
+            colorScheme="blue"
+            onClick={() => {
+              setFormData(prev => ({
+                ...prev,
+                dependentes: [
+                  ...(prev.dependentes || []),
+                  {
+                    nome: '',
+                    cpf: '',
+                    parentesco: '',
+                    dataNascimento: new Date()
+                  }
+                ]
+              }));
+            }}
+          >
+            Adicionar Dependente
+          </Button>
+        </Box>
+
+        {/* Botões de Ação */}
+        <HStack spacing={4} justify="flex-end">
           {onBack && (
-            <Button onClick={onBack} variant="outline">
+            <Button variant="outline" onClick={onBack}>
               Voltar
             </Button>
           )}
           {onSaveDraft && (
-            <Button onClick={onSaveDraft} variant="outline">
+            <Button variant="outline" onClick={onSaveDraft}>
               Salvar Rascunho
             </Button>
           )}
-          <Button onClick={handleSubmit} colorScheme="blue">
+          <Button type="submit" colorScheme="green" size="lg">
             Salvar
           </Button>
         </HStack>
-      </VStack>
+      </Stack>
     </Box>
   );
 } 

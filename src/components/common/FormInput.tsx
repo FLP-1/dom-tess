@@ -1,32 +1,23 @@
-import React, { useCallback, useState } from 'react';
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import React, { useCallback, useState, useEffect, useId, forwardRef } from 'react';
 import {
   Input,
+  InputProps,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  Select,
+  Box,
   InputGroup,
   InputLeftElement,
   InputRightElement,
 } from '@chakra-ui/react';
 import { BaseInputProps } from '../../types/common';
 import { withAccessibility } from '../../hocs/withAccessibility';
-import { Input, InputProps, FormControl, FormLabel, FormErrorMessage, FormHelperText, Select, Box } from '@chakra-ui/react';
-import { useEffect, useId } from 'react';
 import { formatCPF, formatCNPJ, formatPhone, formatCEP, formatCurrency, formatDate } from '../../utils/masks';
-
-export interface FormInputProps extends BaseInputProps {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  touched?: boolean;
-  validate?: (value: string) => string | undefined;
-  onChange?: (value: string) => void;
-  mask?: 'cpf' | 'cnpj' | 'phone' | 'cep' | 'currency' | 'date';
-  as?: typeof Input | typeof Select;
-  children?: React.ReactNode;
-  leftElement?: React.ReactNode;
-  rightElement?: React.ReactNode;
-  isRequired?: boolean;
-  isDisabled?: boolean;
-  isLoading?: boolean;
-}
+import { MaskType } from '@/utils/maskTypes';
+import { FormInputProps } from '@/types/form';
 
 const BaseFormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   (
@@ -36,7 +27,7 @@ const BaseFormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
       onBlur,
       id,
       name,
-      placeholder,
+      _placeholder,
       size,
       width,
       isDisabled,
@@ -48,7 +39,8 @@ const BaseFormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
     },
     ref
   ) => {
-    const [internalValue, setInternalValue] = useState(value);
+    const stringValue = value instanceof Date ? value.toISOString().split('T')[0] : value?.toString() || '';
+    const [internalValue, setInternalValue] = useState(stringValue);
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +61,7 @@ const BaseFormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
       value: internalValue,
       onChange: handleChange,
       onBlur: (e: React.FocusEvent<HTMLInputElement>) => onBlur?.(e.target.value),
-      placeholder,
+      _placeholder,
       size,
       width,
       isDisabled,
@@ -94,7 +86,103 @@ const BaseFormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
 
 BaseFormInput.displayName = 'BaseFormInput';
 
-export const FormInput = withAccessibility(BaseFormInput);
+export const FormInput = forwardRef<HTMLInputElement, FormInputProps>((props, ref) => {
+  const {
+    label,
+    error,
+    helperText,
+    isRequired,
+    isDisabled,
+    isLoading,
+    id,
+    name,
+    width,
+    size = 'md',
+    value,
+    onChange,
+    onBlur,
+    onFocus,
+    onKeyDown,
+    onKeyUp,
+    onKeyPress,
+    maxLength,
+    minLength,
+    pattern,
+    readOnly,
+    autoComplete,
+    autoFocus,
+    inputMode,
+    mask,
+    maskChar,
+    alwaysShowMask,
+    beforeMaskedStateChange,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedby,
+    'aria-labelledby': ariaLabelledby,
+    title,
+    role,
+    _placeholder,
+    ...rest
+  } = props;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (onBlur) {
+      onBlur(e.target.value);
+    }
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (onFocus) {
+      onFocus(e.target.value);
+    }
+  };
+
+  return (
+    <FormControl
+      isInvalid={!!error}
+      isRequired={isRequired}
+      isDisabled={isDisabled}
+      width={width}
+    >
+      {label && <FormLabel htmlFor={id}>{label}</FormLabel>}
+      <Input
+        ref={ref}
+        id={id}
+        name={name}
+        size={size}
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+        onKeyDown={onKeyDown}
+        onKeyUp={onKeyUp}
+        onKeyPress={onKeyPress}
+        maxLength={maxLength}
+        minLength={minLength}
+        pattern={pattern}
+        readOnly={readOnly}
+        autoComplete={autoComplete}
+        autoFocus={autoFocus}
+        inputMode={inputMode}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedby}
+        aria-labelledby={ariaLabelledby}
+        title={title}
+        role={role}
+        placeholder={_placeholder}
+        {...rest}
+      />
+      {error && <FormErrorMessage>{error}</FormErrorMessage>}
+      {helperText && !error && <FormHelperText>{helperText}</FormHelperText>}
+    </FormControl>
+  );
+});
 
 export const FormInputOld = ({
   label,
@@ -150,7 +238,7 @@ export const FormInputOld = ({
       const formattedValue = formatValue(value.toString());
       setDisplayValue(formattedValue);
     }
-  }, [value, formatValue]);
+  }, [value, formatValue, setDisplayValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const newValue = e.target.value;
@@ -196,48 +284,26 @@ export const FormInputOld = ({
       );
     }
 
-    return (
-      <Component {...inputProps}>
-        {children}
-      </Component>
-    );
+    return <Component {...inputProps}>{children}</Component>;
   };
 
   return (
-    <FormControl 
+    <FormControl
       isInvalid={touched && !!localError}
       isRequired={isRequired}
       isDisabled={isDisabled}
-      role="group"
-      aria-labelledby={label ? labelId : undefined}
     >
       {label && (
-        <FormLabel 
-          id={labelId}
-          htmlFor={inputId}
-          mb={1}
-        >
+        <FormLabel htmlFor={inputId} id={labelId}>
           {label}
-          {isRequired && (
-            <Box as="span" color="red.500" ml={1} aria-hidden="true">
-              *
-            </Box>
-          )}
         </FormLabel>
       )}
       {renderInput()}
       {touched && localError && (
-        <FormErrorMessage 
-          id={errorId}
-          role="alert"
-        >
-          {localError}
-        </FormErrorMessage>
+        <FormErrorMessage id={errorId}>{localError}</FormErrorMessage>
       )}
       {helperText && !localError && (
-        <FormHelperText id={helperId}>
-          {helperText}
-        </FormHelperText>
+        <FormHelperText id={helperId}>{helperText}</FormHelperText>
       )}
     </FormControl>
   );

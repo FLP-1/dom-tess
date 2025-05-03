@@ -1,3 +1,4 @@
+import { FormControl, FormLabel, Button } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -12,7 +13,6 @@ import {
   HStack,
   Text,
   useToast,
-  Button,
   Table,
   Thead,
   Tbody,
@@ -20,15 +20,17 @@ import {
   Th,
   Td,
   Badge,
-  FormControl,
-  FormLabel,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Task, TaskStatus, TaskPriority } from '../../types/task';
+import { ITask, ETaskStatus, ETaskPriority } from '../../types/task';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiDownload } from 'react-icons/fi';
 import * as XLSX from 'xlsx';
+import { SelectCustom } from '../common/SelectCustom';
+import { TaskStatusBadge } from './TaskStatusBadge';
+import { TaskPriorityBadge } from './TaskPriorityBadge';
 
 interface TaskReportsProps {
   startDate: Date;
@@ -38,13 +40,12 @@ interface TaskReportsProps {
 export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) => {
   const { user } = useAuth();
   const toast = useToast();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<ITask[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending'>('all');
-
-  useEffect(() => {
-    fetchTasks();
-  }, [startDate, endDate, filter]);
+  const [completedTasks, setCompletedTasks] = useState<ITask[]>([]);
+  const [urgentTasks, setUrgentTasks] = useState<ITask[]>([]);
+  const bgColor = useColorModeValue('white', 'gray.700');
 
   const fetchTasks = async () => {
     try {
@@ -57,9 +58,9 @@ export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) 
       );
 
       if (filter === 'completed') {
-        q = query(q, where('status', '==', TaskStatus.COMPLETED));
+        q = query(q, where('status', '==', ETaskStatus.COMPLETED));
       } else if (filter === 'pending') {
-        q = query(q, where('status', 'in', [TaskStatus.PENDING, TaskStatus.IN_PROGRESS]));
+        q = query(q, where('status', 'in', [ETaskStatus.PENDING, ETaskStatus.IN_PROGRESS]));
       }
 
       const querySnapshot = await getDocs(q);
@@ -72,6 +73,8 @@ export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) 
       })) as Task[];
 
       setTasks(tasksData);
+      setCompletedTasks(tasksData.filter(task => task.status === ETaskStatus.COMPLETED));
+      setUrgentTasks(tasksData.filter(task => task.priority === ETaskPriority.URGENT));
     } catch (error) {
       console.error('Erro ao buscar tarefas:', error);
       toast({
@@ -85,24 +88,30 @@ export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) 
     }
   };
 
-  const getStatusCount = (status: TaskStatus) => {
+  useEffect(() => {
+    fetchTasks();
+  }, [startDate, endDate, filter, fetchTasks]);
+
+  const getStatusCount = (status: ETaskStatus) => {
     return tasks.filter(task => task.status === status).length;
   };
 
-  const getPriorityCount = (priority: TaskPriority) => {
+  const getPriorityCount = (priority: ETaskPriority) => {
     return tasks.filter(task => task.priority === priority).length;
   };
 
-  const calculateAverageCompletionTime = () => {
-    const completedTasks = tasks.filter(task => task.status === TaskStatus.COMPLETED);
-    if (completedTasks.length === 0) return 0;
+  const getCompletionRate = () => {
+    if (tasks.length === 0) return 0;
+    return Math.round((getStatusCount(ETaskStatus.COMPLETED) / tasks.length) * 100);
+  };
 
+  const getAverageTimeToComplete = () => {
+    if (completedTasks.length === 0) return 0;
     const totalTime = completedTasks.reduce((acc, task) => {
       const completionTime = task.updatedAt.getTime() - task.createdAt.getTime();
       return acc + completionTime;
     }, 0);
-
-    return Math.round(totalTime / completedTasks.length / (1000 * 60 * 60)); // em horas
+    return Math.round(totalTime / completedTasks.length / (1000 * 60 * 60 * 24)); // Convert to days
   };
 
   const exportToExcel = () => {
@@ -125,35 +134,11 @@ export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) 
   };
 
   return (
-    <Box p={4}>
-      <VStack spacing={4} align="stretch">
-        <HStack justify="space-between">
-          <Heading size="lg">Relatórios de Tarefas</Heading>
-          <Button
-            leftIcon={<FiDownload />}
-            colorScheme="blue"
-            onClick={exportToExcel}
-          >
-            Exportar para Excel
-          </Button>
-        </HStack>
+    <Box p={4} bg={bgColor} borderRadius="lg" shadow="md">
+      <VStack spacing={6} align="stretch">
+        <Heading size="lg">Relatório de Tarefas</Heading>
 
-        <FormControl maxW="200px">
-          <FormLabel id="label-filtro-tarefas" htmlFor="filtro-tarefas">Filtrar tarefas</FormLabel>
-          <Select
-            id="filtro-tarefas"
-            title="Filtrar tarefas"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as 'all' | 'completed' | 'pending')}
-            width="200px"
-          >
-            <option value="all">Todas as Tarefas</option>
-            <option value="completed">Tarefas Concluídas</option>
-            <option value="pending">Tarefas Pendentes</option>
-          </Select>
-        </FormControl>
-
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
+        <HStack spacing={8} justify="space-between">
           <Stat>
             <StatLabel>Total de Tarefas</StatLabel>
             <StatNumber>{tasks.length}</StatNumber>
@@ -161,26 +146,29 @@ export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) 
 
           <Stat>
             <StatLabel>Tarefas Concluídas</StatLabel>
-            <StatNumber>{getStatusCount(TaskStatus.COMPLETED)}</StatNumber>
+            <StatNumber>{getStatusCount(ETaskStatus.COMPLETED)}</StatNumber>
             <StatHelpText>
               {tasks.length > 0
-                ? `${Math.round((getStatusCount(TaskStatus.COMPLETED) / tasks.length) * 100)}% de conclusão`
-                : '0% de conclusão'}
+                ? `${getCompletionRate()}% de conclusão`
+                : 'Nenhuma tarefa'}
             </StatHelpText>
           </Stat>
 
           <Stat>
             <StatLabel>Tempo Médio de Conclusão</StatLabel>
-            <StatNumber>{calculateAverageCompletionTime()}h</StatNumber>
-            <StatHelpText>Média de tempo para conclusão</StatHelpText>
+            <StatNumber>{getAverageTimeToComplete()} dias</StatNumber>
           </Stat>
 
           <Stat>
             <StatLabel>Tarefas Urgentes</StatLabel>
-            <StatNumber>{getPriorityCount(TaskPriority.URGENT)}</StatNumber>
-            <StatHelpText>Prioridade máxima</StatHelpText>
+            <StatNumber>{getPriorityCount(ETaskPriority.URGENT)}</StatNumber>
+            <StatHelpText>
+              {urgentTasks.length > 0
+                ? `${Math.round((urgentTasks.length / tasks.length) * 100)}% do total`
+                : 'Nenhuma tarefa urgente'}
+            </StatHelpText>
           </Stat>
-        </SimpleGrid>
+        </HStack>
 
         <Box overflowX="auto">
           <Table variant="simple">
@@ -189,47 +177,29 @@ export const TaskReports: React.FC<TaskReportsProps> = ({ startDate, endDate }) 
                 <Th>Título</Th>
                 <Th>Status</Th>
                 <Th>Prioridade</Th>
-                <Th>Data de Vencimento</Th>
-                <Th>Tempo Estimado</Th>
-                <Th>Custo Estimado</Th>
+                <Th>Data de Criação</Th>
+                <Th>Data de Conclusão</Th>
+                <Th>Tempo Estimado (h)</Th>
+                <Th>Custo Estimado (R$)</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {tasks.map((task) => (
+              {tasks.map(task => (
                 <Tr key={task.id}>
                   <Td>{task.title}</Td>
                   <Td>
-                    <Badge
-                      colorScheme={
-                        task.status === TaskStatus.COMPLETED
-                          ? 'green'
-                          : task.status === TaskStatus.IN_PROGRESS
-                          ? 'blue'
-                          : task.status === TaskStatus.CANCELLED
-                          ? 'red'
-                          : 'yellow'
-                      }
-                    >
-                      {task.status}
-                    </Badge>
+                    <TaskStatusBadge status={task.status} />
                   </Td>
                   <Td>
-                    <Badge
-                      colorScheme={
-                        task.priority === TaskPriority.URGENT
-                          ? 'red'
-                          : task.priority === TaskPriority.HIGH
-                          ? 'orange'
-                          : task.priority === TaskPriority.MEDIUM
-                          ? 'yellow'
-                          : 'green'
-                      }
-                    >
-                      {task.priority}
-                    </Badge>
+                    <TaskPriorityBadge priority={task.priority} />
                   </Td>
-                  <Td>{task.dueDate.toLocaleDateString()}</Td>
-                  <Td>{task.estimatedTime || '-'}h</Td>
+                  <Td>{task.createdAt.toLocaleDateString()}</Td>
+                  <Td>
+                    {task.status === ETaskStatus.COMPLETED
+                      ? task.updatedAt.toLocaleDateString()
+                      : '-'}
+                  </Td>
+                  <Td>{task.estimatedTime || '-'}</Td>
                   <Td>
                     {task.estimatedCost
                       ? `R$ ${task.estimatedCost.toFixed(2)}`

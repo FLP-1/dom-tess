@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 import { Box, Heading, Text, Container, UnorderedList, ListItem, Button } from '@chakra-ui/react';
 import { termosDeUso } from '../../constants/legalTexts';

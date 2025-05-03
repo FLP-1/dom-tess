@@ -1,22 +1,11 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import serviceAccount from '../secrets/serviceAccount.json';
 import { DadosEmpregador, DadosEmpregado, Familiar, CertificadoDigital } from '../types/esocial';
-import { db } from '@/config/firebase';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-
-// Inicializa o Firebase Admin
-const app = initializeApp({
-  credential: cert(serviceAccount as any)
-});
-
-const dbAdmin = getFirestore(app);
+import { db } from '../lib/firebase';
+import { collection, doc, setDoc, getDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 
 export class EsocialService {
   // Métodos para Empregador
   static async criarDadosEmpregador(dados: Omit<DadosEmpregador, 'id' | 'ultimaAtualizacao'>): Promise<DadosEmpregador> {
-    const empregadorRef = doc(db, 'empregadores', dados.userId);
+    const empregadorRef = doc(collection(db, 'empregadores'));
     const dadosCompletos: DadosEmpregador = {
       ...dados,
       id: empregadorRef.id,
@@ -52,83 +41,81 @@ export class EsocialService {
     empregadorId: string,
     certificado: Omit<CertificadoDigital, 'id' | 'status'>
   ): Promise<CertificadoDigital> {
-    const docRef = dbAdmin.collection('certificados').doc();
+    const docRef = doc(collection(db, 'certificados'));
     const dadosCompletos = {
       ...certificado,
       id: docRef.id,
-      status: 'ativo'
+      status: 'ativo' as CertificadoDigital['status']
     };
     
-    await docRef.set(dadosCompletos);
-    await dbAdmin.collection('empregadores').doc(empregadorId).update({
+    await setDoc(docRef, dadosCompletos);
+    await updateDoc(doc(db, 'empregadores', empregadorId), {
       certificadoDigital: dadosCompletos
     });
     
-    return dadosCompletos;
+    return dadosCompletos as CertificadoDigital;
   }
 
   // Métodos para Empregados
   static async criarEmpregado(dados: Omit<DadosEmpregado, 'id' | 'ultimaAtualizacao'>): Promise<DadosEmpregado> {
-    const docRef = db.collection('empregados').doc();
+    const docRef = doc(collection(db, 'empregados'));
     const dadosCompletos = {
       ...dados,
       id: docRef.id,
       ultimaAtualizacao: new Date(),
-      status: 'ativo'
+      status: 'ativo' as DadosEmpregado['status']
     };
     
-    await docRef.set(dadosCompletos);
-    return dadosCompletos;
+    await setDoc(docRef, dadosCompletos);
+    return dadosCompletos as DadosEmpregado;
   }
 
   static async atualizarEmpregado(id: string, dados: Partial<DadosEmpregado>): Promise<void> {
-    const docRef = db.collection('empregados').doc(id);
-    await docRef.update({
+    const docRef = doc(db, 'empregados', id);
+    await updateDoc(docRef, {
       ...dados,
       ultimaAtualizacao: new Date()
     });
   }
 
   static async listarEmpregados(empregadorId: string): Promise<DadosEmpregado[]> {
-    const snapshot = await db.collection('empregados')
-      .where('empregadorId', '==', empregadorId)
-      .get();
+    const q = query(collection(db, 'empregados'), where('empregadorId', '==', empregadorId));
+    const querySnapshot = await getDocs(q);
     
-    return snapshot.docs.map(doc => doc.data() as DadosEmpregado);
+    return querySnapshot.docs.map(doc => doc.data() as DadosEmpregado);
   }
 
   // Métodos para Familiares
   static async criarFamiliar(dados: Omit<Familiar, 'id' | 'ultimaAtualizacao'>): Promise<Familiar> {
-    const docRef = db.collection('familiares').doc();
+    const docRef = doc(collection(db, 'familiares'));
     const dadosCompletos = {
       ...dados,
       id: docRef.id,
       ultimaAtualizacao: new Date(),
-      status: 'ativo'
+      status: 'ativo' as Familiar['status']
     };
     
-    await docRef.set(dadosCompletos);
-    return dadosCompletos;
+    await setDoc(docRef, dadosCompletos);
+    return dadosCompletos as Familiar;
   }
 
   static async atualizarFamiliar(id: string, dados: Partial<Familiar>): Promise<void> {
-    const docRef = db.collection('familiares').doc(id);
-    await docRef.update({
+    const docRef = doc(db, 'familiares', id);
+    await updateDoc(docRef, {
       ...dados,
       ultimaAtualizacao: new Date()
     });
   }
 
   static async listarFamiliares(empregadorId: string): Promise<Familiar[]> {
-    const snapshot = await db.collection('familiares')
-      .where('empregadorId', '==', empregadorId)
-      .get();
+    const q = query(collection(db, 'familiares'), where('empregadorId', '==', empregadorId));
+    const querySnapshot = await getDocs(q);
     
-    return snapshot.docs.map(doc => doc.data() as Familiar);
+    return querySnapshot.docs.map(doc => doc.data() as Familiar);
   }
 
   static async criarDadosEmpregado(dados: Omit<DadosEmpregado, 'id' | 'ultimaAtualizacao'>): Promise<DadosEmpregado> {
-    const empregadoRef = doc(db, 'empregados', dados.userId);
+    const empregadoRef = doc(collection(db, 'empregados'));
     const dadosCompletos: DadosEmpregado = {
       ...dados,
       id: empregadoRef.id,

@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState } from 'react';
@@ -129,79 +131,58 @@ export function DadosDocumentosForm({
     setFormData(prev => ({
       ...prev,
       ctps: {
+        ...prev.ctps,
+        [field]: value,
+      },
+    }));
+
+    if (errors[`ctps.${field}`]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[`ctps.${field}`];
+        return newErrors;
+      });
+    }
+  };
+
   return (
     <Box as="form" onSubmit={handleSubmit}>
       <VStack spacing={4} align="stretch">
-        <FormControl isInvalid={!!errors.rg}>
-          <FormLabel>RG</FormLabel>
+        <FormControl isInvalid={!!errors['rg.numero']}>
+          <FormLabel>Número do RG</FormLabel>
           <Input
-            value={formData.rg}
-            onChange={e => handleChange('rg', e.target.value)}
-            placeholder="Digite o RG"
+            value={formData.rg?.numero}
+            onChange={e => handleRgChange('numero', e.target.value)}
+            placeholder="Digite o número do RG"
           />
-          <FormErrorMessage>{errors.rg}</FormErrorMessage>
+          <FormErrorMessage>{errors['rg.numero']}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.rgOrgaoEmissor}>
+        <FormControl isInvalid={!!errors['rg.orgaoEmissor']}>
           <FormLabel>Órgão Emissor do RG</FormLabel>
           <Input
-            value={formData.rgOrgaoEmissor}
-            onChange={e => handleChange('rgOrgaoEmissor', e.target.value)}
-            placeholder="Digite o órgão emissor do RG"
+            value={formData.rg?.orgaoEmissor}
+            onChange={e => handleRgChange('orgaoEmissor', e.target.value)}
+            placeholder="Digite o órgão emissor"
           />
-          <FormErrorMessage>{errors.rgOrgaoEmissor}</FormErrorMessage>
+          <FormErrorMessage>{errors['rg.orgaoEmissor']}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.rgDataEmissao}>
+        <FormControl isInvalid={!!errors['rg.dataEmissao']}>
           <FormLabel>Data de Emissão do RG</FormLabel>
-          <Input
-            type="date"
-            value={formData.rgDataEmissao}
-            onChange={e => handleChange('rgDataEmissao', e.target.value)}
+          <MaskedInput
+            mask={masks.date}
+            value={formData.rg?.dataEmissao}
+            onChange={e => handleRgChange('dataEmissao', e.target.value)}
+            placeholder="DD/MM/AAAA"
           />
-          <FormErrorMessage>{errors.rgDataEmissao}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.rgUfEmissao}>
-          <FormLabel>UF de Emissão do RG</FormLabel>
-          <Input
-            value={formData.rgUfEmissao}
-            onChange={e => handleChange('rgUfEmissao', e.target.value)}
-            placeholder="Digite a UF de emissão do RG"
-          />
-          <FormErrorMessage>{errors.rgUfEmissao}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Título de Eleitor</FormLabel>
-          <Input
-            value={formData.tituloEleitor}
-            onChange={e => handleChange('tituloEleitor', e.target.value)}
-            placeholder="Digite o título de eleitor"
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Zona Eleitoral</FormLabel>
-          <Input
-            value={formData.tituloEleitorZona}
-            onChange={e => handleChange('tituloEleitorZona', e.target.value)}
-            placeholder="Digite a zona eleitoral"
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Seção Eleitoral</FormLabel>
-          <Input
-            value={formData.tituloEleitorSecao}
-            onChange={e => handleChange('tituloEleitorSecao', e.target.value)}
-            placeholder="Digite a seção eleitoral"
-          />
+          <FormErrorMessage>{errors['rg.dataEmissao']}</FormErrorMessage>
         </FormControl>
 
         <FormControl isInvalid={!!errors.pis}>
           <FormLabel>PIS</FormLabel>
-          <Input
+          <MaskedInput
+            mask={masks.pis}
             value={formData.pis}
             onChange={e => handleChange('pis', e.target.value)}
             placeholder="Digite o PIS"
@@ -209,71 +190,79 @@ export function DadosDocumentosForm({
           <FormErrorMessage>{errors.pis}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.ctps}>
-          <FormLabel>CTPS</FormLabel>
+        <FormControl isInvalid={!!errors['ctps.numero']}>
+          <FormLabel>Número da CTPS</FormLabel>
           <Input
-            value={formData.ctps}
-            onChange={e => handleChange('ctps', e.target.value)}
+            value={formData.ctps?.numero}
+            onChange={e => handleCtpsChange('numero', e.target.value)}
             placeholder="Digite o número da CTPS"
           />
-          <FormErrorMessage>{errors.ctps}</FormErrorMessage>
+          <FormErrorMessage>{errors['ctps.numero']}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.ctpsSerie}>
+        <FormControl isInvalid={!!errors['ctps.serie']}>
           <FormLabel>Série da CTPS</FormLabel>
           <Input
-            value={formData.ctpsSerie}
-            onChange={e => handleChange('ctpsSerie', e.target.value)}
+            value={formData.ctps?.serie}
+            onChange={e => handleCtpsChange('serie', e.target.value)}
             placeholder="Digite a série da CTPS"
           />
-          <FormErrorMessage>{errors.ctpsSerie}</FormErrorMessage>
+          <FormErrorMessage>{errors['ctps.serie']}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.ctpsUf}>
+        <FormControl isInvalid={!!errors['ctps.uf']}>
           <FormLabel>UF da CTPS</FormLabel>
-          <Input
-            value={formData.ctpsUf}
-            onChange={e => handleChange('ctpsUf', e.target.value)}
-            placeholder="Digite a UF da CTPS"
+          <SelectField
+            value={formData.ctps?.uf}
+            onChange={e => handleCtpsChange('uf', e.target.value)}
+            options={[
+              { value: '', label: 'Selecione a UF' },
+              { value: 'AC', label: 'Acre' },
+              { value: 'AL', label: 'Alagoas' },
+              { value: 'AP', label: 'Amapá' },
+              { value: 'AM', label: 'Amazonas' },
+              { value: 'BA', label: 'Bahia' },
+              { value: 'CE', label: 'Ceará' },
+              { value: 'DF', label: 'Distrito Federal' },
+              { value: 'ES', label: 'Espírito Santo' },
+              { value: 'GO', label: 'Goiás' },
+              { value: 'MA', label: 'Maranhão' },
+              { value: 'MT', label: 'Mato Grosso' },
+              { value: 'MS', label: 'Mato Grosso do Sul' },
+              { value: 'MG', label: 'Minas Gerais' },
+              { value: 'PA', label: 'Pará' },
+              { value: 'PB', label: 'Paraíba' },
+              { value: 'PR', label: 'Paraná' },
+              { value: 'PE', label: 'Pernambuco' },
+              { value: 'PI', label: 'Piauí' },
+              { value: 'RJ', label: 'Rio de Janeiro' },
+              { value: 'RN', label: 'Rio Grande do Norte' },
+              { value: 'RS', label: 'Rio Grande do Sul' },
+              { value: 'RO', label: 'Rondônia' },
+              { value: 'RR', label: 'Roraima' },
+              { value: 'SC', label: 'Santa Catarina' },
+              { value: 'SP', label: 'São Paulo' },
+              { value: 'SE', label: 'Sergipe' },
+              { value: 'TO', label: 'Tocantins' },
+            ]}
           />
-          <FormErrorMessage>{errors.ctpsUf}</FormErrorMessage>
+          <FormErrorMessage>{errors['ctps.uf']}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!!errors.ctpsDataEmissao}>
-          <FormLabel>Data de Emissão da CTPS</FormLabel>
-          <Input
-            type="date"
-            value={formData.ctpsDataEmissao}
-            onChange={e => handleChange('ctpsDataEmissao', e.target.value)}
-          />
-          <FormErrorMessage>{errors.ctpsDataEmissao}</FormErrorMessage>
-        </FormControl>
-
-        <HStack justify="space-between" mt={4}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            isDisabled={!onBack}
-          >
-            Voltar
-          </Button>
-
-          <HStack>
-            {onSaveDraft && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onSaveDraft}
-              >
-                Salvar Rascunho
-              </Button>
-            )}
-
-            <Button type="submit" colorScheme="blue">
-              Próximo
+        <HStack spacing={4} justify="flex-end">
+          {onBack && (
+            <Button variant="outline" onClick={onBack}>
+              Voltar
             </Button>
-          </HStack>
+          )}
+          {onSaveDraft && (
+            <Button variant="outline" onClick={onSaveDraft}>
+              Salvar Rascunho
+            </Button>
+          )}
+          <Button type="submit" colorScheme="blue">
+            Próximo
+          </Button>
         </HStack>
       </VStack>
     </Box>

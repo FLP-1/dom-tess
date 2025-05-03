@@ -1,4 +1,4 @@
-import { Task } from '../types/task';
+import { ITask } from '../types/task';
 
 export interface CalendarEvent {
   id: string;
@@ -12,7 +12,7 @@ export interface CalendarEvent {
 }
 
 export class CalendarService {
-  static async exportToGoogleCalendar(task: Task): Promise<string> {
+  static async exportToGoogleCalendar(task: ITask): Promise<string> {
     const event = {
       summary: task.title,
       description: task.description,
@@ -40,7 +40,7 @@ export class CalendarService {
     return `${baseUrl}?${params.toString()}`;
   }
 
-  static async exportToOutlook(task: Task): Promise<string> {
+  static async exportToOutlook(task: ITask): Promise<string> {
     const event = {
       subject: task.title,
       body: task.description,
@@ -67,7 +67,7 @@ export class CalendarService {
     return date.replace(/[-:]/g, '').replace('.000Z', 'Z');
   }
 
-  static async syncWithCalendar(task: Task): Promise<void> {
+  static async syncWithCalendar(task: ITask): Promise<void> {
     // Aqui você implementaria a sincronização automática com o calendário
     // Por exemplo, usando webhooks ou polling
     console.log('Sincronizando tarefa com calendário:', task);

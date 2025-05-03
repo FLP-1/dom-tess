@@ -8,15 +8,16 @@ import {
   Text,
   useToast,
   HStack,
-  FormControl,
-  FormLabel,
   Input,
   Select,
   Switch,
   FormErrorMessage,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { SelectCustom } from '../common/SelectCustom';
 
 interface HorarioTrabalhoProps {
   userId: string;
@@ -128,14 +129,17 @@ export function HorarioTrabalho({ userId }: HorarioTrabalhoProps) {
 
         <FormControl>
           <FormLabel>Regime de Trabalho</FormLabel>
-          <Select
+          <SelectCustom
             value={formData.regime}
             onChange={(e) => setFormData({ ...formData, regime: e.target.value })}
-          >
-            <option value="CLT">CLT</option>
-            <option value="PJ">PJ</option>
-            <option value="Autônomo">Autônomo</option>
-          </Select>
+            options={[
+              { value: 'CLT', label: 'CLT' },
+              { value: 'PJ', label: 'PJ' },
+              { value: 'Autônomo', label: 'Autônomo' }
+            ]}
+            placeholder="Selecione o regime"
+            isRequired
+          />
         </FormControl>
 
         <FormControl display="flex" alignItems="center">

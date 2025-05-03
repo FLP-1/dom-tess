@@ -1,6 +1,7 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, forwardRef } from 'react';
 import {
   Select,
   SelectProps as ChakraSelectProps,
@@ -14,6 +15,7 @@ import {
 import { ValidationRule } from '../../utils/validations';
 import { BaseSelectProps } from '../../types/common';
 import { withAccessibility } from '../../hocs/withAccessibility';
+import { FormSelectProps } from '@/types/form';
 
 export interface Option {
   value: string | number;
@@ -21,179 +23,141 @@ export interface Option {
   group?: string;
 }
 
-type SelectFieldBaseProps = {
-  options: Option[];
-  value?: string | number;
-  onChange?: (value: string) => void;
-  onBlur?: (event: React.FocusEvent<HTMLSelectElement>) => void;
-  onFocus?: (event: React.FocusEvent<HTMLSelectElement>) => void;
-  label?: string;
-  error?: string;
-  helperText?: string;
-  validationRules?: ValidationRule[];
-  isRequired?: boolean;
-  isDisabled?: boolean;
-  isLoading?: boolean;
-  id?: string;
-  name?: string;
-  placeholder?: string;
-  size?: 'sm' | 'md' | 'lg';
-  width?: string | number;
-};
+export const SelectField = forwardRef<HTMLSelectElement, FormSelectProps>((props, ref) => {
+  const {
+    label,
+    error,
+    helperText,
+    isRequired,
+    isDisabled,
+    isLoading,
+    id,
+    name,
+    width,
+    size = 'md',
+    value,
+    onChange,
+    onBlur,
+    onFocus,
+    options,
+    isClearable,
+    isSearchable,
+    isMulti,
+    closeMenuOnSelect,
+    noOptionsMessage,
+    loadingMessage,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedby,
+    'aria-labelledby': ariaLabelledby,
+    title,
+    role,
+    _placeholder,
+    ...rest
+  } = props;
 
-export type SelectFieldProps = SelectFieldBaseProps & Omit<ChakraSelectProps, keyof SelectFieldBaseProps>;
+  const generatedId = useId();
+  const inputId = id || name || generatedId;
+  const labelId = `${inputId}-label`;
+  const errorId = `${inputId}-error`;
+  const helperId = `${inputId}-helper`;
 
-export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
-  (
-    {
-      value = '',
-      options = [],
-      onChange,
-      onBlur,
-      id,
-      name,
-      placeholder,
-      size = 'md',
-      width = '100%',
-      isDisabled,
-      isRequired,
-      isLoading,
-      label,
-      error,
-      helperText,
-      ...props
-    },
-    ref
-  ) => {
-    const [internalValue, setInternalValue] = useState<string | number>(value);
-    const uniqueId = useId();
-    const fieldId = id || uniqueId;
-    const labelId = `${fieldId}-label`;
-    const helperId = `${fieldId}-helper`;
-    const errorId = `${fieldId}-error`;
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
 
-    const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newValue = e.target.value;
-        setInternalValue(newValue);
+  const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
+    if (onBlur) {
+      onBlur(e.target.value);
+    }
+  };
 
-        if (onChange) {
-          onChange(newValue);
-        }
-      },
-      [onChange]
-    );
+  const handleFocus = (e: React.FocusEvent<HTMLSelectElement>) => {
+    if (onFocus) {
+      onFocus(e.target.value);
+    }
+  };
 
-    const groupedOptions = options.reduce<Record<string, Option[]>>((acc, option) => {
+  const renderOptions = () => {
+    if (!options) return null;
+
+    const groupedOptions: Record<string, typeof options> = {};
+    const ungroupedOptions: typeof options = [];
+
+    options.forEach(option => {
       if (option.group) {
-        if (!acc[option.group]) {
-          acc[option.group] = [];
+        if (!groupedOptions[option.group]) {
+          groupedOptions[option.group] = [];
         }
-        acc[option.group].push(option);
+        groupedOptions[option.group].push(option);
       } else {
-        if (!acc.default) {
-          acc.default = [];
-        }
-        acc.default.push(option);
+        ungroupedOptions.push(option);
       }
-      return acc;
-    }, {});
-
-    const accessibleName = label || name || placeholder || 'Campo de seleção';
+    });
 
     return (
-      <FormControl
-        isInvalid={!!error}
-        isRequired={isRequired}
-        isDisabled={isDisabled}
-        width={width}
-      >
-        {label && (
-          <FormLabel
-            id={labelId}
-            htmlFor={fieldId}
-            mb={1}
-          >
-            {label}
-          </FormLabel>
+      <>
+        {_placeholder && (
+          <option value="" disabled>
+            {_placeholder}
+          </option>
         )}
-
-        <Select
-          as="select"
-          ref={ref}
-          id={fieldId}
-          name={name}
-          value={internalValue}
-          onChange={handleChange}
-          onBlur={onBlur}
-          placeholder={placeholder}
-          size={size}
-          width="100%"
-          isDisabled={isDisabled || isLoading}
-          isRequired={isRequired}
-          variant={error ? 'outline' : undefined}
-          focusBorderColor={error ? 'red.500' : 'blue.500'}
-          errorBorderColor="red.500"
-          aria-label={accessibleName}
-          aria-labelledby={label ? labelId : undefined}
-          aria-describedby={
-            [
-              helperText ? helperId : null,
-              error ? errorId : null
-            ].filter(Boolean).join(' ') || undefined
-          }
-          aria-invalid={!!error}
-          data-testid={`select-${name || fieldId}`}
-          {...props}
-        >
-          {placeholder && (
-            <option value="" disabled={isRequired}>
-              {placeholder}
-            </option>
-          )}
-          {Object.entries(groupedOptions).map(([group, groupOptions]) => (
-            group === 'default' ? (
-              groupOptions.map((option) => (
-                <option 
-                  key={option.value} 
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))
-            ) : (
-              <optgroup 
-                key={group} 
-                label={group}
-              >
-                {groupOptions.map((option) => (
-                  <option 
-                    key={option.value} 
-                    value={option.value}
-                  >
-                    {option.label}
-                  </option>
-                ))}
-              </optgroup>
-            )
-          ))}
-        </Select>
-
-        {error && (
-          <FormErrorMessage id={errorId}>
-            {error}
-          </FormErrorMessage>
-        )}
-        
-        {helperText && !error && (
-          <FormHelperText id={helperId}>
-            {helperText}
-          </FormHelperText>
-        )}
-      </FormControl>
+        {ungroupedOptions.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+        {Object.entries(groupedOptions).map(([group, options]) => (
+          <optgroup key={group} label={group}>
+            {options.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </>
     );
-  }
-);
+  };
+
+  const accessibleName = label || _placeholder || 'Campo de seleção';
+
+  return (
+    <FormControl
+      isInvalid={!!error}
+      isRequired={isRequired}
+      isDisabled={isDisabled}
+      width={width}
+    >
+      {label && <FormLabel htmlFor={inputId} id={labelId}>{label}</FormLabel>}
+      <Select
+        ref={ref}
+        id={inputId}
+        name={name}
+        size={size}
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+        aria-label={ariaLabel || accessibleName}
+        aria-describedby={error ? errorId : helperText ? helperId : undefined}
+        aria-labelledby={ariaLabelledby || labelId}
+        aria-invalid={!!error}
+        aria-required={isRequired}
+        aria-busy={isLoading}
+        title={title || accessibleName}
+        role={role || 'combobox'}
+        aria-expanded="true"
+        {...rest}
+      >
+        {renderOptions()}
+      </Select>
+      {error && <FormErrorMessage id={errorId}>{error}</FormErrorMessage>}
+      {helperText && !error && <FormHelperText id={helperId}>{helperText}</FormHelperText>}
+    </FormControl>
+  );
+});
 
 SelectField.displayName = 'SelectField';
 

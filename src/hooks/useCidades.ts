@@ -52,7 +52,7 @@ export function useCidades(uf: string) {
     };
 
     buscarCidades();
-  }, [uf, toast]);
+  }, [uf, toast, setCidades, setLoading, setError]);
 
   const filtrarCidades = (termo: string) => {
     if (!termo) return cidades;

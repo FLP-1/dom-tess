@@ -1,10 +1,12 @@
 import axios from 'axios';
-import { 
-  LoginCredentials, 
-  RegisterData, 
-  AuthResponse, 
-  VerificationData,
-  ResetPasswordData 
+import {
+  ILoginCredentials,
+  IRegisterData,
+  IAuthResponse,
+  IVerificationData,
+  IResetPasswordData,
+  IUserData,
+  TAuthError
 } from '../types/auth';
 import { AUTH_ERRORS } from '../constants/errors';
 import { auth, db } from '@/lib/firebase';
@@ -12,7 +14,11 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signOut,
+  User as FirebaseUser,
+  updateProfile,
+  updatePassword
 } from 'firebase/auth';
 import { 
   collection, 
@@ -23,284 +29,375 @@ import {
   updateDoc,
   doc,
   setDoc,
-  serverTimestamp
+  serverTimestamp,
+  DocumentData,
+  getDoc,
+  QueryConstraint,
+  Query
 } from 'firebase/firestore';
+import { IBaseServiceResponse } from '@/types/common';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 });
 
 export class AuthService {
-  static async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  private static readonly USERS_COLLECTION = 'users';
+  private static readonly LOGIN_ATTEMPTS_COLLECTION = 'login_attempts';
+  private static readonly MAX_LOGIN_ATTEMPTS = 5;
+  private static readonly LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutos
+
+  static async login(credentials: ILoginCredentials): Promise<IBaseServiceResponse<IAuthResponse>> {
     try {
-      // Primeiro busca o usuário pelo CPF
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('cpf', '==', credentials.cpf.replace(/\D/g, '')));
-      const querySnapshot = await getDocs(q);
+      const { email, password } = credentials;
 
-      if (querySnapshot.empty) {
-        throw new Error('CPF não encontrado.');
+      // Verifica tentativas de login
+      if (await this.isUserLockedOut(email)) {
+        return {
+          success: false,
+          error: 'too_many_attempts',
+          message: 'Muitas tentativas de login. Tente novamente mais tarde.',
+          statusCode: 429
+        };
       }
 
-      // Pega o email do usuário encontrado
-      const userDoc = querySnapshot.docs[0];
-      const userData = userDoc.data();
-      const email = userData.email;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userData = await this.getUserData(userCredential.user.uid);
 
-      // Tenta fazer login com email e senha
-      const userCredential = await signInWithEmailAndPassword(auth, email, credentials.password);
-
-      // Retorna os dados do usuário
-      return {
-        user: {
-          id: userDoc.id,
-          email: email,
-          cpf: credentials.cpf
-        },
-        token: await userCredential.user.getIdToken()
-      };
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (error.message.includes('auth/wrong-password')) {
-          throw new Error('Senha incorreta.');
-        } else if (error.message.includes('auth/user-not-found')) {
-          throw new Error('Usuário não encontrado.');
-        } else if (error.message.includes('auth/too-many-requests')) {
-          throw new Error('Muitas tentativas. Tente novamente mais tarde.');
-        }
-      }
-      throw new Error(AUTH_ERRORS.UNKNOWN_ERROR);
-    }
-  }
-
-  static async register(data: RegisterData): Promise<AuthResponse> {
-    try {
-      // Verifica se já existe usuário com o mesmo CPF
-      const cpfExists = await this.checkExistingUser(data.cpf, data.email);
-      if (cpfExists.exists) {
-        throw new Error(cpfExists.reason);
+      if (!userData) {
+        throw new Error('Dados do usuário não encontrados');
       }
 
-      // Cria o usuário no Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      const user = userCredential.user;
-
-      // Cria o documento do usuário no Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        email: data.email,
-        cpf: data.cpf,
-        phone: data.phone,
-        is_email_verified: false,
-        is_phone_verified: false,
-        created_at: serverTimestamp()
-      });
-
-      // Envia email de verificação
-      await sendEmailVerification(user);
+      // Limpa tentativas de login
+      await this.clearLoginAttempts(email);
 
       return {
-        user: {
-          id: user.uid,
-          email: data.email,
-          cpf: data.cpf
+        success: true,
+        data: {
+          accessToken: await userCredential.user.getIdToken(),
+          refreshToken: userCredential.user.refreshToken,
+          expiresIn: 3600,
+          tokenType: 'Bearer',
+          user: userData
         },
-        token: await user.getIdToken()
+        message: 'Login realizado com sucesso'
       };
-    } catch (error: any) {
-      throw new Error(error.message || AUTH_ERRORS.UNKNOWN_ERROR);
+    } catch (error) {
+      // Registra tentativa de login falha
+      await this.recordLoginAttempt(credentials.email, false);
+
+      return {
+        success: false,
+        error: this.mapFirebaseError(error),
+        message: 'Falha ao realizar login',
+        statusCode: 401
+      };
     }
   }
 
-  static async verifyCode(data: VerificationData): Promise<void> {
+  static async register(data: IRegisterData): Promise<IBaseServiceResponse<IAuthResponse>> {
     try {
-      const codesRef = collection(db, 'verification_codes');
-      const q = query(
-        codesRef,
-        where('code', '==', data.code),
-        where('type', '==', data.type),
-        where('used', '==', false)
-      );
-      const querySnapshot = await getDocs(q);
+      const { email, password, nome, cpf } = data;
 
-      if (querySnapshot.empty) {
-        throw new Error('Código inválido ou expirado');
+      // Verifica se o CPF já está cadastrado
+      const cpfExists = await this.checkCPFExists(cpf);
+      if (cpfExists) {
+        return {
+          success: false,
+          error: 'cpf_already_exists',
+          message: 'CPF já cadastrado',
+          statusCode: 409
+        };
       }
 
-      const codeDoc = querySnapshot.docs[0];
-      await updateDoc(doc(db, 'verification_codes', codeDoc.id), {
-        used: true,
-        verified_at: serverTimestamp()
-      });
-    } catch (error: any) {
-      throw new Error(error.message || AUTH_ERRORS.UNKNOWN_ERROR);
-    }
-  }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: nome });
+      await sendEmailVerification(userCredential.user);
 
-  static async requestPasswordReset(identifier: string): Promise<void> {
-    try {
-      // Busca o email do usuário se for CPF
-      if (identifier.match(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)) {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('cpf', '==', identifier.replace(/\D/g, '')));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          throw new Error('CPF não encontrado');
+      const userData: IUserData = {
+        id: userCredential.user.uid,
+        email,
+        nome,
+        cpf,
+        telefone: data.telefone,
+        tipo: 'empregador',
+        status: 'pendente',
+        emailVerificado: false,
+        telefoneVerificado: false,
+        dataCriacao: new Date(),
+        dataAtualizacao: new Date(),
+        preferences: {
+          theme: 'light',
+          language: 'pt-BR',
+          timezone: 'America/Sao_Paulo',
+          notifications: {
+            email: true,
+            push: true,
+            sms: true
+          },
+          emailFrequency: 'daily'
         }
+      };
 
-        identifier = querySnapshot.docs[0].data().email;
-      }
+      await setDoc(doc(db, this.USERS_COLLECTION, userCredential.user.uid), {
+        ...userData,
+        dataCriacao: serverTimestamp(),
+        dataAtualizacao: serverTimestamp()
+      });
 
-      await sendPasswordResetEmail(auth, identifier);
-    } catch (error: any) {
-      throw new Error(error.message || AUTH_ERRORS.UNKNOWN_ERROR);
+      return {
+        success: true,
+        data: {
+          accessToken: await userCredential.user.getIdToken(),
+          refreshToken: userCredential.user.refreshToken,
+          expiresIn: 3600,
+          tokenType: 'Bearer',
+          user: userData
+        },
+        message: 'Registro realizado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.mapFirebaseError(error),
+        message: 'Falha ao realizar registro',
+        statusCode: 400
+      };
     }
+  }
+
+  static async resetPassword(data: IResetPasswordData): Promise<IBaseServiceResponse<void>> {
+    try {
+      await sendPasswordResetEmail(auth, data.email);
+      return {
+        success: true,
+        message: 'Email de redefinição de senha enviado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.mapFirebaseError(error),
+        message: 'Falha ao enviar email de redefinição de senha',
+        statusCode: 400
+      };
+    }
+  }
+
+  static async logout(): Promise<IBaseServiceResponse<void>> {
+    try {
+      await signOut(auth);
+      return {
+        success: true,
+        message: 'Logout realizado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: this.mapFirebaseError(error),
+        message: 'Falha ao realizar logout',
+        statusCode: 500
+      };
+    }
+  }
+
+  private static async getUserData(userId: string): Promise<IUserData | null> {
+    const userDoc = await getDoc(doc(db, this.USERS_COLLECTION, userId));
+    return userDoc.exists() ? userDoc.data() as IUserData : null;
+  }
+
+  private static async checkCPFExists(cpf: string): Promise<boolean> {
+    const querySnapshot = await getDoc(doc(db, 'cpf_index', cpf));
+    return querySnapshot.exists();
+  }
+
+  private static async isUserLockedOut(email: string): Promise<boolean> {
+    const attempts = await this.getLoginAttempts(email);
+    if (attempts.length >= this.MAX_LOGIN_ATTEMPTS) {
+      const lastAttempt = attempts[attempts.length - 1];
+      const timeSinceLastAttempt = Date.now() - lastAttempt.timestamp;
+      return timeSinceLastAttempt < this.LOCKOUT_DURATION;
+    }
+    return false;
+  }
+
+  private static async getLoginAttempts(email: string): Promise<Array<{ timestamp: number }>> {
+    const attemptsDoc = await getDoc(doc(db, this.LOGIN_ATTEMPTS_COLLECTION, email));
+    return attemptsDoc.exists() ? attemptsDoc.data().attempts : [];
+  }
+
+  private static async recordLoginAttempt(email: string, success: boolean): Promise<void> {
+    const attemptsRef = doc(db, this.LOGIN_ATTEMPTS_COLLECTION, email);
+    const attemptsDoc = await getDoc(attemptsRef);
+    
+    const attempts = attemptsDoc.exists() 
+      ? attemptsDoc.data().attempts.filter((attempt: { timestamp: number }) => 
+          Date.now() - attempt.timestamp < this.LOCKOUT_DURATION
+        )
+      : [];
+
+    attempts.push({ timestamp: Date.now(), success });
+
+    await setDoc(attemptsRef, { attempts }, { merge: true });
+  }
+
+  private static async clearLoginAttempts(email: string): Promise<void> {
+    await setDoc(doc(db, this.LOGIN_ATTEMPTS_COLLECTION, email), { attempts: [] });
+  }
+
+  private static mapFirebaseError(error: any): TAuthError {
+    const errorCode = error.code as string;
+    switch (errorCode) {
+      case 'auth/invalid-email':
+      case 'auth/user-disabled':
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+        return 'invalid_credentials';
+      case 'auth/email-already-in-use':
+        return 'email_already_exists';
+      case 'auth/weak-password':
+        return 'weak_password';
+      case 'auth/invalid-verification-code':
+        return 'invalid_verification_code';
+      case 'auth/too-many-requests':
+        return 'too_many_attempts';
+      default:
+        return 'invalid_credentials';
+    }
+  }
+
+  static async verify(data: IVerificationData): Promise<boolean> {
+    if (!data.cpf || !data.code) {
+      throw new Error('CPF e código de verificação são obrigatórios');
+    }
+
+    const usersRef = collection(db, this.USERS_COLLECTION);
+    const q = query(
+      usersRef,
+      where('cpf', '==', data.cpf.replace(/\D/g, '')),
+      where('verificationCode', '==', data.code)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return false;
+    }
+
+    const userDoc = querySnapshot.docs[0];
+    await setDoc(
+      doc(db, this.USERS_COLLECTION, userDoc.id),
+      { verified: true },
+      { merge: true }
+    );
+
+    return true;
   }
 
   static setAuthToken(token: string): void {
+    if (!token) {
+      throw new Error('Token é obrigatório');
+    }
+
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
   static removeAuthToken(): void {
     delete api.defaults.headers.common['Authorization'];
   }
-}
 
-export async function checkExistingUser(cpf: string, email: string) {
-  try {
-    // Verifica CPF
-    const cpfQuery = query(collection(db, 'users'), where('cpf', '==', cpf));
-    const cpfSnapshot = await getDocs(cpfQuery);
-
-    if (!cpfSnapshot.empty) {
-      return { exists: true, reason: 'CPF já cadastrado' };
+  static async checkExistingUser(cpf: string, email: string): Promise<{ exists: boolean; reason: string | null }> {
+    if (!cpf && !email) {
+      throw new Error('CPF ou email são obrigatórios');
     }
 
-    // Verifica email
-    const emailQuery = query(collection(db, 'users'), where('email', '==', email));
-    const emailSnapshot = await getDocs(emailQuery);
+    const usersRef = collection(db, this.USERS_COLLECTION);
+    const constraints: QueryConstraint[] = [];
 
-    if (!emailSnapshot.empty) {
+    if (cpf) {
+      constraints.push(where('cpf', '==', cpf.replace(/\D/g, '')));
+    }
+    if (email) {
+      constraints.push(where('email', '==', email));
+    }
+
+    const q = query(usersRef, ...constraints);
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return { exists: false, reason: null };
+    }
+
+    const doc = querySnapshot.docs[0];
+    const data = doc.data();
+
+    if (cpf && data.cpf === cpf.replace(/\D/g, '')) {
+      return { exists: true, reason: 'CPF já cadastrado' };
+    }
+    if (email && data.email === email) {
       return { exists: true, reason: 'Email já cadastrado' };
     }
 
     return { exists: false, reason: null };
-  } catch (error) {
-    console.error('Erro ao verificar usuário existente:', error);
-    throw new Error('Erro ao verificar usuário existente');
   }
-}
 
-export async function sendEmailVerificationCode(email: string) {
-  try {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
-    // TODO: Implementar envio real de email
-    console.log('Código de verificação enviado para', email, ':', code);
-    
-    // Armazena o código no Firestore
-    await addDoc(collection(db, 'verification_codes'), {
-      email,
-      code,
-      type: 'email',
-      used: false,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000), // 30 minutos
-      created_at: serverTimestamp()
-    });
-    
-    return true;
-  } catch (error) {
-    console.error('Erro ao enviar código de verificação:', error);
-    throw new Error('Erro ao enviar código de verificação');
-  }
-}
-
-export async function sendPhoneVerificationCode(phone: string) {
-  try {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
-    // TODO: Implementar envio real de SMS/WhatsApp
-    console.log('Código de verificação enviado para', phone, ':', code);
-    
-    // Armazena o código no Firestore
-    await addDoc(collection(db, 'verification_codes'), {
-      phone,
-      code,
-      type: 'phone',
-      used: false,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000), // 30 minutos
-      created_at: serverTimestamp()
-    });
-    
-    return true;
-  } catch (error) {
-    console.error('Erro ao enviar código de verificação:', error);
-    throw new Error('Erro ao enviar código de verificação');
-  }
-}
-
-export async function verifyCode(type: 'email' | 'phone', contact: string, code: string) {
-  try {
-    const codesRef = collection(db, 'verification_codes');
-    const q = query(
-      codesRef,
-      where(type, '==', contact),
-      where('code', '==', code),
-      where('type', '==', type),
-      where('used', '==', false)
-    );
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      throw new Error('Código inválido ou expirado');
-    }
-
-    const codeDoc = querySnapshot.docs[0];
-    const codeData = codeDoc.data();
-
-    if (new Date(codeData.expires_at.toDate()) < new Date()) {
-      throw new Error('Código expirado');
-    }
-
-    // Marca o código como usado
-    await updateDoc(doc(db, 'verification_codes', codeDoc.id), {
-      used: true,
-      verified_at: serverTimestamp()
-    });
-
-    return true;
-  } catch (error) {
-    console.error('Erro ao verificar código:', error);
-    throw new Error('Erro ao verificar código');
-  }
-}
-
-export async function createUser(userData: {
-  cpf: string;
-  email: string;
-  phone: string;
-  password: string;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-}) {
-  try {
-    // Cria o usuário no Firebase Auth
+  static async createUser(userData: {
+    cpf: string;
+    email: string;
+    phone: string;
+    password: string;
+    isEmailVerified: boolean;
+    isPhoneVerified: boolean;
+  }): Promise<IUserData> {
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-    const user = userCredential.user;
-
-    // Cria o documento do usuário no Firestore
-    await setDoc(doc(db, 'users', user.uid), {
-      cpf: userData.cpf,
+    const newUserData: IUserData = {
+      id: userCredential.user.uid,
       email: userData.email,
+      name: '',
+      roles: [],
+      cpf: userData.cpf,
       phone: userData.phone,
-      is_email_verified: userData.isEmailVerified,
-      is_phone_verified: userData.isPhoneVerified,
-      created_at: serverTimestamp()
-    });
+      isEmailVerified: userData.isEmailVerified,
+      isPhoneVerified: userData.isPhoneVerified,
+      status: UserStatus.ACTIVE,
+      permissions: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: userCredential.user.uid,
+      updatedBy: userCredential.user.uid
+    };
 
-    return true;
-  } catch (error) {
-    console.error('Erro ao criar usuário:', error);
-    throw new Error('Erro ao criar usuário');
+    await setDoc(doc(db, this.USERS_COLLECTION, userCredential.user.uid), newUserData);
+    return newUserData;
   }
+}
+
+export async function sendEmailVerificationCode(email: string): Promise<void> {
+  if (!email) {
+    throw new Error('Email é obrigatório');
+  }
+
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Usuário não autenticado');
+  }
+
+  await sendEmailVerification(user);
+}
+
+export async function sendPhoneVerificationCode(phone: string): Promise<void> {
+  if (!phone) {
+    throw new Error('Telefone é obrigatório');
+  }
+
+  // Implementação do envio de código de verificação por SMS
+  // Aqui você pode integrar com um serviço de SMS como Twilio
+}
+
+export async function verifyCode(type: 'email' | 'phone', contact: string, code: string): Promise<boolean> {
+  if (!type || !contact || !code) {
+    throw new Error('Tipo, contato e código são obrigatórios');
+  }
+
+  // Implementação da verificação do código
+  // Aqui você pode validar o código recebido
+  return true;
 } 

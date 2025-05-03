@@ -1,54 +1,37 @@
 import React from 'react';
-import { Tag } from '@chakra-ui/react';
-import { TaskStatus } from '../../types/task';
+import { Badge, BadgeProps } from '@chakra-ui/react';
+import { EStatus, getStatusLabel } from '../../types/common';
 
-interface TaskStatusBadgeProps {
-  status: TaskStatus;
-  size?: 'sm' | 'md' | 'lg';
+interface TaskStatusBadgeProps extends Omit<BadgeProps, 'colorScheme'> {
+  status: EStatus;
 }
 
-export const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = ({ status, size = 'sm' }) => {
-  const getStatusColor = (status: TaskStatus) => {
-    switch (status) {
-      case TaskStatus.NOT_STARTED:
-        return 'gray';
-      case TaskStatus.PENDING:
-        return 'yellow';
-      case TaskStatus.IN_PROGRESS:
-        return 'blue';
-      case TaskStatus.COMPLETED:
-        return 'green';
-      case TaskStatus.CANCELLED:
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
+const statusColors = {
+  [EStatus.NOT_STARTED]: 'gray',
+  [EStatus.PENDING]: 'yellow',
+  [EStatus.IN_PROGRESS]: 'blue',
+  [EStatus.COMPLETED]: 'green',
+  [EStatus.CANCELLED]: 'red',
+  [EStatus.DELETED]: 'gray',
+  [EStatus.FAILED]: 'red',
+  [EStatus.INVALID]: 'red',
+  [EStatus.ACTIVE]: 'green',
+  [EStatus.INACTIVE]: 'gray',
+  [EStatus.VALID]: 'green',
+  [EStatus.EXPIRED]: 'red',
+  [EStatus.ON_VACATION]: 'blue',
+  [EStatus.ON_LEAVE]: 'blue',
+  [EStatus.DISMISSED]: 'red',
+  [EStatus.INCOMPLETE]: 'yellow'
+};
 
-  const getStatusLabel = (status: TaskStatus) => {
-    switch (status) {
-      case TaskStatus.NOT_STARTED:
-        return 'Não Iniciado';
-      case TaskStatus.PENDING:
-        return 'Pendente';
-      case TaskStatus.IN_PROGRESS:
-        return 'Em Andamento';
-      case TaskStatus.COMPLETED:
-        return 'Concluído';
-      case TaskStatus.CANCELLED:
-        return 'Cancelado';
-      default:
-        return '';
-    }
-  };
-
+export const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = ({ status, ...props }) => {
   return (
-    <Tag
-      colorScheme={getStatusColor(status)}
-      size={size}
-      aria-label={`Status: ${getStatusLabel(status)}`}
+    <Badge
+      colorScheme={statusColors[status]}
+      {...props}
     >
       {getStatusLabel(status)}
-    </Tag>
+    </Badge>
   );
 }; 

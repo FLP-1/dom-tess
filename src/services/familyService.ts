@@ -1,16 +1,8 @@
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { formatCPF, validateCPF } from '@/utils/formatting';
 import { BaseService } from './base/BaseService';
-
-export interface FamilyMember {
-  id?: string;
-  nome: string;
-  cpf: string;
-  dataNascimento: string;
-  parentesco: 'CONJUGE' | 'FILHO' | 'PAI' | 'MAE' | 'OUTRO';
-  empregadoId: string;
-}
+import { FamilyMember } from '@/types/family';
 
 export class FamilyService extends BaseService<FamilyMember> {
   protected collectionName = 'family';
@@ -63,6 +55,58 @@ export class FamilyService extends BaseService<FamilyMember> {
       id: doc.id,
       ...doc.data()
     })) as FamilyMember[];
+  }
+
+  static async create(member: Omit<FamilyMember, 'id'>): Promise<FamilyMember> {
+    const docRef = doc(db, this.collectionName);
+    const newMember: FamilyMember = {
+      ...member,
+      id: docRef.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    await setDoc(docRef, newMember);
+    return newMember;
+  }
+
+  static async getAll(employeeId: string): Promise<FamilyMember[]> {
+    const q = query(
+      db,
+      this.collectionName,
+      where('employeeId', '==', employeeId),
+      where('status', '!=', 'deleted')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id
+    })) as FamilyMember[];
+  }
+
+  static async getById(id: string): Promise<FamilyMember | null> {
+    const docRef = doc(db, this.collectionName, id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return null;
+    return { ...docSnap.data(), id: docSnap.id } as FamilyMember;
+  }
+
+  static async update(id: string, data: Partial<FamilyMember>): Promise<void> {
+    const docRef = doc(db, this.collectionName, id);
+    await setDoc(
+      docRef,
+      {
+        ...data,
+        updatedAt: new Date().toISOString()
+      },
+      { merge: true }
+    );
+  }
+
+  static async delete(id: string): Promise<void> {
+    const docRef = doc(db, this.collectionName, id);
+    await setDoc(docRef, { status: 'deleted' }, { merge: true });
   }
 }
 

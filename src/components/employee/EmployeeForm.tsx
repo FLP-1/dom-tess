@@ -1,3 +1,4 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -99,7 +100,7 @@ export function EmployeeForm() {
     };
 
     loadCCT();
-  }, [formData.state, formData.position]);
+  }, [formData.state, formData.position, loadCCT, setCCT, setLoadingCCT, cctService]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

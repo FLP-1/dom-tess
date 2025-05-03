@@ -1,23 +1,22 @@
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { BaseServiceResponse } from '@/types/common';
 
-interface VerificationCode {
+export interface VerificationCode {
   code: string;
   expiresAt: Date;
   attempts: number;
-}
-
-interface VerificationResult {
-  success: boolean;
-  message: string;
+  userId: string;
+  type: 'email' | 'phone' | 'password';
+  identifier: string;
 }
 
 export class VerificationService {
   private static readonly MAX_ATTEMPTS = 3;
   private static readonly CODE_EXPIRATION_MINUTES = 10;
-  private static readonly VERIFICATION_CODES = new Map<string, VerificationCode>();
+  private static readonly COLLECTION_NAME = 'verifications';
 
   private static generateCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -29,143 +28,148 @@ export class VerificationService {
     return date;
   }
 
-  private static async getUserByCPF(cpf: string) {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('cpf', '==', cpf.replace(/\D/g, '')));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      throw new Error('Usuário não encontrado');
-    }
-
-    return querySnapshot.docs[0];
-  }
-
-  private static async verifyContactInfo(userDoc: any, contactInfo: string, type: 'email' | 'phone'): Promise<boolean> {
-    const userData = userDoc.data();
-    return userData[type] === contactInfo;
-  }
-
-  private static async updateUserVerificationStatus(userDoc: any, verified: boolean) {
-    const userRef = doc(db, 'users', userDoc.id);
-    await updateDoc(userRef, {
-      [`${verified ? 'email' : 'phone'}Verified`]: verified,
-      [`${verified ? 'email' : 'phone'}VerificationDate`]: new Date()
-    });
-  }
-
-  public static async sendVerificationCode(cpf: string, contactInfo: string, type: 'email' | 'phone'): Promise<VerificationResult> {
+  public async createVerification(
+    userId: string,
+    type: VerificationCode['type'],
+    identifier: string
+  ): Promise<BaseServiceResponse<VerificationCode>> {
     try {
-      const userDoc = await this.getUserByCPF(cpf);
-      
-      if (!await this.verifyContactInfo(userDoc, contactInfo, type)) {
-        return {
-          success: false,
-          message: `${type === 'email' ? 'Email' : 'Celular'} não corresponde ao cadastrado`
-        };
-      }
+      const code = VerificationService.generateCode();
+      const expiresAt = VerificationService.generateExpirationDate();
 
-      const code = this.generateCode();
-      const expiresAt = this.generateExpirationDate();
-
-      this.VERIFICATION_CODES.set(`${cpf}-${type}`, {
+      const verification: VerificationCode = {
         code,
         expiresAt,
-        attempts: 0
-      });
+        attempts: 0,
+        userId,
+        type,
+        identifier
+      };
 
-      if (type === 'email') {
-        await sendPasswordResetEmail(auth, contactInfo);
-        console.log(`Código de verificação enviado para ${contactInfo}: ${code}`);
-      } else {
-        // Simulação de envio de SMS
-        console.log(`SMS enviado para ${contactInfo}: ${code}`);
-      }
+      await setDoc(doc(db, VerificationService.COLLECTION_NAME, code), verification);
 
       return {
         success: true,
-        message: `Código de verificação enviado para seu ${type === 'email' ? 'email' : 'celular'}`
+        data: verification,
+        message: 'Código de verificação criado com sucesso'
       };
-    } catch (error: any) {
+    } catch (error) {
       return {
         success: false,
-        message: error.message || 'Erro ao enviar código de verificação'
+        error: error instanceof Error ? error.message : 'Erro ao criar código de verificação',
+        message: 'Falha ao criar código de verificação'
       };
     }
   }
 
-  public static async verifyCode(cpf: string, type: 'email' | 'phone', code: string): Promise<VerificationResult> {
+  public async verifyCode(
+    code: string,
+    type: VerificationCode['type'],
+    identifier: string
+  ): Promise<BaseServiceResponse<boolean>> {
     try {
-      const key = `${cpf}-${type}`;
-      const verification = this.VERIFICATION_CODES.get(key);
+      const q = query(
+        collection(db, VerificationService.COLLECTION_NAME),
+        where('code', '==', code),
+        where('type', '==', type),
+        where('identifier', '==', identifier)
+      );
 
-      if (!verification) {
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
         return {
           success: false,
-          message: 'Código não encontrado ou expirado'
+          error: 'Código inválido',
+          message: 'Código de verificação inválido'
         };
       }
 
-      if (verification.attempts >= this.MAX_ATTEMPTS) {
-        this.VERIFICATION_CODES.delete(key);
+      const verification = querySnapshot.docs[0].data() as VerificationCode;
+
+      if (verification.attempts >= VerificationService.MAX_ATTEMPTS) {
+        await this.deleteVerification(code);
         return {
           success: false,
+          error: 'Número máximo de tentativas excedido',
           message: 'Número máximo de tentativas excedido'
         };
       }
 
-      if (new Date() > verification.expiresAt) {
-        this.VERIFICATION_CODES.delete(key);
+      if (verification.expiresAt.getTime() < Date.now()) {
+        await this.deleteVerification(code);
         return {
           success: false,
-          message: 'Código expirado'
+          error: 'Código expirado',
+          message: 'Código de verificação expirado'
         };
       }
 
-      if (verification.code !== code) {
-        verification.attempts++;
-        this.VERIFICATION_CODES.set(key, verification);
-        return {
-          success: false,
-          message: 'Código inválido'
-        };
-      }
-
-      const userDoc = await this.getUserByCPF(cpf);
-      await this.updateUserVerificationStatus(userDoc, true);
-      this.VERIFICATION_CODES.delete(key);
-
+      await this.deleteVerification(code);
       return {
         success: true,
+        data: true,
         message: 'Código verificado com sucesso'
       };
-    } catch (error: any) {
+    } catch (error) {
       return {
         success: false,
-        message: error.message || 'Erro ao verificar código'
+        error: error instanceof Error ? error.message : 'Erro ao verificar código',
+        message: 'Falha ao verificar código'
       };
     }
   }
 
-  public static async resendCode(cpf: string, type: 'email' | 'phone', contactInfo: string): Promise<VerificationResult> {
+  private async deleteVerification(code: string): Promise<BaseServiceResponse<void>> {
     try {
-      const key = `${cpf}-${type}`;
-      const verification = this.VERIFICATION_CODES.get(key);
-
-      if (verification && new Date() < verification.expiresAt) {
-        const timeLeft = Math.ceil((verification.expiresAt.getTime() - new Date().getTime()) / 1000 / 60);
-        return {
-          success: false,
-          message: `Aguarde ${timeLeft} minutos para solicitar um novo código`
-        };
-      }
-
-      return await this.sendVerificationCode(cpf, contactInfo, type);
-    } catch (error: any) {
+      await deleteDoc(doc(db, VerificationService.COLLECTION_NAME, code));
+      return {
+        success: true,
+        message: 'Verificação excluída com sucesso'
+      };
+    } catch (error) {
       return {
         success: false,
-        message: error.message || 'Erro ao reenviar código'
+        error: error instanceof Error ? error.message : 'Erro ao excluir verificação',
+        message: 'Falha ao excluir verificação'
       };
     }
   }
-} 
+
+  public async incrementAttempts(code: string): Promise<BaseServiceResponse<void>> {
+    try {
+      const docRef = doc(db, VerificationService.COLLECTION_NAME, code);
+      await updateDoc(docRef, {
+        attempts: (await getDocs(query(collection(db, VerificationService.COLLECTION_NAME), where('code', '==', code)))).docs[0].data().attempts + 1
+      });
+      return {
+        success: true,
+        message: 'Tentativas incrementadas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro ao incrementar tentativas',
+        message: 'Falha ao incrementar tentativas'
+      };
+    }
+  }
+
+  public async sendPasswordResetEmail(email: string): Promise<BaseServiceResponse<void>> {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return {
+        success: true,
+        message: 'E-mail de redefinição de senha enviado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro ao enviar e-mail de redefinição de senha',
+        message: 'Falha ao enviar e-mail de redefinição de senha'
+      };
+    }
+  }
+}
+
+export const verificationService = new VerificationService(); 

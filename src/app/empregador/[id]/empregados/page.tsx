@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -44,7 +45,7 @@ export default function ListagemEmpregadosPage({ params }: Props) {
     };
 
     carregarEmpregados();
-  }, [params.id]);
+  }, [params.id, carregarEmpregados, setEmpregados]);
 
   const getCorStatus = (status: string) => {
     switch (status) {

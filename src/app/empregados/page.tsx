@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -44,7 +45,7 @@ export default function EmpregadosPage() {
     if (user) {
       loadEmpregados();
     }
-  }, [user]);
+  }, [user, loadEmpregados]);
 
   const loadEmpregados = async () => {
     try {

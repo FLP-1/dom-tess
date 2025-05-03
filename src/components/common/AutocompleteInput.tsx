@@ -57,7 +57,7 @@ const BaseAutocompleteInput = React.forwardRef<HTMLInputElement, AutocompleteInp
         setFilteredOptions([]);
         setIsOpen(false);
       }
-    }, [internalValue, options, minCharsToSearch]);
+    }, [internalValue, options, minCharsToSearch, setFilteredOptions, setIsOpen]);
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {

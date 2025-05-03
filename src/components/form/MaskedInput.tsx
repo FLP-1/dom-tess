@@ -15,7 +15,7 @@ export function MaskedInput({ label, error, mask, validate, value, onChange, ...
     if (value) {
       setDisplayValue(mask(value as string));
     }
-  }, [value, mask]);
+  }, [value, mask, setDisplayValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

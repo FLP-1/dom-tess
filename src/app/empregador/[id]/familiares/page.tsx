@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -44,7 +45,7 @@ export default function ListagemFamiliaresPage({ params }: Props) {
     };
 
     carregarFamiliares();
-  }, [params.id]);
+  }, [params.id, carregarFamiliares, setFamiliares]);
 
   return (
     <Container maxWidth="lg">

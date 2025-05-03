@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState } from 'react';
@@ -13,7 +15,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DadosEmpregado } from '@/types/esocial';
-import { SelectField } from '@/components/common/SelectField';
+import { SelectCustom } from '../common/SelectCustom';
 import { CEPService } from '@/services/cepService';
 
 interface DadosEnderecoFormProps {
@@ -238,16 +240,15 @@ export function DadosEnderecoForm({
           <FormErrorMessage>{errors.cidade}</FormErrorMessage>
         </FormControl>
 
-        <SelectField
-          label="UF"
-          name="uf"
+        <SelectCustom
+          label="Estado"
+          options={ESTADOS.map(estado => ({
+            value: estado.value,
+            label: estado.label
+          }))}
           value={formData.uf || ''}
-          onChange={(value) => handleChange('uf', value)}
-          options={ESTADOS}
-          placeholder="Selecione o estado"
-          error={errors.uf}
+          onChange={(e) => handleChange('uf', e.target.value)}
           isRequired
-          isDisabled={loading}
         />
 
         <FormControl>

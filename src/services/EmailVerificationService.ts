@@ -17,11 +17,7 @@ export class EmailVerificationService extends BaseVerificationService {
       const code = this.generateCode();
       const expiresAt = this.generateExpirationDate();
 
-      this.VERIFICATION_CODES.set(`${cpf}-email`, {
-        code,
-        expiresAt,
-        attempts: 0
-      });
+      await this.saveVerificationCode(`${cpf}-email`, code, expiresAt);
 
       await sendPasswordResetEmail(auth, email);
       console.log(`Código de verificação enviado para ${email}: ${code}`);
@@ -59,7 +55,7 @@ export class EmailVerificationService extends BaseVerificationService {
   public static async resendCode(cpf: string, email: string): Promise<VerificationResult> {
     try {
       const key = `${cpf}-email`;
-      const canResend = this.canResendCode(key);
+      const canResend = await this.canResendCode(key);
       
       if (canResend) {
         return canResend;

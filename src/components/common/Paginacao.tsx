@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 import { Flex, Button, Text, HStack } from '@chakra-ui/react';
 
 interface PaginacaoProps {

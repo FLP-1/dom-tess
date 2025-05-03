@@ -4,11 +4,15 @@ import { BaseMaskedInputProps } from '../../types/common';
 import { withAccessibility } from '../../hocs/withAccessibility';
 import { MaskType, maskFunctions } from '../../utils/maskTypes';
 
-export interface MaskedInputProps extends Omit<BaseMaskedInputProps, keyof InputProps>, Omit<InputProps, keyof BaseMaskedInputProps> {
-  mask?: MaskType;
-  value?: string;
-  onChange?: (value: string) => void;
+export interface MaskedInputProps {
+  value?: string | number | Date;
+  onChange: (value: string) => void;
   onBlur?: (value: string) => void;
+  mask?: MaskType;
+  _placeholder?: string;
+  'aria-label'?: string;
+  'aria-describedby'?: string;
+  disabled?: boolean;
 }
 
 const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
@@ -18,14 +22,7 @@ const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       onChange,
       onBlur,
       mask,
-      id,
-      name,
-      placeholder,
-      size,
-      width,
-      isDisabled,
-      isRequired,
-      isLoading,
+      _placeholder,
       ...props
     },
     ref
@@ -61,17 +58,10 @@ const BaseMaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
     return (
       <Input
         ref={ref}
-        id={id}
-        name={name}
         value={internalValue}
         onChange={handleChange}
         onBlur={handleBlur}
-        placeholder={placeholder}
-        size={size}
-        width={width}
-        isDisabled={isDisabled}
-        isRequired={isRequired}
-        isInvalid={!!props.error}
+        _placeholder={_placeholder}
         {...props}
       />
     );

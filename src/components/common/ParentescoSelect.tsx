@@ -1,41 +1,20 @@
+import { FormControl, FormLabel, FormErrorMessage, FormHelperText } from '@chakra-ui/react';
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  FormControl,
-  FormLabel,
-  Select,
-  FormErrorMessage,
-  FormHelperText,
-  HStack,
-  Text,
-  Icon,
-} from '@chakra-ui/react';
 import { Parentesco } from '@/types/esocial';
 import { ParentescoService } from '@/services/parentescoService';
-import { FaUser, FaUserFriends, FaUserTie, FaUserGraduate } from 'react-icons/fa';
+import { SelectCustom } from './SelectCustom';
 
 interface ParentescoSelectProps {
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   error?: string;
   isRequired?: boolean;
   label?: string;
   helperText?: string;
+  isInvalid?: boolean;
 }
-
-const getIconByCategoria = (categoria: string) => {
-  switch (categoria) {
-    case 'DIRETO':
-      return FaUser;
-    case 'CASAMENTO':
-      return FaUserTie;
-    case 'COLATERAL':
-      return FaUserFriends;
-    default:
-      return FaUserGraduate;
-  }
-};
 
 export function ParentescoSelect({
   value,
@@ -44,57 +23,57 @@ export function ParentescoSelect({
   isRequired = false,
   label = 'Parentesco',
   helperText,
+  isInvalid
 }: ParentescoSelectProps) {
   const [parentescos, setParentescos] = useState<Parentesco[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const carregarParentescos = async () => {
+    async function loadParentescos() {
       try {
-        const dados = await ParentescoService.listarParentescos();
-        setParentescos(dados);
-      } catch (err) {
-        console.error('Erro ao carregar parentescos:', err);
+        setLoading(true);
+        const response = await ParentescoService.getAll();
+        setParentescos(response);
+      } catch (error) {
+        console.error('Erro ao carregar parentescos:', error);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    carregarParentescos();
+    loadParentescos();
   }, []);
 
-  const parentescosPorCategoria = parentescos.reduce((acc, parentesco) => {
+  const parentescosPorCategoria = parentescos.reduce<Record<string, Parentesco[]>>((acc, parentesco) => {
     if (!acc[parentesco.categoria]) {
       acc[parentesco.categoria] = [];
     }
     acc[parentesco.categoria].push(parentesco);
     return acc;
-  }, {} as Record<string, Parentesco[]>);
+  }, {});
+
+  const options = Object.entries(parentescosPorCategoria).flatMap(([categoria, parentescos]) => [
+    ...parentescos.map(parentesco => ({
+      value: parentesco.codigo,
+      label: parentesco.descricao,
+      group: categoria
+    }))
+  ]);
 
   return (
-    <FormControl isInvalid={!!error} isRequired={isRequired}>
+    <FormControl isInvalid={isInvalid}>
       <FormLabel>{label}</FormLabel>
-      <Select
+      <SelectCustom
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Selecione o parentesco"
+        onChange={onChange}
+        options={options}
+        isRequired={isRequired}
         isDisabled={loading}
-      >
-        {Object.entries(parentescosPorCategoria).map(([categoria, parentescos]) => (
-          <optgroup key={categoria} label={categoria}>
-            {parentescos.map((parentesco) => (
-              <option key={parentesco.id} value={parentesco.codigo}>
-                <HStack>
-                  <Icon as={getIconByCategoria(parentesco.categoria)} />
-                  <Text>{parentesco.descricao}</Text>
-                </HStack>
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </Select>
+        isInvalid={isInvalid}
+        placeholder="Selecione o parentesco"
+      />
       {helperText && <FormHelperText>{helperText}</FormHelperText>}
-      <FormErrorMessage>{error}</FormErrorMessage>
+      {error && <FormErrorMessage>{error}</FormErrorMessage>}
     </FormControl>
   );
 } 

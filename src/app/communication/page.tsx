@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { Box, Container, Heading, SimpleGrid, Button, Text } from '@chakra-ui/react';

@@ -55,8 +55,8 @@ export function EmployeeFormSteps({ employeeId, empregadorId }: EmployeeFormStep
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadEmployee();
-  }, [employeeId]);
+loadEmployee();
+}, [employeeId, loadEmployee]);
 
   const loadEmployee = async () => {
     try {

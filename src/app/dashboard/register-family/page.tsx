@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 "use client";
 
 import { Box, Heading, FormControl, FormLabel, Input, Button, VStack, useToast, FormErrorMessage } from '@chakra-ui/react';
@@ -39,7 +41,7 @@ export default function RegisterFamily() {
     };
 
     loadEmployees();
-  }, [toast]);
+  }, [toast, loadEmployees, employeeService, setEmployees]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

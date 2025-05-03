@@ -1,7 +1,8 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
 'use client';
 
 import { HStack, Icon, FormControl, FormLabel } from '@chakra-ui/react';
-import { Select } from '@/components/Select';
+import { SelectCustom } from './SelectCustom';
 import { FaFilter } from 'react-icons/fa';
 
 interface FiltrosRegistroProps {
@@ -31,24 +32,22 @@ export function FiltrosRegistro({ periodo, tipo, onPeriodoChange, onTipoChange }
       <Icon as={FaFilter} />
       <FormControl>
         <FormLabel htmlFor="periodo">Período</FormLabel>
-        <Select
-          id="periodo"
-          name="periodo"
+        <SelectCustom
           value={periodo}
           onChange={(e) => onPeriodoChange(e.target.value)}
           options={periodos}
-          label="Selecione o período"
+          placeholder="Selecione o período"
+          width="200px"
         />
       </FormControl>
       <FormControl>
         <FormLabel htmlFor="tipo">Tipo</FormLabel>
-        <Select
-          id="tipo"
-          name="tipo"
+        <SelectCustom
           value={tipo}
           onChange={(e) => onTipoChange(e.target.value)}
           options={tipos}
-          label="Selecione o tipo de registro"
+          placeholder="Selecione o tipo de registro"
+          width="200px"
         />
       </FormControl>
     </HStack>

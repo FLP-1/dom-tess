@@ -1,26 +1,29 @@
 import React, { ReactNode } from 'react';
-import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
+import { Formik, FormikHelpers, FormikProps, FormikValues, Form } from 'formik';
+import { FormProps } from '@/types/form';
+import { Schema } from 'yup';
 
-interface FormularioBaseProps<T> {
-  valoresIniciais: T;
+export interface FormularioBaseProps<T extends FormikValues> {
+  initialValues: T;
   onSubmit: (values: T, helpers: FormikHelpers<T>) => void | Promise<void>;
-  children: (props: FormikProps<T>) => ReactNode;
-  validacao?: any;
+  validationSchema?: Schema<T>;
+  children: (formikProps: FormikProps<T>) => React.ReactNode;
   titulo?: string;
 }
 
-export function FormularioBase<T>({
-  valoresIniciais,
+export function FormularioBase<T extends FormikValues>({
+  initialValues,
   onSubmit,
+  validationSchema,
   children,
-  validacao,
   titulo,
 }: FormularioBaseProps<T>) {
   return (
     <Formik
-      initialValues={valoresIniciais}
+      initialValues={initialValues}
       onSubmit={onSubmit}
-      validationSchema={validacao}
+      validationSchema={validationSchema}
+      enableReinitialize
     >
       {(formikProps) => (
         <Form className="space-y-4">

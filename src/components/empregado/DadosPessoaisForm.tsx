@@ -1,3 +1,5 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import { useState } from 'react';
@@ -15,7 +17,7 @@ import {
 import { formatCPF, removeCPFFormatting, validateCPF } from '@/utils/cpf';
 import { formatPhone } from '@/utils/phone';
 import { DadosEmpregado } from '@/types/esocial';
-import { SelectField } from '@/components/common/SelectField';
+import { SelectCustom } from '../common/SelectCustom';
 import { MaskedInput, masks } from '@/components/common/MaskedInput';
 import { EnderecoForm } from '@/components/common/EnderecoForm';
 
@@ -203,6 +205,19 @@ export function DadosPessoaisForm({
         <EnderecoForm
           enderecoInicial={formData.endereco}
           onChange={handleEnderecoChange}
+        />
+
+        <SelectCustom
+          label="Estado Civil"
+          options={[
+            { value: 'solteiro', label: 'Solteiro(a)' },
+            { value: 'casado', label: 'Casado(a)' },
+            { value: 'divorciado', label: 'Divorciado(a)' },
+            { value: 'viuvo', label: 'Viúvo(a)' }
+          ]}
+          value={formData.estadoCivil || ''}
+          onChange={(e) => handleChange('estadoCivil', e.target.value)}
+          isRequired
         />
 
         <HStack justify="space-between" mt={4}>

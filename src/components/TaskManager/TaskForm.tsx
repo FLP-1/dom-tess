@@ -10,8 +10,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
-  FormControl,
-  FormLabel,
   Input,
   Textarea,
   Select,
@@ -25,31 +23,41 @@ import {
   IconButton,
   InputGroup,
   InputRightElement,
+  FormControl,
+  FormLabel,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
 } from '@chakra-ui/react';
-import { Task, TaskPriority, TaskStatus, TaskRecurrence } from '../../types/task';
+import { ITask, ETaskPriority, ETaskRecurrence } from '../../types/task';
+import { EStatus } from '../../types/common';
 import { FiPlus, FiX } from 'react-icons/fi';
 import { collection, addDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
-import { SelectField } from '@/components/SelectField';
+import { SelectCustom } from '../common/SelectCustom';
 
 interface TaskFormProps {
   isOpen: boolean;
   onClose: () => void;
-  task?: Task;
+  task?: ITask;
   onUpdate?: () => void;
 }
 
 const statusOptions = [
-  { value: 'pending', label: 'Pendente' },
-  { value: 'in_progress', label: 'Em Andamento' },
-  { value: 'completed', label: 'Concluído' }
+  { value: EStatus.NOT_STARTED, label: 'Não Iniciada' },
+  { value: EStatus.IN_PROGRESS, label: 'Em Andamento' },
+  { value: EStatus.COMPLETED, label: 'Concluída' },
+  { value: EStatus.CANCELLED, label: 'Cancelada' }
 ];
 
 const priorityOptions = [
-  { value: 'high', label: 'Alta' },
-  { value: 'medium', label: 'Média' },
-  { value: 'low', label: 'Baixa' }
+  { value: ETaskPriority.LOW, label: 'Baixa' },
+  { value: ETaskPriority.MEDIUM, label: 'Média' },
+  { value: ETaskPriority.HIGH, label: 'Alta' },
+  { value: ETaskPriority.URGENT, label: 'Urgente' }
 ];
 
 const assigneeOptions = [
@@ -58,21 +66,27 @@ const assigneeOptions = [
   { value: 'user3', label: 'Usuário 3' }
 ];
 
+const recurrenceOptions = [
+  { value: ETaskRecurrence.NONE, label: 'Nenhuma' },
+  { value: ETaskRecurrence.DAILY, label: 'Diária' },
+  { value: ETaskRecurrence.WEEKLY, label: 'Semanal' },
+  { value: ETaskRecurrence.MONTHLY, label: 'Mensal' },
+  { value: ETaskRecurrence.YEARLY, label: 'Anual' }
+];
+
 export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, task, onUpdate }) => {
   const { user } = useAuth();
   const toast = useToast();
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
-  const [dueDate, setDueDate] = useState(task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
-  const [priority, setPriority] = useState<TaskPriority>(task?.priority || TaskPriority.MEDIUM);
-  const [status, setStatus] = useState<TaskStatus>(task?.status || TaskStatus.NOT_STARTED);
-  const [estimatedCost, setEstimatedCost] = useState(task?.estimatedCost?.toString() || '');
-  const [estimatedTime, setEstimatedTime] = useState(task?.estimatedTime?.toString() || '');
-  const [recurrenceType, setRecurrenceType] = useState<TaskRecurrence>(task?.recurrence?.type || TaskRecurrence.NONE);
-  const [recurrenceInterval, setRecurrenceInterval] = useState(task?.recurrence?.interval?.toString() || '1');
-  const [recurrenceEndDate, setRecurrenceEndDate] = useState(
-    task?.recurrence?.endDate ? new Date(task.recurrence.endDate).toISOString().split('T')[0] : ''
-  );
+  const [status, setStatus] = useState<EStatus>(task?.status || EStatus.NOT_STARTED);
+  const [priority, setPriority] = useState<ETaskPriority>(task?.priority || ETaskPriority.MEDIUM);
+  const [dueDate, setDueDate] = useState<Date | null>(task?.dueDate || null);
+  const [estimatedTime, setEstimatedTime] = useState<number | undefined>(task?.estimatedTime);
+  const [estimatedCost, setEstimatedCost] = useState<number | undefined>(task?.estimatedCost);
+  const [recurrenceType, setRecurrenceType] = useState<ETaskRecurrence>(task?.recurrence?.type || ETaskRecurrence.NONE);
+  const [recurrenceInterval, setRecurrenceInterval] = useState<number>(task?.recurrence?.interval || 1);
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState<Date | null>(task?.recurrence?.endDate || null);
   const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [newTag, setNewTag] = useState('');
 
@@ -80,20 +94,19 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, task, onUpd
     e.preventDefault();
 
     try {
-      const taskData = {
+      const taskData: Partial<ITask> = {
         title,
         description,
-        dueDate: Timestamp.fromDate(new Date(dueDate)),
-        priority,
         status,
-        estimatedCost: estimatedCost ? parseFloat(estimatedCost) : undefined,
-        estimatedTime: estimatedTime ? parseFloat(estimatedTime) : undefined,
-        recurrence: recurrenceType !== TaskRecurrence.NONE ? {
+        priority,
+        dueDate: dueDate || new Date(),
+        estimatedTime,
+        estimatedCost,
+        recurrence: recurrenceType !== ETaskRecurrence.NONE ? {
           type: recurrenceType,
-          interval: parseInt(recurrenceInterval),
-          endDate: recurrenceEndDate ? Timestamp.fromDate(new Date(recurrenceEndDate)) : undefined,
+          interval: recurrenceInterval,
+          endDate: recurrenceEndDate || undefined
         } : undefined,
-        tags,
         updatedAt: Timestamp.now(),
         createdBy: user?.uid,
         assignedTo: task?.assignedTo || [user?.uid],
@@ -171,89 +184,109 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, task, onUpd
                 />
               </FormControl>
 
-              <HStack width="100%" spacing={4}>
-                <FormControl isRequired>
-                  <FormLabel>Data de Vencimento</FormLabel>
-                  <Input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                  />
-                </FormControl>
-
-                <SelectField
-                  label="Status"
-                  options={statusOptions}
+              <FormControl isRequired>
+                <FormLabel>Status</FormLabel>
+                <Select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                  isRequired
-                />
+                  onChange={(e) => setStatus(e.target.value as EStatus)}
+                >
+                  {statusOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </Select>
+              </FormControl>
 
-                <SelectField
-                  label="Prioridade"
-                  options={priorityOptions}
+              <FormControl isRequired>
+                <FormLabel>Prioridade</FormLabel>
+                <Select
                   value={priority}
-                  onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                  isRequired
+                  onChange={(e) => setPriority(e.target.value as ETaskPriority)}
+                >
+                  {priorityOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Data de Vencimento</FormLabel>
+                <Input
+                  type="datetime-local"
+                  value={dueDate ? dueDate.toISOString().slice(0, 16) : ''}
+                  onChange={(e) => setDueDate(e.target.value ? new Date(e.target.value) : null)}
                 />
-              </HStack>
+              </FormControl>
 
-              <HStack width="100%" spacing={4}>
-                <FormControl>
-                  <FormLabel>Custo Estimado (R$)</FormLabel>
-                  <Input
-                    type="number"
-                    value={estimatedCost}
-                    onChange={(e) => setEstimatedCost(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </FormControl>
+              <FormControl>
+                <FormLabel>Tempo Estimado (horas)</FormLabel>
+                <NumberInput
+                  value={estimatedTime || ''}
+                  onChange={(_, value) => setEstimatedTime(value || undefined)}
+                  min={0}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
 
-                <FormControl>
-                  <FormLabel>Tempo Estimado (horas)</FormLabel>
-                  <Input
-                    type="number"
-                    value={estimatedTime}
-                    onChange={(e) => setEstimatedTime(e.target.value)}
-                    placeholder="0"
-                  />
-                </FormControl>
-              </HStack>
+              <FormControl>
+                <FormLabel>Custo Estimado (R$)</FormLabel>
+                <NumberInput
+                  value={estimatedCost || ''}
+                  onChange={(_, value) => setEstimatedCost(value || undefined)}
+                  min={0}
+                  precision={2}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
 
-              <Box width="100%">
+              <FormControl>
                 <FormLabel>Recorrência</FormLabel>
-                <HStack spacing={4}>
-                  <Select
-                    value={recurrenceType}
-                    onChange={(e) => setRecurrenceType(e.target.value as TaskRecurrence)}
-                    aria-label="Selecione o tipo de recorrência da tarefa"
-                  >
-                    <option value={TaskRecurrence.NONE}>Nenhuma</option>
-                    <option value={TaskRecurrence.DAILY}>Diária</option>
-                    <option value={TaskRecurrence.WEEKLY}>Semanal</option>
-                    <option value={TaskRecurrence.MONTHLY}>Mensal</option>
-                    <option value={TaskRecurrence.YEARLY}>Anual</option>
-                  </Select>
+                <Select
+                  value={recurrenceType}
+                  onChange={(e) => setRecurrenceType(e.target.value as ETaskRecurrence)}
+                >
+                  {recurrenceOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </Select>
+              </FormControl>
 
-                  {recurrenceType !== TaskRecurrence.NONE && (
-                    <>
-                      <Input
-                        type="number"
-                        value={recurrenceInterval}
-                        onChange={(e) => setRecurrenceInterval(e.target.value)}
-                        placeholder="Intervalo"
-                        width="100px"
-                      />
-                      <Input
-                        type="date"
-                        value={recurrenceEndDate}
-                        onChange={(e) => setRecurrenceEndDate(e.target.value)}
-                        placeholder="Data Final"
-                      />
-                    </>
-                  )}
-                </HStack>
-              </Box>
+              {recurrenceType !== ETaskRecurrence.NONE && (
+                <>
+                  <FormControl>
+                    <FormLabel>Intervalo de Recorrência</FormLabel>
+                    <NumberInput
+                      value={recurrenceInterval}
+                      onChange={(_, value) => setRecurrenceInterval(value)}
+                      min={1}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Data Final da Recorrência</FormLabel>
+                    <Input
+                      type="date"
+                      value={recurrenceEndDate ? recurrenceEndDate.toISOString().slice(0, 10) : ''}
+                      onChange={(e) => setRecurrenceEndDate(e.target.value ? new Date(e.target.value) : null)}
+                    />
+                  </FormControl>
+                </>
+              )}
 
               <Box width="100%">
                 <FormLabel>Tags</FormLabel>

@@ -88,6 +88,14 @@ export function useFormAutoSave<T>(
     setLastSavedData(initialData);
   }, [initialData]);
 
+  useEffect(() => {
+    return () => {
+      if (debouncedSave) {
+        debouncedSave.cancel();
+      }
+    };
+  }, [options.onSave, options.debounceMs, options.enabled]);
+
   return {
     formData,
     updateFormData,

@@ -1,16 +1,17 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, CircularProgress } from '@mui/material';
 import { Upload } from '@mui/icons-material';
 import { EsocialService } from '@/services/esocialService';
+import { DocumentoService } from '@/services/documentoService';
 import { toast } from 'react-toastify';
+import { TipoDocumento } from '@/types/documento';
 
 interface Props {
   empregadorId: string;
+  userId: string;
 }
 
-export function CertificadoDigitalUpload({ empregadorId }: Props) {
+export function CertificadoDigitalUpload({ empregadorId, userId }: Props) {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [senha, setSenha] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -32,9 +33,24 @@ export function CertificadoDigitalUpload({ empregadorId }: Props) {
       // TODO: Implementar o upload do arquivo para o storage
       const arquivoUrl = 'url_do_arquivo';
       
+      // Criar documento no sistema de gestão
+      const documento = await DocumentoService.criarDocumento({
+        tipo: 'certificado_digital',
+        nome: arquivo.name,
+        descricao: 'Certificado Digital para integração com eSocial',
+        arquivoUrl,
+        dataValidade: new Date(), // TODO: Extrair data de validade do certificado
+        userId,
+        empregadorId,
+        notificacoes: {
+          diasAntecedencia: [30, 15, 7, 3, 1]
+        }
+      });
+
+      // Atualizar certificado no eSocial
       await EsocialService.uploadCertificadoDigital(empregadorId, {
         nome: arquivo.name,
-        dataValidade: new Date(), // TODO: Extrair data de validade do certificado
+        dataValidade: documento.dataValidade,
         senha,
         arquivoUrl
       });

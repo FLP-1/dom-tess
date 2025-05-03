@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Heading, Text, VStack, HStack, Button, Spinner, useDisclosure } from '@chakra-ui/react';
-import { Task, TaskStatus } from '../../types/task';
+import { ITask, ETaskStatus } from '../../types/task';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { TaskForm } from './TaskForm';
@@ -9,43 +9,42 @@ import { Card } from '../common/Card';
 import { useRouter } from 'next/navigation';
 
 export const TodayTasksCard: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<ITask[]>([]);
   const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
 
+  const fetchTodayTasks = async () => {
+    try {
+      setLoading(true);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const q = query(
+        collection(db, 'tasks'),
+        where('dueDate', '>=', Timestamp.fromDate(today)),
+        where('dueDate', '<', Timestamp.fromDate(tomorrow)),
+        where('status', 'in', [ETaskStatus.NOT_STARTED, ETaskStatus.PENDING, ETaskStatus.IN_PROGRESS])
+      );
+
+      const querySnapshot = await getDocs(q);
+      const tasksData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        dueDate: doc.data().dueDate.toDate(),
+      })) as ITask[];
+
+      setTasks(tasksData);
+    } catch (error) {
+      console.error('Erro ao buscar tarefas do dia:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTodayTasks = async () => {
-      try {
-        setLoading(true);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const q = query(
-          collection(db, 'tasks'),
-          where('dueDate', '>=', Timestamp.fromDate(today)),
-          where('dueDate', '<', Timestamp.fromDate(tomorrow)),
-          where('status', 'in', [TaskStatus.NOT_STARTED, TaskStatus.PENDING, TaskStatus.IN_PROGRESS])
-        );
-
-        const querySnapshot = await getDocs(q);
-        const tasksData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          dueDate: doc.data().dueDate.toDate(),
-        })) as Task[];
-
-        setTasks(tasksData);
-      } catch (error) {
-        console.error('Erro ao buscar tarefas do dia:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTodayTasks();
   }, []);
 

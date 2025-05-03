@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react';
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -43,7 +44,7 @@ export default function ComplementoDadosPage() {
     };
 
     carregarDados();
-  }, [user, router]);
+  }, [user, router, carregarDados]);
 
   const renderConteudo = () => {
     switch (passoAtivo) {

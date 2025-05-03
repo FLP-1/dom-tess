@@ -1,10 +1,11 @@
 'use client';
 
-import { Select, FormControl, FormLabel, FormErrorMessage } from '@chakra-ui/react';
+import { FormControl, FormLabel, FormErrorMessage } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { FuncaoDomestica } from '@/types/esocial';
 import { FuncaoDomesticaService } from '@/services/funcaoDomesticaService';
 import { useAppNotifications } from '@/hooks/useAppNotifications';
+import { SelectCustom } from './common/SelectCustom';
 
 interface FuncaoDomesticaSelectProps {
   value?: string;
@@ -12,6 +13,7 @@ interface FuncaoDomesticaSelectProps {
   isInvalid?: boolean;
   errorMessage?: string;
   placeholder?: string;
+  label?: string;
 }
 
 export function FuncaoDomesticaSelect({
@@ -19,47 +21,45 @@ export function FuncaoDomesticaSelect({
   onChange,
   isInvalid,
   errorMessage,
-  placeholder = 'Selecione uma função'
+  placeholder = 'Selecione a função',
+  label = 'Função Doméstica'
 }: FuncaoDomesticaSelectProps) {
   const [funcoes, setFuncoes] = useState<FuncaoDomestica[]>([]);
-  const [loading, setLoading] = useState(true);
-  const notifications = useAppNotifications();
+  const [loading, setLoading] = useState(false);
+  const { showError } = useAppNotifications();
 
   useEffect(() => {
-    async function carregarFuncoes() {
+    async function loadFuncoes() {
       try {
-        const funcoesData = await FuncaoDomesticaService.listarFuncoes();
-        setFuncoes(funcoesData);
+        setLoading(true);
+        const response = await FuncaoDomesticaService.getAll();
+        setFuncoes(response);
       } catch (error) {
-        notifications.showError(
-          'Erro ao carregar funções',
-          'Não foi possível carregar a lista de funções domésticas. Tente novamente mais tarde.',
-          { persistent: true } // Salva no histórico de notificações
-        );
+        showError('Erro ao carregar funções domésticas');
       } finally {
         setLoading(false);
       }
     }
 
-    carregarFuncoes();
-  }, [notifications]);
+    loadFuncoes();
+  }, [showError]);
+
+  const options = funcoes.map(funcao => ({
+    value: funcao.codigo,
+    label: funcao.descricao
+  }));
 
   return (
     <FormControl isInvalid={isInvalid}>
-      <FormLabel>Função Doméstica</FormLabel>
-      <Select
+      <FormLabel>{label}</FormLabel>
+      <SelectCustom
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
+        options={options}
         placeholder={placeholder}
         isDisabled={loading}
-        aria-label="Selecione uma função doméstica"
-      >
-        {funcoes.map((funcao) => (
-          <option key={funcao.id} value={funcao.id}>
-            {funcao.nome} - {funcao.codigo}
-          </option>
-        ))}
-      </Select>
+        isInvalid={isInvalid}
+      />
       {errorMessage && <FormErrorMessage>{errorMessage}</FormErrorMessage>}
     </FormControl>
   );

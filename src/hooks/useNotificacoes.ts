@@ -58,7 +58,7 @@ export function useNotificacoes(userId: string) {
         unsubscribe();
       }
     };
-  }, [userId]);
+  }, [userId, setNotificacoes, setError, setLoading]);
 
   const notificacoesNaoLidas = notificacoes.filter(notif => !notif.lida);
 

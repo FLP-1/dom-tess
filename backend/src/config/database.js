@@ -1,13 +1,10 @@
 // E:\git-dom\backend\src\config\database.js
-const { Pool } = require('pg');
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production'
-    ? { rejectUnauthorized: false }
-    : false,
-});
+dotenv.config();
 
-module.exports = pool;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export default pool;
 
 

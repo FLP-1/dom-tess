@@ -1,0 +1,66 @@
+﻿# Banco de dados
+# Configurações do Banco de Dados
+DB_USER=user_dom
+DB_HOST=localhost
+DB_NAME=dom
+DB_PASSWORD=FLP*2025
+DB_PORT=5432
+
+# Banco de dados
+# DATABASE_URL="postgresql://[usuário]:[senha]@[host]:[porta]/[nome_do_banco_de_dados]?schema=public"
+
+#DATABASE_URL=DATABASE_URL="postgresql://postgres:FLP*2001@localhost:5432/dom"
+DATABASE_URL="postgresql://user_dom:FLP*2025@localhost:5432/dom?schema=public"
+
+# Email
+SMTP_HOST="smtp-mail.outlook.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="flp-business.strategy@outlook.com"
+SMTP_PASS="FLP*2025"
+SMTP_FROM="flp-business.strategy@outlook.com"
+
+# Aplicação
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+# Configurações de Autenticação
+JWT_SECRET=FLP*2025
+JWT_EXPIRATION=24h
+
+# Aplicação
+#NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+import { NextApiRequest, NextApiResponse } from 'next';
+import { sendPasswordResetEmail } from '../../utils/email';
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Método não permitido' });
+  }
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email é obrigatório' });
+    }
+
+    // Token de teste
+    const testToken = 'test-token-123';
+
+    // Enviar email de teste
+    await sendPasswordResetEmail(email, testToken);
+
+    return res.status(200).json({
+      message: 'Email de teste enviado com sucesso',
+    });
+  } catch (error) {
+    console.error('Erro ao enviar email de teste:', error);
+    return res.status(500).json({ 
+      message: 'Erro ao enviar email de teste',
+      error: error instanceof Error ? error.message : 'Erro desconhecido'
+    });
+  }
+}

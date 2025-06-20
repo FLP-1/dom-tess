@@ -1,5 +1,8 @@
 // backend/controllers/authController.js
+const authController = require('E:/git-dom/backend/src/controllers/authController'); // Ajuste para o caminho correto
+
 const User = require('../models/User');
+//const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 

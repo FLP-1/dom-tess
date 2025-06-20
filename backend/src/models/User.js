@@ -1,6 +1,11 @@
-// backend/models/User.js
+// de src/models/User.js
 // Exemplo simplificado usando pool do PostgreSQL
-const pool = require('../../database/your-pool-file'); // ajuste o caminho conforme sua estrutura
+//const pool = require('../../database/your-pool-file'); // ajuste o caminho 
+//const pool = require('../../database');
+//conforme sua estrutura
+// ✔️ Agora aponta para E:\git-dom\backend\src\config\database.js
+const pool = require('../config/database');
+
 
 class User {
   constructor({ id, cpf, name, email, password, otp, isVerified }) {

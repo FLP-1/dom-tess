@@ -1,0 +1,12 @@
+.homepage__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+@media (max-width: 600px) {
+  .homepage__grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}

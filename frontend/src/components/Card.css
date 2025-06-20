@@ -1,0 +1,35 @@
+:root {
+  --card-bg: #ffffff;
+  --card-border-radius: 8px;
+  --card-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  --card-padding: 16px;
+  --card-hover-transform: translateY(-2px);
+  --card-hover-shadow: 0px 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: var(--card-hover-transform);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.card__header,
+.card__footer {
+  padding: var(--card-padding);
+  background-color: #f7f7f7;
+}
+
+.card__body {
+  padding: var(--card-padding);
+  flex: 1;
+}
